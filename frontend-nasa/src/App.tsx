@@ -129,6 +129,8 @@ export function App() {
         onOpenDataSources={() => setIsDataSourcesOpen(true)}
         onBackToLanding={handleBackToLanding}
         selectedVillage={selectedField.village}
+        currentLang={currentLang}
+        onToggleLang={handleToggleLang}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
