@@ -25,6 +25,13 @@ export interface PriorityWeights {
   laborDemand: number;      // 0 - 100
 }
 
+export interface PplBriefMetadata {
+  farmerName: string;
+  poktanName: string;
+  pplOfficerName: string;
+  notes: string;
+}
+
 export interface ScoreSet {
   yield: number;            // 0 - 100
   waterEfficiency: number;  // 0 - 100

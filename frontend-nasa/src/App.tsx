@@ -52,6 +52,19 @@ export function App() {
     temperatureAnomalyDelta: 0,
   });
 
+  // PPL Field Verification Checklist persistence
+  const [verifiedChecks, setVerifiedChecks] = useState<Record<string, boolean>>({
+    'Saluran irigasi tersier bebas endapan lumpur (debit minimal 15 L/detik)': true,
+    'Ketersediaan benih kedelai bersertifikat di penangkar lokal': true,
+  });
+
+  const handleToggleCheck = (checkText: string) => {
+    setVerifiedChecks((prev) => ({
+      ...prev,
+      [checkText]: !prev[checkText],
+    }));
+  };
+
   // Multi-objective weighting (sums to 100)
   const [weights, setWeights] = useState<PriorityWeights>({
     yield: 20,
@@ -312,6 +325,9 @@ export function App() {
             strategies={currentStrategies}
             weights={weights}
             climatePhase={climatePhase}
+            constraints={constraints}
+            scenario={scenario}
+            verifiedChecks={verifiedChecks}
           />
         )}
 
@@ -352,6 +368,8 @@ export function App() {
         strategy={evidenceStrategy}
         isOpen={!!evidenceStrategy}
         onClose={() => setEvidenceStrategy(null)}
+        verifiedChecks={verifiedChecks}
+        onToggleCheck={handleToggleCheck}
       />
 
       <DataSourcesModal
