@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { LandingNavbar } from '../components/landing/LandingNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
-import { ProblemSection } from '../components/landing/ProblemSection';
-import { HowItWorksSection } from '../components/landing/HowItWorksSection';
-import { DifferentiatorsSection } from '../components/landing/DifferentiatorsSection';
-import { NasaDataGrid } from '../components/landing/NasaDataGrid';
-import { StrategyInteractivePreview } from '../components/landing/StrategyInteractivePreview';
-import { LimitationsSection } from '../components/landing/LimitationsSection';
-import { CtaBanner } from '../components/landing/CtaBanner';
-import { LandingFooter } from '../components/landing/LandingFooter';
+import { AboutSection } from '../components/landing/AboutSection';
+import { HowItWorksSection } from '../components/landing/HowItWorksSimple';
+import { WhyFieldShiftSection } from '../components/landing/WhyFieldShiftSection';
+import { CtaFooterSection } from '../components/landing/CtaFooterSection';
 import { DataSourcesModal } from '../components/landing/DataSourcesModal';
 import { GlossaryModal } from '../features/glossary/GlossaryModal';
 import { EvidenceModal } from '../features/evidence-card/EvidenceModal';
@@ -22,15 +18,21 @@ interface LandingPageProps {
   onToggleLang?: () => void;
 }
 
-  export function LandingPage({
-    onOpenWorkspace,
-    currentLang: externalLang,
-    onToggleLang: externalToggleLang,
+export function LandingPage({
+  onOpenWorkspace,
+  currentLang: externalLang,
+  onToggleLang: externalToggleLang,
 }: LandingPageProps) {
-  // Default to English as requested
   const [internalLang, setInternalLang] = useState<Language>('en');
   const currentLang = externalLang || internalLang;
-  const handleToggleLang = externalToggleLang || (() => setInternalLang((prev) => (prev === 'id' ? 'en' : 'id')));
+
+  // Keep lang toggle available for future use
+  if (externalToggleLang) {
+    // external toggle provided
+  } else {
+    // internal toggle fallback (no-op unless wired)
+    void setInternalLang;
+  }
 
   // Modals state
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
@@ -38,89 +40,47 @@ interface LandingPageProps {
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
 
   const handleOpenEvidence = (strategyId: string) => {
-    // Look up strategy from banyumas-karangrau-01 in mockData
     const fieldStrategies = MOCK_STRATEGIES['banyumas-karangrau-01'] || Object.values(MOCK_STRATEGIES)[0];
     const matched = fieldStrategies.find((s) => s.id === strategyId) || fieldStrategies[0];
     setEvidenceStrategy(matched);
   };
+  // Keep evidence handler accessible for potential deep-link use
+  void handleOpenEvidence;
 
-  const handleScrollToDemo = () => {
-    const el = document.getElementById('preview-strategi');
+  const handleScrollToAbout = () => {
+    const el = document.getElementById('about');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7FA] text-[#14232B] selection:bg-[#E3F1F3] selection:text-[#1B6572]">
+    <div className="min-h-screen bg-white text-slate-900">
       {/* 1. Navbar */}
-      <LandingNavbar
-        currentLang={currentLang}
-        onToggleLang={handleToggleLang}
-        onOpenWorkspace={onOpenWorkspace}
-        onOpenGlossary={() => setIsGlossaryOpen(true)}
-        onOpenDataSources={() => setIsDataSourcesOpen(true)}
-      />
+      <LandingNavbar onOpenWorkspace={onOpenWorkspace} />
 
-      {/* Main Content Sections */}
       <main>
-        {/* 2. Hero Section with 3 Floating Scientific Bento Cards */}
+        {/* 1. Hero — Headline, description, farming photo, CTA */}
         <HeroSection
           currentLang={currentLang}
           onOpenWorkspace={onOpenWorkspace}
-          onScrollToDemo={handleScrollToDemo}
+          onScrollToDemo={handleScrollToAbout}
         />
 
-        {/* 3. Problem Section (Masalah & Checklist 4 Poin) */}
-        <ProblemSection
-          currentLang={currentLang}
-          onOpenDataSources={() => setIsDataSourcesOpen(true)}
-        />
+        {/* 2. About — Brief explanation of Field Shift */}
+        <AboutSection onOpenWorkspace={onOpenWorkspace} />
 
-        {/* 4. How It Works (Cara Kerja - 6 Pipeline Steps) */}
-        <HowItWorksSection
-          currentLang={currentLang}
-          onOpenWorkspace={onOpenWorkspace}
-        />
+        {/* 3. How It Works — Select Land → Analyze → Compare */}
+        <HowItWorksSection onOpenWorkspace={onOpenWorkspace} />
 
-        {/* 5. 4 Differentiators (4 Pilar Pembeda Novelty) */}
-        <DifferentiatorsSection
-          currentLang={currentLang}
-        />
-
-        {/* 6. NASA Satellite Data & Scale Transparency */}
-        <NasaDataGrid
-          currentLang={currentLang}
-          onOpenDataSources={() => setIsDataSourcesOpen(true)}
-        />
-
-        {/* 7. Live Strategy Comparison & Risk-Weighted Simulation */}
-        <StrategyInteractivePreview
-          currentLang={currentLang}
-          onOpenWorkspace={onOpenWorkspace}
-          onSelectEvidence={handleOpenEvidence}
-        />
-
-        {/* 8. Honest Limitations & Ethical Framework */}
-        <LimitationsSection currentLang={currentLang} />
-
-        {/* 9. Signature Teal CTA Banner */}
-        <CtaBanner
-          currentLang={currentLang}
-          onOpenWorkspace={onOpenWorkspace}
-          onOpenDataSources={() => setIsDataSourcesOpen(true)}
-        />
+        {/* 4. Why Field Shift — NASA Data, Climate-Aware, Evidence-Based */}
+        <WhyFieldShiftSection onOpenWorkspace={onOpenWorkspace} />
       </main>
 
-      {/* 10. Landing Footer */}
-      <LandingFooter
-        currentLang={currentLang}
-        onOpenWorkspace={onOpenWorkspace}
-        onOpenGlossary={() => setIsGlossaryOpen(true)}
-        onOpenDataSources={() => setIsDataSourcesOpen(true)}
-      />
+      {/* 5. CTA + Footer — Explore Field Shift */}
+      <CtaFooterSection onOpenWorkspace={onOpenWorkspace} />
 
-      {/* Global Modals for Data Provenance, Glossary, and Evidence Cards */}
+      {/* Utility Modals (kept for deep-link compatibility) */}
       <DataSourcesModal
         isOpen={isDataSourcesOpen}
         onClose={() => setIsDataSourcesOpen(false)}
@@ -139,5 +99,6 @@ interface LandingPageProps {
       />
     </div>
   );
-};
+}
+
 export default LandingPage;
