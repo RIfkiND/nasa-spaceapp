@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
-import type { PickingInfo } from '@deck.gl/core';
+import type { PickingInfo, MapViewState } from '@deck.gl/core';
 import { Map } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import type { Feature, Geometry, Polygon } from 'geojson';
@@ -96,7 +96,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
   const [is3D, setIs3D] = useState(true);
 
   // Initial View State centered on active plot
-  const initialViewState = useMemo(() => ({
+  const initialViewState: MapViewState = useMemo(() => ({
     longitude: selectedField?.coordinates?.[1] ?? 109.2942,
     latitude: selectedField?.coordinates?.[0] ?? -7.5186,
     zoom: 12.2,
@@ -356,7 +356,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       )}
 
       {/* Deck.gl + MapLibre Map Canvas */}
-      <DeckGL
+      <DeckGL<null>
         key={`${selectedField?.id}-${is3D ? '3d' : '2d'}`}
         initialViewState={initialViewState}
         controller={true}
