@@ -4,6 +4,25 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 @theme {
+  /* Semantic Tokens (better-colors) */
+  --color-accent-solid: #237F8E;
+  --color-accent-hover: #1B6572;
+  --color-accent-subtle: #E3F1F3;
+  --color-accent-text: #1B6572;
+  --color-text-primary: #14232B;
+  --color-text-secondary: #5F6B74;
+  --color-border-default: #E6EBF0;
+  --color-success-subtle: #E7F2EB;
+  --color-success-solid: #2E7D4F;
+  --color-success-text: #256C43;
+  --color-warning-subtle: #F6EFE5;
+  --color-warning-solid: #B7791F;
+  --color-warning-text: #9A6014;
+  --color-danger-subtle: #F6E9E8;
+  --color-danger-solid: #B4443A;
+  --color-danger-text: #96352D;
+
+  /* Legacy & Brand Aliases */
   --color-primary: #237F8E;
   --color-primary-dark: #1B6572;
   --color-primary-light: #E3F1F3;
