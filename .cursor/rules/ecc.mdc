@@ -1,0 +1,5 @@
+---
+description: Project Python and TypeScript/React standards
+alwaysApply: true
+---
+Follow all engineering rules in AGENTS.md, .agents/rules/common/, .agents/rules/python/, and .agents/rules/typescript/.

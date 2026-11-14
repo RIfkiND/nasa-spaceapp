@@ -1,0 +1,133 @@
+name: nasa-space-app
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NASA Space App Monorepo Docker Compose
+# Services: backend (FastAPI + AI) · postgres (16 + PostGIS 3.4) · redis (7) · frontend
+#
+# Usage:
+#   docker compose up -d                  # Start all services
+#   docker compose up -d --build          # Rebuild images first
+#   docker compose up -d --build backend  # Rebuild a specific service
+#   docker compose logs -f backend        # Tail backend logs
+#   docker compose down                   # Stop all
+#   docker compose down -v                # Stop + delete volumes (reset DB)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Shared environment block for the backend
+x-app-env: &app-env
+  APP_ENV: development
+  APP_PORT: "8000"
+
+  # PostgreSQL (PostGIS) — points to the postgres service inside the compose network
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: postgres
+  DB_PASSWORD: mysecretpassword
+  DB_NAME: nasa_space_app
+  DB_SSLMODE: disable
+  DATABASE_URL: postgresql://postgres:mysecretpassword@postgres:5432/nasa_space_app
+
+  # Redis — points to the redis service inside the compose network
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: ""
+  REDIS_DB: "0"
+  REDIS_URL: redis://redis:6379/0
+
+services:
+
+  backend:
+    container_name: nasa-space-app-backend
+    build:
+      context: ./compfest-18-ai
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    ports:
+      - "8000:8000"           
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nasa-space-app-net
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 120s     
+
+  postgres:
+    container_name: nasa-space-app-postgres
+    # PostGIS image (PostgreSQL 16 + PostGIS 3.4). The postgis extension is
+    # enabled automatically in POSTGRES_DB on first initialization.
+    image: postgis/postgis:16-3.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: nasa_space_app
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nasa-space-app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nasa_space_app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    container_name: nasa-space-app-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --appendonly no
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nasa-space-app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  frontend:
+    container_name: nasa-space-app-frontend
+    build:
+      context: ./compest-2026-frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - nasa-space-app-net
+
+networks:
+  nasa-space-app-net:
+    name: nasa-space-app-net
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: nasa-space-app-postgres-data
+  redis_data:
+    name: nasa-space-app-redis-data
