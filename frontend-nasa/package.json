@@ -11,6 +11,7 @@
     "gen:api": "npx --yes openapi-typescript@7 ../contracts/openapi.json -o src/api/schema.d.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/vite": "^4.3.5",
     "@tanstack/react-query": "^5.107.1",
     "@types/leaflet": "^1.9.22",

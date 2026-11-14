@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MOCK_FIELDS, MOCK_STRATEGIES } from './api/mock/mockData';
+import { getFieldsFromDatabase, getStrategiesFromDatabase, isSupabaseConfigured } from './api/supabase';
 import type { FieldProfile, PriorityWeights, ClimatePhase, Strategy } from './types/domain';
 import { Header } from './components/Header';
 import { FieldMap } from './features/map/FieldMap';
@@ -9,11 +10,14 @@ import { StrategyBoard } from './features/strategy-comparison/StrategyBoard';
 import { SummaryBrief } from './features/export/SummaryBrief';
 import { GlossaryModal } from './features/glossary/GlossaryModal';
 import { EvidenceModal } from './features/evidence-card/EvidenceModal';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight, Database } from 'lucide-react';
 
 export function App() {
-  const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
+  const [fields, setFields] = useState<FieldProfile[]>(MOCK_FIELDS);
   const [selectedField, setSelectedField] = useState<FieldProfile>(MOCK_FIELDS[0]);
+  const [currentStrategies, setCurrentStrategies] = useState<Strategy[]>(
+    MOCK_STRATEGIES[MOCK_FIELDS[0].id] || MOCK_STRATEGIES['banyumas-karangrau-01']
+  );
   const [activeTab, setActiveTab] = useState<'map' | 'profile' | 'comparison' | 'export'>('map');
 
   const [weights, setWeights] = useState<PriorityWeights>({
@@ -28,8 +32,35 @@ export function App() {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState<boolean>(false);
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
 
-  // Retrieve strategies for the selected field (or fallback to first field's strategies)
-  const currentStrategies = MOCK_STRATEGIES[selectedField.id] || MOCK_STRATEGIES['banyumas-karangrau-01'];
+  // Sync fields from Supabase (or fallback gracefully to NASA baseline)
+  useEffect(() => {
+    let isMounted = true;
+    async function loadFields() {
+      const dbFields = await getFieldsFromDatabase();
+      if (isMounted && dbFields.length > 0) {
+        setFields(dbFields);
+      }
+    }
+    loadFields();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sync strategies when selected field changes
+  useEffect(() => {
+    let isMounted = true;
+    async function loadStrategies() {
+      const dbStrats = await getStrategiesFromDatabase(selectedField.id);
+      if (isMounted && dbStrats.length > 0) {
+        setCurrentStrategies(dbStrats);
+      }
+    }
+    loadStrategies();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedField.id]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950">
@@ -43,6 +74,24 @@ export function App() {
 
       {/* Main Container */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+        {/* Supabase Connection Status Banner */}
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-xs">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-emerald-400" />
+            <span className="text-slate-300">
+              Database Sync:{' '}
+              {isSupabaseConfigured ? (
+                <strong className="text-emerald-400">Connected to Supabase (ljxtsjmlqzuebngrfdyd)</strong>
+              ) : (
+                <strong className="text-sky-400">Ready for Supabase &middot; Using Calibrated NASA Baseline</strong>
+              )}
+            </span>
+          </div>
+          <span className="font-mono text-[11px] text-slate-400">
+            {isSupabaseConfigured ? 'Live PostgreSQL + PostGIS' : 'Mock/Local Offline Fallback'}
+          </span>
+        </div>
+
         {/* TAB 1: INTERACTIVE MAP (F1) */}
         {activeTab === 'map' && (
           <div className="space-y-6">
