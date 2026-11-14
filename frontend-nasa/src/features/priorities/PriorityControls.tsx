@@ -38,18 +38,20 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
   return (
     <div className="space-y-6">
       {/* Climate Condition Selector (F6) */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="rounded-2xl border border-[#e3dcd2] bg-white p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-[#eee8df] pb-3 gap-2">
           <div>
-            <h3 className="font-semibold text-white flex items-center gap-2">
-              <Sun className="h-4 w-4 text-amber-400" />
+            <h3 className="font-semibold text-[#1a2015] flex items-center gap-2 text-sm sm:text-base">
+              <Sun className="h-4 w-4 text-amber-500" />
               Next Season Climate State (ENSO / IOD Forcing)
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#6b7280] mt-0.5">
               Condition rotation outcomes on forecasted Pacific & Indian Ocean climate analogues
             </p>
           </div>
-          <span className="text-[11px] text-emerald-400 font-mono">Analog Model Active</span>
+          <span className="self-start sm:self-auto rounded-full bg-[#f4f7ed] px-2.5 py-0.5 text-[11px] font-semibold text-[#404f1d] border border-[#cbd9b5]">
+            Analog Model Active
+          </span>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -57,15 +59,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
             onClick={() => onClimatePhaseChange('el_nino')}
             className={`flex flex-col items-start rounded-xl border p-3.5 text-left transition ${
               climatePhase === 'el_nino'
-                ? 'border-rose-500 bg-rose-500/10 text-rose-200 shadow-md ring-1 ring-rose-500'
-                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                ? 'border-rose-400 bg-rose-50/70 text-rose-950 shadow-xs ring-1 ring-rose-400'
+                : 'border-[#e3dcd2] bg-[#fcfbf9] text-[#4b5563] hover:border-rose-300 hover:bg-rose-50/30'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-rose-400">
-              <Sun className="h-4 w-4" />
+            <div className="flex items-center gap-2 font-bold text-rose-700 text-xs sm:text-sm">
+              <Sun className="h-4 w-4 shrink-0" />
               <span>El Niño (Severe Drought)</span>
             </div>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs text-[#6b7280] leading-relaxed">
               Delayed monsoon onset, early dry season, low reservoir storage. Worst-case CVaR heavily weighted.
             </p>
           </button>
@@ -74,15 +76,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
             onClick={() => onClimatePhaseChange('normal')}
             className={`flex flex-col items-start rounded-xl border p-3.5 text-left transition ${
               climatePhase === 'normal'
-                ? 'border-sky-500 bg-sky-500/10 text-sky-200 shadow-md ring-1 ring-sky-500'
-                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                ? 'border-sky-500 bg-sky-50/70 text-sky-950 shadow-xs ring-1 ring-sky-500'
+                : 'border-[#e3dcd2] bg-[#fcfbf9] text-[#4b5563] hover:border-sky-300 hover:bg-sky-50/30'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-sky-400">
-              <Wind className="h-4 w-4" />
+            <div className="flex items-center gap-2 font-bold text-sky-700 text-xs sm:text-sm">
+              <Wind className="h-4 w-4 shrink-0" />
               <span>Neutral / Normal Monsoon</span>
             </div>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs text-[#6b7280] leading-relaxed">
               Standard climatological distribution. Normal rainfall onset in late October.
             </p>
           </button>
@@ -91,15 +93,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
             onClick={() => onClimatePhaseChange('la_nina')}
             className={`flex flex-col items-start rounded-xl border p-3.5 text-left transition ${
               climatePhase === 'la_nina'
-                ? 'border-teal-500 bg-teal-500/10 text-teal-200 shadow-md ring-1 ring-teal-500'
-                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                ? 'border-teal-500 bg-teal-50/70 text-teal-950 shadow-xs ring-1 ring-teal-500'
+                : 'border-[#e3dcd2] bg-[#fcfbf9] text-[#4b5563] hover:border-teal-300 hover:bg-teal-50/30'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-teal-400">
-              <CloudRain className="h-4 w-4" />
+            <div className="flex items-center gap-2 font-bold text-teal-700 text-xs sm:text-sm">
+              <CloudRain className="h-4 w-4 shrink-0" />
               <span>La Niña (Wet Anomaly)</span>
             </div>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs text-[#6b7280] leading-relaxed">
               Excessive rainfall throughout dry season. Low drought risk, higher fungal pest & flooding risk.
             </p>
           </button>
@@ -107,42 +109,42 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
       </div>
 
       {/* Priority Sliders (F3) */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      <div className="rounded-2xl border border-[#e3dcd2] bg-white p-5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee8df] pb-3">
           <div>
-            <h3 className="font-semibold text-white flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-emerald-400" />
+            <h3 className="font-semibold text-[#1a2015] flex items-center gap-2 text-sm sm:text-base">
+              <Sliders className="h-4 w-4 text-[#404f1d]" />
               Farmer Multi-Objective Weights
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#6b7280] mt-0.5">
               Tailor strategy scoring according to real farmer constraints and market priorities
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-slate-500 mr-1 flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-amber-400" /> Presets:
+            <span className="text-[11px] text-[#6b7280] mr-1 flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-amber-500" /> Presets:
             </span>
             <button
               onClick={() => applyPreset('balanced')}
-              className="rounded bg-slate-800 px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-700"
+              className="rounded-lg bg-[#f4ede6] px-2.5 py-1 text-[11px] font-medium text-[#404f1d] hover:bg-[#ede3d8] transition"
             >
               Balanced
             </button>
             <button
               onClick={() => applyPreset('drought')}
-              className="rounded bg-rose-950/60 border border-rose-800/40 px-2 py-1 text-[11px] text-rose-300 hover:bg-rose-900/60"
+              className="rounded-lg bg-rose-50 border border-rose-200 px-2.5 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-100 transition"
             >
               Drought Shield
             </button>
             <button
               onClick={() => applyPreset('soil')}
-              className="rounded bg-emerald-950/60 border border-emerald-800/40 px-2 py-1 text-[11px] text-emerald-300 hover:bg-emerald-900/60"
+              className="rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-medium text-emerald-800 hover:bg-emerald-100 transition"
             >
               Soil Booster
             </button>
             <button
               onClick={() => applyPreset('labor')}
-              className="rounded bg-slate-800 px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-700"
+              className="rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 transition"
             >
               Low Labor
             </button>
@@ -153,8 +155,8 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Yield & Revenue */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-200">Harvest Yield & Economic Return</span>
-              <span className="font-mono text-emerald-400 font-bold">{weights.yield}%</span>
+              <span className="font-medium text-[#1a2015]">Harvest Yield & Economic Return</span>
+              <span className="font-mono text-[#404f1d] font-bold">{weights.yield}%</span>
             </div>
             <input
               type="range"
@@ -162,15 +164,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.yield}
               onChange={(e) => handleSliderChange('yield', Number(e.target.value))}
-              className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-emerald-500"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#ebe5dc] accent-[#404f1d]"
             />
           </div>
 
           {/* Water Conservation */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-200">Water Conservation & Drought Safety</span>
-              <span className="font-mono text-sky-400 font-bold">{weights.waterEfficiency}%</span>
+              <span className="font-medium text-[#1a2015]">Water Conservation & Drought Safety</span>
+              <span className="font-mono text-sky-700 font-bold">{weights.waterEfficiency}%</span>
             </div>
             <input
               type="range"
@@ -178,15 +180,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.waterEfficiency}
               onChange={(e) => handleSliderChange('waterEfficiency', Number(e.target.value))}
-              className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-sky-500"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#ebe5dc] accent-sky-600"
             />
           </div>
 
           {/* Soil Organic Health */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-200">Soil Health & Nitrogen Enrichment</span>
-              <span className="font-mono text-amber-400 font-bold">{weights.soilHealth}%</span>
+              <span className="font-medium text-[#1a2015]">Soil Health & Nitrogen Enrichment</span>
+              <span className="font-mono text-amber-700 font-bold">{weights.soilHealth}%</span>
             </div>
             <input
               type="range"
@@ -194,15 +196,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.soilHealth}
               onChange={(e) => handleSliderChange('soilHealth', Number(e.target.value))}
-              className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-amber-500"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#ebe5dc] accent-amber-600"
             />
           </div>
 
           {/* Cover Days / Fallow Reduction */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-200">Continuous Soil Cover (Minimize Bare Fallow)</span>
-              <span className="font-mono text-teal-400 font-bold">{weights.coverDays}%</span>
+              <span className="font-medium text-[#1a2015]">Continuous Soil Cover (Minimize Bare Fallow)</span>
+              <span className="font-mono text-teal-700 font-bold">{weights.coverDays}%</span>
             </div>
             <input
               type="range"
@@ -210,15 +212,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.coverDays}
               onChange={(e) => handleSliderChange('coverDays', Number(e.target.value))}
-              className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-teal-500"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#ebe5dc] accent-teal-600"
             />
           </div>
 
           {/* Labor Simplicity */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-200">Labor Feasibility & Low Input Complexity</span>
-              <span className="font-mono text-indigo-400 font-bold">{weights.laborDemand}%</span>
+              <span className="font-medium text-[#1a2015]">Labor Feasibility & Low Input Complexity</span>
+              <span className="font-mono text-indigo-700 font-bold">{weights.laborDemand}%</span>
             </div>
             <input
               type="range"
@@ -226,7 +228,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.laborDemand}
               onChange={(e) => handleSliderChange('laborDemand', Number(e.target.value))}
-              className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-indigo-500"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#ebe5dc] accent-indigo-600"
             />
           </div>
         </div>

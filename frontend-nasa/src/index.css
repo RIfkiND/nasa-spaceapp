@@ -6,21 +6,22 @@
 
 :root {
   font-family: var(--font-body);
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--color-farm-dark);
-  color: var(--color-farm-cream);
+  background-color: #f7f3ec; /* Farm Minerals Warm Mineral Cream */
+  color: #262c20;            /* Dark Charcoal Earth Text */
   font-family: var(--font-body);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.02em;
+  color: #1a2015;
 }
 
 /* Map canvas container */
@@ -36,10 +37,10 @@ h1, h2, h3, h4, h5, h6 {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d130c;
+  background: #ede6dc;
 }
 ::-webkit-scrollbar-thumb {
-  background: #273625;
+  background: #c5bcae;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {

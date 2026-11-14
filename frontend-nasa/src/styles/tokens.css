@@ -4,10 +4,14 @@
   --color-farm-primary-hover: #4c5b20;  /* Moss Green (rgb 76, 91, 32) */
   --color-farm-sage: #636f3d;           /* Sage Green (rgb 99, 111, 61) */
   --color-farm-cream: #f4ede6;          /* Warm Mineral Cream (rgb 244, 237, 230) */
-  --color-farm-charcoal: #333333;       /* Dark Charcoal (rgb 51, 51, 51) */
-  --color-farm-dark: #0d130c;           /* Deep Organic Earth Background */
-  --color-farm-card: #151e14;           /* Forest Earth Card Surface */
-  --color-farm-border: #273625;         /* Earth Muted Border */
+  --color-farm-charcoal: #262c20;       /* Dark Charcoal Earth Text */
+  
+  /* Light Theme Surfaces & Borders */
+  --color-farm-bg: #f7f3ec;             /* Clean Warm Mineral Canvas */
+  --color-farm-card: #ffffff;           /* Clean White Card Surface */
+  --color-farm-card-subtle: #f8f5f0;    /* Light Cream Inset Box */
+  --color-farm-border: #e3dcd2;         /* Mineral Border */
+  --color-farm-border-subtle: #eee8df;  /* Subtle Divider Border */
 
   /* Typography */
   --font-heading: 'Aeonik', 'Inter', system-ui, -apple-system, sans-serif;
