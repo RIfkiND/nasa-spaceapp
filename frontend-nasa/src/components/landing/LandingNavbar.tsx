@@ -1,187 +1,154 @@
-import { useState } from 'react';
-import { Sprout, Globe, ArrowRight, Menu, X, BookOpen, Layers } from 'lucide-react';
-import type { Language } from '../../types/landing';
+import { useState, useEffect } from 'react';
+import { Sprout, ArrowRight, Menu, X } from 'lucide-react';
 
 interface LandingNavbarProps {
-  currentLang: Language;
-  onToggleLang: () => void;
   onOpenWorkspace: () => void;
-  onOpenGlossary: () => void;
-  onOpenDataSources: () => void;
 }
 
-  export function LandingNavbar({
-    currentLang,
-    onToggleLang,
-    onOpenWorkspace,
-    onOpenGlossary,
-    onOpenDataSources,
-}: LandingNavbarProps) {
+export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isId = currentLang === 'id';
+  const [activeNav, setActiveNav] = useState('hero');
 
-    const scrollTo = (id: string) => {
-      setIsMobileMenuOpen(false);
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+  // Dynamic Scroll Spy: automatically update active nav pill as the user scrolls
+  useEffect(() => {
+    const handleScroll = () => {
+      // Offset from top accounting for floating island navbar
+      const scrollPosition = window.scrollY + 180;
+      const sectionIds = ['why-field-shift', 'how-it-works', 'about', 'hero'];
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop;
+          if (scrollPosition >= top) {
+            setActiveNav(id);
+            break;
+          }
+        }
       }
     };
 
-    return (
-              <header className="sticky top-0 z-50 border-b border-[#E6EBF0] bg-white/90 backdrop-blur-md transition-all">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
-                  {/* Brand */}
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E3F1F3] text-[#237F8E] shadow-xs">
-                      <Sprout className="h-5 w-5" />
-                    </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base font-bold tracking-tight text-[#14232B]">
-                          FIELD <span className="text-[#237F8E]">SHIFT</span>
-                        </span>
-                        <span className="hidden sm:inline-block rounded-full bg-[#E3F1F3] px-2 py-0.5 text-[10px] font-bold text-[#1B6572] border border-[#237F8E]/20">
-                          NASA Space Apps
-                        </span>
-                      </div>
-                    </div>
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
 
-                      {/* Streamlined Desktop Nav Links - Only 4 Core Items */}
-                      <nav className="hidden md:flex items-center gap-1 rounded-full border border-[#E6EBF0] bg-[#F7F9FB] p-1 text-xs font-semibold text-[#5F6B74]">
-                        <button
-                          onClick={() => scrollTo('hero')}
-                          className="rounded-full px-3.5 py-1.5 transition hover:text-[#14232B] hover:bg-white"
-                        >
-                          {isId ? 'Ringkasan' : 'Overview'}
-                        </button>
-                        <button
-                          onClick={() => scrollTo('cara-kerja')}
-                          className="rounded-full px-3.5 py-1.5 transition hover:text-[#14232B] hover:bg-white"
-                        >
-                          {isId ? 'Alur Kerja' : 'Workflow'}
-                        </button>
-                        <button
-                          onClick={() => scrollTo('data-nasa')}
-                          className="rounded-full px-3.5 py-1.5 transition hover:text-[#14232B] hover:bg-white"
-                        >
-                          {isId ? 'Data NASA' : 'NASA Data'}
-                        </button>
-                        <button
-                          onClick={() => scrollTo('preview-strategi')}
-                          className="rounded-full px-3.5 py-1.5 transition hover:text-[#14232B] hover:bg-white text-[#237F8E]"
-                        >
-                          {isId ? 'Simulator' : 'Simulator'}
-                        </button>
-                      </nav>
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
-                        {/* Clean Right Actions */}
-                        <div className="flex items-center gap-2">
-                          {/* 26 Data Sources modal trigger */}
-                          <button
-                            onClick={onOpenDataSources}
-                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs hover:border-[#237F8E] hover:text-[#237F8E] transition"
-                            title={isId ? 'Audit 26 Sumber Data' : '26 Data Provenance Audit'}
-                          >
-                            <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
-                            <span>{isId ? '26 Data' : '26 Data'}</span>
-                          </button>
+  const scrollTo = (id: string) => {
+    setActiveNav(id);
+    setIsMobileMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      const navOffset = 90;
+      const targetY = element.getBoundingClientRect().top + window.scrollY - navOffset;
+      window.scrollTo({
+        top: Math.max(0, targetY),
+        behavior: 'smooth',
+      });
+    }
+  };
 
-                          {/* Glossary trigger */}
-                          <button
-                            onClick={onOpenGlossary}
-                            className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs hover:border-[#237F8E] hover:text-[#237F8E] transition"
-                            title={isId ? 'Buka Glosarium' : 'Scientific Glossary'}
-                          >
-                            <BookOpen className="h-3.5 w-3.5 text-[#237F8E]" />
-                            <span>{isId ? 'Glosarium' : 'Glossary'}</span>
-                          </button>
+  const NAV_ITEMS = [
+    { id: 'hero', label: 'Home' },
+    { id: 'about', label: 'About Us' },
+    { id: 'how-it-works', label: 'How It Works' },
+    { id: 'why-field-shift', label: 'Why Us' },
+  ];
 
-                          {/* Compact Language Toggle */}
-                          <button
-                            onClick={onToggleLang}
-                            className="flex items-center gap-1 rounded-full border border-[#E6EBF0] bg-white px-2.5 py-1.5 text-xs font-bold text-[#14232B] shadow-xs hover:border-[#237F8E] transition"
-                            aria-label="Toggle language"
-                          >
-                            <Globe className="h-3.5 w-3.5 text-[#237F8E]" />
-                            <span className="tabular-nums uppercase">{currentLang}</span>
-                          </button>
+  return (
+    <header className="sticky top-3 sm:top-4 z-50 mx-auto max-w-7xl px-3 sm:px-6 transition-all duration-300 pointer-events-none">
+      <div className="pointer-events-auto rounded-full bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgba(15,23,42,0.06)] px-4 py-2 sm:py-2.5 sm:px-6 flex items-center justify-between">
+        
+        {/* Left: Brand with Fresh Light Mint Container */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E3F1F3] text-[#237F8E] border border-[#237F8E]/25 shadow-2xs">
+            <Sprout className="h-4.5 w-4.5" />
+          </div>
+          <span className="text-base font-extrabold tracking-tight text-[#14232B]">
+            FIELD <span className="text-[#237F8E]">SHIFT</span>
+          </span>
+        </div>
 
-                          {/* Primary Action Button */}
-                          <button
-                            onClick={onOpenWorkspace}
-                            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] px-4 py-2 text-xs font-bold text-white shadow-xs hover:from-[#1B6572] hover:to-[#17463c] transition active:scale-95"
-                          >
-                            <span>{isId ? 'Buka App' : 'Launch App'}</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
+        {/* Center: Clean & Airy Frosted Nav Bar with Rounded Pill Shape */}
+        <nav className="hidden md:flex items-center gap-1 rounded-full bg-slate-100/80 backdrop-blur-md p-1 border border-slate-200/80 shadow-2xs">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeNav === item.id;
+            return isActive ? (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollTo(item.id)}
+                className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#237F8E] shadow-2xs border border-slate-200/70 transition cursor-pointer"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-[#237F8E] inline-block" />
+                <span>{item.label}</span>
+              </button>
+            ) : (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollTo(item.id)}
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#5F6B74] hover:text-[#14232B] hover:bg-white/60 transition cursor-pointer"
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
 
-                          {/* Mobile hamburger */}
-                          <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-expanded={isMobileMenuOpen}
-                            className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[#E6EBF0] text-[#14232B] hover:bg-[#F7F9FB]"
-                            aria-label="Toggle Navigation Menu"
-                          >
-                            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
+        {/* Right: Signature Teal CTA Button & Mobile Toggle */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenWorkspace}
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white font-bold px-5 py-2 text-xs shadow-xs hover:shadow transition active:scale-[0.98] cursor-pointer"
+          >
+            <span>Launch App</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
 
-                      {/* Mobile Menu Dropdown */}
-                      {isMobileMenuOpen && (
-                            <div className="md:hidden border-t border-[#E6EBF0] bg-white px-4 py-3 space-y-2 shadow-lg animate-in slide-in-from-top-1">
-                              <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-[#E6EBF0] text-xs font-medium">
-                                <button
-                                  onClick={() => scrollTo('hero')}
-                                  className="rounded-lg p-2 text-left hover:bg-[#F7F9FB]"
-                                >
-                                  {isId ? 'Ringkasan' : 'Overview'}
-                                </button>
-                                <button
-                                  onClick={() => scrollTo('cara-kerja')}
-                                  className="rounded-lg p-2 text-left hover:bg-[#F7F9FB]"
-                                >
-                                  {isId ? 'Alur Kerja' : 'Workflow'}
-                                </button>
-                                <button
-                                  onClick={() => scrollTo('data-nasa')}
-                                  className="rounded-lg p-2 text-left hover:bg-[#F7F9FB]"
-                                >
-                                  {isId ? 'Data NASA' : 'NASA Data'}
-                                </button>
-                                <button
-                                  onClick={() => scrollTo('preview-strategi')}
-                                  className="rounded-lg p-2 text-left text-[#237F8E] font-bold hover:bg-[#E3F1F3]"
-                                >
-                                  {isId ? 'Simulator' : 'Simulator'}
-                                </button>
-                              </div>
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-expanded={isMobileMenuOpen}
+            className="md:hidden flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
 
-                                <div className="flex items-center gap-2 pt-1 text-xs">
-                                  <button
-                                    onClick={() => {
-                                      setIsMobileMenuOpen(false);
-                                      onOpenDataSources();
-                                    }}
-                                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#E6EBF0] p-2 font-semibold text-[#14232B] hover:bg-[#F7F9FB]"
-                                  >
-                                    <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
-                                    <span>{isId ? '26 Data' : '26 Datasets'}</span>
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setIsMobileMenuOpen(false);
-                                      onOpenGlossary();
-                                    }}
-                                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[#E6EBF0] p-2 font-semibold text-[#14232B] hover:bg-[#F7F9FB]"
-                                  >
-                                    <BookOpen className="h-3.5 w-3.5 text-[#237F8E]" />
-                                    <span>{isId ? 'Glosarium' : 'Glossary'}</span>
-                                  </button>
-                                </div>
-                              </div>
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="pointer-events-auto mt-2 md:hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-3 shadow-xl">
+          <div className="grid grid-cols-2 gap-1.5 text-xs font-medium">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeNav === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollTo(item.id)}
+                  className={`rounded-xl p-2.5 text-left transition cursor-pointer flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-[#E3F1F3] text-[#1B6572] font-bold border border-[#237F8E]/25'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-[#237F8E]" />}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
-                            </header>
-                            );
+    </header>
+  );
 }
-                            export default LandingNavbar;
+
+export default LandingNavbar;
