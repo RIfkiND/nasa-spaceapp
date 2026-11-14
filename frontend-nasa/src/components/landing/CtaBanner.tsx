@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sprout, ArrowRight, Layers } from 'lucide-react';
 import type { Language } from '../../types/landing';
 
@@ -8,10 +7,10 @@ interface CtaBannerProps {
   onOpenDataSources: () => void;
 }
 
-export function CtaBanner({
-  currentLang,
-  onOpenWorkspace,
-  onOpenDataSources,
+  export function CtaBanner({
+    currentLang,
+    onOpenWorkspace,
+    onOpenDataSources,
 }: CtaBannerProps) {
   const isId = currentLang === 'id';
 

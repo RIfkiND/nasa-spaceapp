@@ -28,7 +28,7 @@ export function App() {
     return 'landing';
   });
 
-  const [currentLang, setCurrentLang] = useState<Language>('id');
+  const [currentLang, setCurrentLang] = useState<Language>('en');
   const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
   const [selectedField, setSelectedField] = useState<FieldProfile>(MOCK_FIELDS[0]);
   const [activeTab, setActiveTab] = useState<'map' | 'profile' | 'comparison' | 'export'>('map');
@@ -176,11 +176,10 @@ export function App() {
                     <div
                       key={field.id}
                       onClick={() => setSelectedField(field)}
-                      className={`cursor-pointer rounded-2xl border p-4 transition duration-150 ${
-                        isSelected
+                      className={`cursor-pointer rounded-2xl border p-4 transition duration-150 ${isSelected
                           ? 'border-[#237F8E] bg-[#E3F1F3]/50 ring-1 ring-[#237F8E] shadow-xs'
                           : 'border-[#E6EBF0] bg-white hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>

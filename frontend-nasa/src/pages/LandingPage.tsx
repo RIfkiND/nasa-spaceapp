@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { LandingNavbar } from '../components/landing/LandingNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { ProblemSection } from '../components/landing/ProblemSection';
@@ -22,13 +22,13 @@ interface LandingPageProps {
   onToggleLang?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({
-  onOpenWorkspace,
-  currentLang: externalLang,
-  onToggleLang: externalToggleLang,
-}) => {
-  // Support independent or lifted state for language
-  const [internalLang, setInternalLang] = useState<Language>('id');
+  export function LandingPage({
+    onOpenWorkspace,
+    currentLang: externalLang,
+    onToggleLang: externalToggleLang,
+}: LandingPageProps) {
+  // Default to English as requested
+  const [internalLang, setInternalLang] = useState<Language>('en');
   const currentLang = externalLang || internalLang;
   const handleToggleLang = externalToggleLang || (() => setInternalLang((prev) => (prev === 'id' ? 'en' : 'id')));
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Sliders,
   CheckCircle2,
@@ -19,10 +19,10 @@ interface StrategyInteractivePreviewProps {
   onSelectEvidence: (strategyId: string) => void;
 }
 
-export function StrategyInteractivePreview({
-  currentLang,
-  onOpenWorkspace,
-  onSelectEvidence,
+  export function StrategyInteractivePreview({
+    currentLang,
+    onOpenWorkspace,
+    onSelectEvidence,
 }: StrategyInteractivePreviewProps) {
   const isId = currentLang === 'id';
   const previewStrategies = getPreviewStrategies(currentLang);
@@ -36,27 +36,27 @@ export function StrategyInteractivePreview({
     const cautionWeight = cautionLevel / 100;
     const avgWeight = 1 - cautionWeight;
 
-    return previewStrategies.map((strat) => {
-      let phasePenalty = 0;
-      if (climatePhase === 'el_nino') {
-        phasePenalty = strat.isBaseline ? -18 : strat.crops.some((c) => c.toLowerCase().includes('sorghum') || c.toLowerCase().includes('sorgum')) ? 5 : 2;
-      } else if (climatePhase === 'la_nina') {
-        phasePenalty = strat.isBaseline ? 10 : 0;
-      }
+      return previewStrategies.map((strat) => {
+        let phasePenalty = 0;
+        if (climatePhase === 'el_nino') {
+          phasePenalty = strat.isBaseline ? -18 : strat.crops.some((c) => c.toLowerCase().includes('sorghum') || c.toLowerCase().includes('sorgum')) ? 5 : 2;
+        } else if (climatePhase === 'la_nina') {
+          phasePenalty = strat.isBaseline ? 10 : 0;
+        }
 
-      const rawAvg = Math.min(100, Math.max(10, strat.avgScore + phasePenalty));
-      const rawWorst = Math.min(100, Math.max(10, strat.worstScore + (climatePhase === 'el_nino' && strat.isBaseline ? -8 : 0)));
+        const rawAvg = Math.min(100, Math.max(10, strat.avgScore + phasePenalty));
+        const rawWorst = Math.min(100, Math.max(10, strat.worstScore + (climatePhase === 'el_nino' && strat.isBaseline ? -8 : 0)));
 
-      // Composite risk-adjusted score: (1 - caution) * Average + caution * WorstYear
-      const compositeScore = Math.round(rawAvg * avgWeight + rawWorst * cautionWeight);
+        // Composite risk-adjusted score: (1 - caution) * Average + caution * WorstYear
+        const compositeScore = Math.round(rawAvg * avgWeight + rawWorst * cautionWeight);
 
-      return {
-        ...strat,
-        currentScore: compositeScore,
-        computedAvg: rawAvg,
-        computedWorst: rawWorst,
-      };
-    }).sort((a, b) => b.currentScore - a.currentScore);
+        return {
+          ...strat,
+          currentScore: compositeScore,
+          computedAvg: rawAvg,
+          computedWorst: rawWorst,
+        };
+      }).sort((a, b) => b.currentScore - a.currentScore);
   }, [cautionLevel, climatePhase, previewStrategies]);
 
   const getConfidenceBadge = (confidence: { level: string; label: string; reason: string }) => {
@@ -164,11 +164,10 @@ export function StrategyInteractivePreview({
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setClimatePhase('el_nino')}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${
-                    climatePhase === 'el_nino'
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${climatePhase === 'el_nino'
                       ? 'border-rose-400 bg-rose-50 text-rose-800 ring-1 ring-rose-400'
                       : 'border-[#E6EBF0] bg-white text-[#5F6B74] hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <Sun className="h-4 w-4 mb-0.5 text-rose-600" />
                   <span>El Niño</span>
@@ -177,11 +176,10 @@ export function StrategyInteractivePreview({
 
                 <button
                   onClick={() => setClimatePhase('normal')}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${
-                    climatePhase === 'normal'
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${climatePhase === 'normal'
                       ? 'border-[#237F8E] bg-[#E3F1F3] text-[#1B6572] ring-1 ring-[#237F8E]'
                       : 'border-[#E6EBF0] bg-white text-[#5F6B74] hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <Sprout className="h-4 w-4 mb-0.5 text-[#237F8E]" />
                   <span>Normal</span>
@@ -190,11 +188,10 @@ export function StrategyInteractivePreview({
 
                 <button
                   onClick={() => setClimatePhase('la_nina')}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${
-                    climatePhase === 'la_nina'
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition ${climatePhase === 'la_nina'
                       ? 'border-sky-400 bg-sky-50 text-sky-800 ring-1 ring-sky-400'
                       : 'border-[#E6EBF0] bg-white text-[#5F6B74] hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <CloudRain className="h-4 w-4 mb-0.5 text-sky-600" />
                   <span>La Niña</span>
@@ -213,13 +210,12 @@ export function StrategyInteractivePreview({
             return (
               <div
                 key={strat.id}
-                className={`rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between ${
-                  strat.isDominated
+                className={`rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between ${strat.isDominated
                     ? 'border-2 border-dashed border-[#8A949B] bg-[#F7F9FB]/80'
                     : isRank1
-                    ? 'border-2 border-[#237F8E] bg-white shadow-card ring-1 ring-[#237F8E]/20'
-                    : 'border border-[#E6EBF0] bg-white shadow-xs hover:border-[#237F8E]/40'
-                }`}
+                      ? 'border-2 border-[#237F8E] bg-white shadow-card ring-1 ring-[#237F8E]/20'
+                      : 'border border-[#E6EBF0] bg-white shadow-xs hover:border-[#237F8E]/40'
+                  }`}
               >
                 <div>
                   {/* Top Status & Pareto Tag */}
@@ -229,13 +225,12 @@ export function StrategyInteractivePreview({
                         {isId ? `Peringkat #${index + 1}` : `Rank #${index + 1}`}
                       </span>
                       <span
-                        className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                          strat.isDominated
+                        className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${strat.isDominated
                             ? 'bg-gray-200 text-[#8A949B]'
                             : strat.isBaseline
-                            ? 'bg-[#E3F1F3] text-[#1B6572]'
-                            : 'bg-emerald-50 text-[#2E7D4F] border border-emerald-200'
-                        }`}
+                              ? 'bg-[#E3F1F3] text-[#1B6572]'
+                              : 'bg-emerald-50 text-[#2E7D4F] border border-emerald-200'
+                          }`}
                       >
                         {strat.badge}
                       </span>
@@ -275,9 +270,8 @@ export function StrategyInteractivePreview({
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
                         <span
-                          className={`text-3xl font-extrabold tabular-nums ${
-                            strat.isDominated ? 'text-[#8A949B]' : 'text-[#237F8E]'
-                          }`}
+                          className={`text-3xl font-extrabold tabular-nums ${strat.isDominated ? 'text-[#8A949B]' : 'text-[#237F8E]'
+                            }`}
                         >
                           {strat.currentScore}
                         </span>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sprout, ExternalLink, Code2, Satellite, BookOpen, Layers, ShieldCheck } from 'lucide-react';
 import type { Language } from '../../types/landing';
 
@@ -9,12 +8,12 @@ interface LandingFooterProps {
   onOpenDataSources: () => void;
 }
 
-export const LandingFooter: React.FC<LandingFooterProps> = ({
-  currentLang,
-  onOpenWorkspace,
-  onOpenGlossary,
-  onOpenDataSources,
-}) => {
+  export function LandingFooter({
+    currentLang,
+    onOpenWorkspace,
+    onOpenGlossary,
+    onOpenDataSources,
+}: LandingFooterProps) {
   const isId = currentLang === 'id';
 
   const scrollToTop = () => {
@@ -49,7 +48,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
             </div>
           </div>
 
-          {/* Col 2: Navigation Produk */}
+          {/* Col 2: Product Navigation */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#14232B] mb-3">
               {isId ? 'Navigasi Produk' : 'Product Navigation'}
@@ -57,17 +56,17 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
             <ul className="space-y-2 text-xs">
               <li>
                 <button onClick={scrollToTop} className="hover:text-[#237F8E] transition">
-                  {isId ? 'Beranda' : 'Home'}
+                  {isId ? 'Beranda' : 'Overview'}
                 </button>
               </li>
               <li>
                 <button onClick={onOpenWorkspace} className="hover:text-[#237F8E] transition font-semibold text-[#237F8E]">
-                  {isId ? 'Workspace Peta & Plot' : 'Interactive Plot Workspace'}
+                  {isId ? 'Workspace Peta & Plot' : 'Interactive Workspace'}
                 </button>
               </li>
               <li>
                 <a href="#cara-kerja" className="hover:text-[#237F8E] transition">
-                  {isId ? 'Alur Kerja 6 Langkah' : '6-Step Workflow'}
+                  {isId ? 'Alur Kerja 6 Langkah' : '6-Step Scientific Workflow'}
                 </a>
               </li>
               <li>
@@ -77,13 +76,13 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               </li>
               <li>
                 <a href="#preview-strategi" className="hover:text-[#237F8E] transition">
-                  {isId ? 'Simulasi 3 Strategi' : 'Strategy Simulation'}
+                  {isId ? 'Simulasi 3 Strategi' : 'Rotation Risk Simulator'}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Data & Glosarium */}
+          {/* Col 3: Science & Provenance */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#14232B] mb-3">
               {isId ? 'Sains & Provenance' : 'Science & Provenance'}
@@ -92,7 +91,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               <li>
                 <button onClick={onOpenDataSources} className="flex items-center gap-1.5 hover:text-[#237F8E] transition">
                   <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
-                  <span>{isId ? '26 Sumber Data Ilmiah' : '26 Data Resources'}</span>
+                  <span>{isId ? '26 Sumber Data Ilmiah' : '26 Scientific Datasets'}</span>
                 </button>
               </li>
               <li>
@@ -121,14 +120,14 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
             </ul>
           </div>
 
-          {/* Col 4: Tim & Repositori */}
+          {/* Col 4: Project & Repository */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#14232B] mb-3">
               {isId ? 'Pengembang & Tim' : 'Project & Repository'}
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <span className="font-semibold text-[#14232B]">{isId ? 'Tim Santai' : 'Tim Santai'}</span>
+                <span className="font-semibold text-[#14232B]">Tim Santai</span>
                 <span className="block text-[11px] text-[#5F6B74]">Pasukan Kebal When Yah</span>
               </li>
               <li className="pt-1">
@@ -143,7 +142,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 </a>
               </li>
               <li className="text-[11px] text-[#5F6B74] pt-1">
-                Lisensi: MIT Open Source & Open Data Mandate.
+                {isId ? 'Lisensi: MIT Terbuka' : 'License: Open Source & Open Science'}
               </li>
             </ul>
           </div>
@@ -153,7 +152,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5F6B74]">
             <Satellite className="h-3.5 w-3.5 text-[#237F8E]" />
-            <span>Asimilasi Sensor:</span>
+            <span>{isId ? 'Asimilasi Sensor:' : 'Spaceborne Sensors:'}</span>
             <span className="font-medium text-[#14232B]">NASA HLS 30m</span>
             <span>&middot;</span>
             <span className="font-medium text-[#14232B]">ECOSTRESS 70m</span>
@@ -166,10 +165,11 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
           </div>
 
           <div className="text-[11px] text-[#5F6B74]">
-            &copy; 2026 FIELD SHIFT &middot; NASA Space Apps Purwokerto &middot; All Rights Reserved
+            &copy; 2026 FIELD SHIFT &middot; NASA Space Apps Challenge &middot; Open Data Mandate
           </div>
         </div>
       </div>
     </footer>
   );
-};
+}
+export default LandingFooter;

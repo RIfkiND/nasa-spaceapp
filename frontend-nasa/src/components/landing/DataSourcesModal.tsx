@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Layers, CheckCircle, AlertTriangle, Filter, HelpCircle } from 'lucide-react';
 import type { Language } from '../../types/landing';
-import { ALL_DATA_RESOURCES } from '../../data/landingContent';
+import { getAllDataResources } from '../../data/landingContent';
 
 interface DataSourcesModalProps {
   isOpen: boolean;
@@ -9,9 +9,10 @@ interface DataSourcesModalProps {
   currentLang: Language;
 }
 
-export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onClose, currentLang }) => {
+export function DataSourcesModal({ isOpen, onClose, currentLang }: DataSourcesModalProps) {
   const [filterAgency, setFilterAgency] = useState<string>('all');
   const isId = currentLang === 'id';
+  const allResources = getAllDataResources(currentLang);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -24,10 +25,10 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
 
   if (!isOpen) return null;
 
-  const filteredResources = ALL_DATA_RESOURCES.filter((res) => {
+  const filteredResources = allResources.filter((res) => {
     if (filterAgency === 'all') return true;
     if (filterAgency === 'nasa') return res.agency.includes('NASA');
-    if (filterAgency === 'soil') return res.id.includes('soil') || res.id.includes('srtm');
+    if (filterAgency === 'soil') return res.id.includes('soil') || res.id.includes('srtm') || res.id.includes('ssurgo');
     if (filterAgency === 'global') return !res.agency.includes('NASA');
     return true;
   });
@@ -86,13 +87,13 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
                   {isId ? 'Daftar Sumber Data & Provenance Ilmiah' : 'Scientific Data Inventory & Provenance'}
                 </h3>
                 <span className="rounded-full bg-[#E3F1F3] px-2 py-0.5 text-[10px] font-bold text-[#1B6572]">
-                  26 Sumber
+                  {allResources.length} {isId ? 'Sumber' : 'Datasets'}
                 </span>
               </div>
               <p className="text-xs text-[#5F6B74]">
                 {isId
                   ? 'Transparansi skala, resolusi spasial/temporal, dan peran dalam algoritma rotasi tanaman Field Shift'
-                  : 'Spatial/temporal scale transparency and assigned algorithmic roles'}
+                  : 'Spatial/temporal scale transparency and assigned algorithmic roles in Field Shift'}
               </p>
             </div>
           </div>
@@ -100,7 +101,7 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
           <button
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-full text-[#5F6B74] hover:bg-gray-200 hover:text-[#14232B] transition"
-            aria-label="Tutup modal"
+            aria-label="Close dialog"
           >
             <X className="h-5 w-5" />
           </button>
@@ -114,41 +115,37 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
           </span>
           <button
             onClick={() => setFilterAgency('all')}
-            className={`rounded-full px-3 py-1 transition ${
-              filterAgency === 'all'
+            className={`rounded-full px-3 py-1 transition ${filterAgency === 'all'
                 ? 'bg-[#237F8E] text-white font-bold'
                 : 'bg-[#F7F9FB] text-[#5F6B74] hover:text-[#14232B]'
-            }`}
+              }`}
           >
             {isId ? 'Semua Sumber' : 'All Resources'}
           </button>
           <button
             onClick={() => setFilterAgency('nasa')}
-            className={`rounded-full px-3 py-1 transition ${
-              filterAgency === 'nasa'
+            className={`rounded-full px-3 py-1 transition ${filterAgency === 'nasa'
                 ? 'bg-[#237F8E] text-white font-bold'
                 : 'bg-[#F7F9FB] text-[#5F6B74] hover:text-[#14232B]'
-            }`}
+              }`}
           >
             NASA Earth Science
           </button>
           <button
             onClick={() => setFilterAgency('soil')}
-            className={`rounded-full px-3 py-1 transition ${
-              filterAgency === 'soil'
+            className={`rounded-full px-3 py-1 transition ${filterAgency === 'soil'
                 ? 'bg-[#237F8E] text-white font-bold'
                 : 'bg-[#F7F9FB] text-[#5F6B74] hover:text-[#14232B]'
-            }`}
+              }`}
           >
             {isId ? 'Pedologi & Topografi' : 'Soils & Topography'}
           </button>
           <button
             onClick={() => setFilterAgency('global')}
-            className={`rounded-full px-3 py-1 transition ${
-              filterAgency === 'global'
+            className={`rounded-full px-3 py-1 transition ${filterAgency === 'global'
                 ? 'bg-[#237F8E] text-white font-bold'
                 : 'bg-[#F7F9FB] text-[#5F6B74] hover:text-[#14232B]'
-            }`}
+              }`}
           >
             {isId ? 'Mitra Global & FAO' : 'Global & FAO Partners'}
           </button>
@@ -159,11 +156,11 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-[#E6EBF0] text-[#5F6B74] uppercase text-[10px] tracking-wider font-bold">
-                <th className="pb-3 pr-4">Nama Produk Dataset</th>
-                <th className="pb-3 px-3">Status Penggunaan</th>
-                <th className="pb-3 px-3">Resolusi Spasial & Waktu</th>
-                <th className="pb-3 px-3">Skala Validitas</th>
-                <th className="pb-3 pl-3">Peran dalam Field Shift</th>
+                <th className="pb-3 pr-4">{isId ? 'Nama Produk Dataset' : 'Dataset Product'}</th>
+                <th className="pb-3 px-3">{isId ? 'Status Penggunaan' : 'Operational Status'}</th>
+                <th className="pb-3 px-3">{isId ? 'Resolusi & Waktu' : 'Resolution & Revisit'}</th>
+                <th className="pb-3 px-3">{isId ? 'Skala Validitas' : 'Validity Scale'}</th>
+                <th className="pb-3 pl-3">{isId ? 'Peran dalam Field Shift' : 'Role in Field Shift'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E6EBF0]">
@@ -182,13 +179,12 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
                   </td>
                   <td className="py-3.5 px-3">
                     <span
-                      className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                        res.scaleType === 'plot'
+                      className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold ${res.scaleType === 'plot'
                           ? 'bg-emerald-50 text-[#2E7D4F]'
                           : 'bg-amber-50 text-amber-700'
-                      }`}
+                        }`}
                     >
-                      {res.scaleType === 'plot' ? 'Resolusi Petak' : 'Konteks Wilayah'}
+                      {res.scaleType === 'plot' ? (isId ? 'Resolusi Petak' : 'Plot Scale') : (isId ? 'Konteks Wilayah' : 'Regional Context')}
                     </span>
                   </td>
                   <td className="py-3.5 pl-3 text-[#5F6B74] leading-relaxed max-w-xs">
@@ -205,7 +201,7 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
           <span className="text-[#5F6B74]">
             {isId
               ? 'Seluruh data dapat diakses melalui portal terbuka NASA Earthdata & CMR API.'
-              : 'All datasets publicly accessible via NASA Earthdata Search & CMR APIs.'}
+              : 'All datasets are publicly accessible via NASA Earthdata Search & CMR APIs.'}
           </span>
           <button
             onClick={onClose}
@@ -217,4 +213,5 @@ export const DataSourcesModal: React.FC<DataSourcesModalProps> = ({ isOpen, onCl
       </div>
     </div>
   );
-};
+}
+export default DataSourcesModal;
