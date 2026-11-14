@@ -32,7 +32,7 @@ interface LimitationsSectionProps {
             </div>
 
             {/* Featured Limitations Card (Section 7.12 specification) */}
-            <div className="mt-12 rounded-2xl border border-[#E6EBF0] border-l-4 border-l-[#237F8E] bg-[#F7F9FB] p-6 sm:p-8 shadow-card">
+            <div className="mt-12 rounded-2xl border border-[#237F8E]/25 bg-[#F7F9FB] p-6 sm:p-8 shadow-card">
               <div className="flex items-center gap-3 pb-4 border-b border-[#E6EBF0]">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E3F1F3] text-[#237F8E]">
                   <ShieldAlert className="h-5 w-5" />

@@ -10,7 +10,7 @@ import { GlossaryModal } from './features/glossary/GlossaryModal';
 import { SummaryBrief } from './features/export/SummaryBrief';
 import { DataSourcesModal } from './components/landing/DataSourcesModal';
 import { LandingPage } from './pages/LandingPage';
-import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase } from './types/domain';
+import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
 import type { Language } from './types/landing';
 import { isSupabaseConfigured } from './api/supabase';
 import { ArrowRight, Database, Check, Sprout } from 'lucide-react';
@@ -38,6 +38,19 @@ export function App() {
 
   // Climate forcing state
   const [climatePhase, setClimatePhase] = useState<ClimatePhase>('el_nino');
+
+  // Farmer constraints state
+  const [constraints, setConstraints] = useState<FarmerConstraints>({
+    irrigationAccess: true,
+    machineryAccess: true,
+    marketAccess: true,
+  });
+
+  // Interactive climate scenario stress test
+  const [scenario, setScenario] = useState<ClimateScenario>({
+    rainfallAnomalyPercent: 0,
+    temperatureAnomalyDelta: 0,
+  });
 
   // Multi-objective weighting (sums to 100)
   const [weights, setWeights] = useState<PriorityWeights>({
@@ -274,6 +287,10 @@ export function App() {
               onWeightsChange={setWeights}
               climatePhase={climatePhase}
               onClimatePhaseChange={setClimatePhase}
+              constraints={constraints}
+              onConstraintsChange={setConstraints}
+              scenario={scenario}
+              onScenarioChange={setScenario}
             />
 
             {/* Strategy Comparison Columns */}
@@ -281,6 +298,8 @@ export function App() {
               strategies={currentStrategies}
               weights={weights}
               climatePhase={climatePhase}
+              constraints={constraints}
+              scenario={scenario}
               onOpenEvidence={(strat) => setEvidenceStrategy(strat)}
             />
           </div>

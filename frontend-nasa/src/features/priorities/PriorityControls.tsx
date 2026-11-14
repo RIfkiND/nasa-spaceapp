@@ -1,12 +1,18 @@
 import React from 'react';
-import type { PriorityWeights, ClimatePhase } from '../../types/domain';
+import type { PriorityWeights, ClimatePhase, FarmerConstraints as FarmerConstraintsType, ClimateScenario } from '../../types/domain';
 import { Sliders, Sun, CloudRain, Wind, Sparkles } from 'lucide-react';
+import { FarmerConstraints } from './FarmerConstraints';
+import { ClimateScenarioSlider } from './ClimateScenarioSlider';
 
 interface PriorityControlsProps {
   weights: PriorityWeights;
   onWeightsChange: (weights: PriorityWeights) => void;
   climatePhase: ClimatePhase;
   onClimatePhaseChange: (phase: ClimatePhase) => void;
+  constraints: FarmerConstraintsType;
+  onConstraintsChange: (constraints: FarmerConstraintsType) => void;
+  scenario: ClimateScenario;
+  onScenarioChange: (scenario: ClimateScenario) => void;
 }
 
 export const PriorityControls: React.FC<PriorityControlsProps> = ({
@@ -14,6 +20,10 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
   onWeightsChange,
   climatePhase,
   onClimatePhaseChange,
+  constraints,
+  onConstraintsChange,
+  scenario,
+  onScenarioChange,
 }) => {
   const handleSliderChange = (key: keyof PriorityWeights, value: number) => {
     onWeightsChange({
@@ -37,25 +47,29 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Climate Forcing Selector */}
+      {/* 1. Climate Forcing Selector */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-gray-100 pb-4 gap-2">
           <div>
-            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
+            <span className="text-[11px] font-bold tracking-wider text-[#1a7a6d] uppercase">
+              / ENSO CLIMATE FORCING
+            </span>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base mt-1">
               <Sun className="h-4 w-4 text-[#d97706]" />
-              Projected Monsoon Phase (Pacific ENSO / Indian Ocean Dipole)
+              Fase Monsun Terproyeksi (Pacific ENSO / Indian Ocean Dipole)
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Simulate downside yield risk and irrigation scarcity against historical climate analogues
+              Simulasi risiko penurunan hasil panen terhadap tahun-tahun iklim analog historis
             </p>
           </div>
           <span className="text-xs text-[#1a7a6d] font-semibold bg-[#e8f5f2] px-3.5 py-1 rounded-full border border-[#bfe3db]">
-            Analogue Model Active
+            Model Analog Aktif
           </span>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('el_nino')}
             className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
               climatePhase === 'el_nino'
@@ -65,14 +79,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           >
             <div className="flex items-center gap-2 font-bold text-[#dc2626] text-sm">
               <Sun className="h-4 w-4 shrink-0" />
-              <span>El Niño (Severe Drought)</span>
+              <span>El Niño (Kekeringan Parah)</span>
             </div>
             <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Delayed monsoon onset, early dry season, low reservoir storage. Worst-case CVaR heavily weighted.
+              Monsun terlambat datang, kemarau lebih cepat, waduk surut. Bobot risiko terburuk (CVaR) diperbesar.
             </p>
           </button>
 
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('normal')}
             className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
               climatePhase === 'normal'
@@ -82,14 +97,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           >
             <div className="flex items-center gap-2 font-bold text-[#0891b2] text-sm">
               <Wind className="h-4 w-4 shrink-0" />
-              <span>Neutral Climatology</span>
+              <span>Klimatologi Netral</span>
             </div>
             <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Standard climatological distribution. Normal rainfall onset in late October.
+              Distribusi standar musiman. Awal musim hujan normal pada akhir Oktober.
             </p>
           </button>
 
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('la_nina')}
             className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
               climatePhase === 'la_nina'
@@ -99,50 +115,69 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           >
             <div className="flex items-center gap-2 font-bold text-[#1a7a6d] text-sm">
               <CloudRain className="h-4 w-4 shrink-0" />
-              <span>La Niña (Wet Anomaly)</span>
+              <span>La Niña (Anomali Basah)</span>
             </div>
             <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Excessive rainfall throughout dry season. Low drought risk, higher fungal pest & flooding risk.
+              Curah hujan tinggi sepanjang kemarau. Risiko kekeringan rendah, risiko hama jamur & genangan tinggi.
             </p>
           </button>
         </div>
       </div>
 
-      {/* Priority Sliders */}
+      {/* 2. Interactive Climate Scenario Slider (Fitur F13) */}
+      <ClimateScenarioSlider
+        scenario={scenario}
+        onScenarioChange={onScenarioChange}
+      />
+
+      {/* 3. Farmer Constraints (Fitur F3) */}
+      <FarmerConstraints
+        constraints={constraints}
+        onConstraintsChange={onConstraintsChange}
+      />
+
+      {/* 4. Priority Sliders */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
           <div>
-            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
+            <span className="text-[11px] font-bold tracking-wider text-[#1a7a6d] uppercase">
+              / MULTI-OBJECTIVE WEIGHTING
+            </span>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base mt-1">
               <Sliders className="h-4 w-4 text-[#1a7a6d]" />
-              Multi-Objective Trade-Off Weights
+              Bobot Preferensi Multi-Objektif Petani
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Calibrate decision optimization based on farmer priorities, market demand, and input constraints
+              Kalibrasikan keputusan trade-off berdasarkan prioritas hasil panen, ketahanan air, dan kesehatan tanah
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-gray-500 mr-1 flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-[#d97706]" /> Presets:
+              <Sparkles className="h-3 w-3 text-[#d97706]" /> Preset Pilihan:
             </span>
             <button
+              type="button"
               onClick={() => applyPreset('balanced')}
               className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
             >
               Balanced
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('drought')}
               className="rounded-full bg-red-50 border border-red-200 px-3 py-1 text-xs font-semibold text-[#dc2626] hover:bg-red-100 transition"
             >
               Drought Shield
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('soil')}
               className="rounded-full bg-[#e8f5f2] border border-[#bfe3db] px-3 py-1 text-xs font-semibold text-[#1a7a6d] hover:bg-teal-100 transition"
             >
               Soil Booster
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('labor')}
               className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
             >
@@ -155,7 +190,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Yield */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Harvest Yield & Gross Margin</span>
+              <span className="font-semibold text-gray-800">Hasil Panen & Margin Finansial</span>
               <span className="font-mono text-[#1a7a6d] font-bold tabular-nums">{weights.yield}%</span>
             </div>
             <input
@@ -171,7 +206,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Water */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Water Conservation & Drought Safety</span>
+              <span className="font-semibold text-gray-800">Efisiensi Air & Ketahanan Kekeringan</span>
               <span className="font-mono text-[#0891b2] font-bold tabular-nums">{weights.waterEfficiency}%</span>
             </div>
             <input
@@ -187,7 +222,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Soil */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Soil Organic Health & Nitrogen Fixing</span>
+              <span className="font-semibold text-gray-800">Kesehatan Tanah & Fiksasi Nitrogen Organik</span>
               <span className="font-mono text-[#d97706] font-bold tabular-nums">{weights.soilHealth}%</span>
             </div>
             <input
@@ -203,7 +238,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Cover Days */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Continuous Ground Cover (Minimize Bare Fallow)</span>
+              <span className="font-semibold text-gray-800">Tutupan Kanopi (Meminimalkan Lahan Bera Terbuka)</span>
               <span className="font-mono text-[#16a34a] font-bold tabular-nums">{weights.coverDays}%</span>
             </div>
             <input
@@ -219,7 +254,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Labor */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Labor Feasibility & Low Input Complexity</span>
+              <span className="font-semibold text-gray-800">Kemudahan Tenaga Kerja & Kompleksitas Input Rendah</span>
               <span className="font-mono text-slate-600 font-bold tabular-nums">{weights.laborDemand}%</span>
             </div>
             <input
