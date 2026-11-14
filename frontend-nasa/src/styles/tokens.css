@@ -1,31 +1,33 @@
 :root {
-  /* Farm Minerals Design System Primitives (https://www.farmminerals.com) */
-  --color-farm-primary: #3d4c1c;        /* Deep Olive Green */
-  --color-farm-primary-hover: #4a5c22;  /* Moss Forest Green */
-  --color-farm-sage: #5e6b3b;           /* Sage Green */
-  --color-farm-sage-bg: #f2f5ed;        /* Soft Sage Canvas */
-  --color-farm-cream: #f7f3ec;          /* Warm Mineral Cream */
-  --color-farm-charcoal: #22271d;       /* Dark Charcoal Earth Text */
-  --color-farm-muted: #5e6857;          /* Muted Secondary Text */
+  /* AgriPluse Design System Primitives */
+  --color-primary: #1a7a6d;             /* Primary Brand Teal */
+  --color-primary-hover: #15665b;       /* Darker Teal Hover */
+  --color-primary-dark: #0f5347;        /* Deep CTA Banner Teal */
+  --color-primary-light: #e8f5f2;       /* Soft Light Teal Tint */
+  --color-primary-border: #bfe3db;      /* Crisp Teal Border */
 
-  /* Semantic Agro-Climate Palette */
-  --color-farm-terracotta: #bc4c2a;     /* Drought / Hazard / High Risk */
-  --color-farm-water: #28637c;          /* River Basin / Hydrometeorology */
-  --color-farm-amber: #9e6414;          /* Soil Fertility / Caution */
+  /* Neutral Surface & Typography */
+  --color-text-primary: #111827;        /* Near-Black Headings & Primary Text */
+  --color-text-secondary: #4b5563;      /* Balanced Charcoal Secondary Text */
+  --color-text-muted: #9ca3af;          /* Light Muted Gray */
+  --color-bg-page: #f8fafc;             /* Clean Canvas Background */
+  --color-bg-surface: #ffffff;          /* Pure White Cards */
+  --color-bg-subtle: #f1f5f9;           /* Inset Tint */
+  --color-border: #e5e7eb;              /* Default Border */
+  --color-border-subtle: #f3f4f6;       /* Soft Divider */
 
-  /* Surfaces & Dividers */
-  --color-farm-bg: #f7f3ec;             /* Clean Mineral Background */
-  --color-farm-surface: #ffffff;        /* Pure Surface */
-  --color-farm-surface-subtle: #f9f7f3; /* Warm Tint Inset */
-  --color-farm-border: #e3dcd2;         /* Mineral Crisp Border */
-  --color-farm-border-subtle: #eee8e0;  /* Quiet Divider */
+  /* Semantic & Environmental Accents */
+  --color-accent-amber: #d97706;        /* Soil Fertility & Warm Accent */
+  --color-accent-water: #0891b2;        /* Hydrology & Water Cyan */
+  --color-accent-hazard: #dc2626;       /* Drought Risk & Warning */
+  --color-accent-growth: #16a34a;       /* Active Crop Growth */
 
-  /* Elevation */
-  --shadow-subtle: 0 1px 3px rgba(34, 39, 29, 0.05);
-  --shadow-card: 0 4px 14px rgba(34, 39, 29, 0.06);
-  --shadow-float: 0 14px 32px rgba(34, 39, 29, 0.10);
+  /* Elevation & Shadows */
+  --shadow-subtle: 0 1px 3px rgba(17, 24, 39, 0.05);
+  --shadow-card: 0 4px 16px rgba(17, 24, 39, 0.06);
+  --shadow-float: 0 16px 36px rgba(17, 24, 39, 0.12);
 
   /* Typography */
-  --font-heading: 'Aeonik', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-body: 'Aeonik', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }

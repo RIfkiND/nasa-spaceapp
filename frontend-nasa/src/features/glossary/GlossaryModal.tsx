@@ -63,20 +63,20 @@ export const GlossaryModal: React.FC<GlossaryModalProps> = ({ isOpen, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs">
-      <div className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#e3dcd2] bg-white p-6 sm:p-8 text-[#22271d] shadow-float">
-        <div className="flex items-center justify-between border-b border-[#eee8e0] pb-4">
+      <div className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 text-gray-900 shadow-float">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#f2f5ed] p-2 text-[#3d4c1c] border border-[#cbd9b5]">
+            <div className="rounded-full bg-[#e8f5f2] p-2.5 text-[#1a7a6d]">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#171b13]">NASA Earth Science & Agronomy Glossary</h2>
-              <p className="text-xs text-[#5e6857]">Essential remote sensing sensors, risk formulations, and agro-ecological metrics</p>
+              <h2 className="text-xl font-bold tracking-tight text-gray-900">NASA Earth Science & Agronomy Glossary</h2>
+              <p className="text-xs text-gray-500">Essential remote sensing sensors, risk formulations, and agro-ecological metrics</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#5e6857] transition hover:bg-[#eee8df] hover:text-[#171b13]"
+            className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
           >
             <X className="h-5 w-5" />
           </button>
@@ -86,30 +86,30 @@ export const GlossaryModal: React.FC<GlossaryModalProps> = ({ isOpen, onClose })
           {GLOSSARY_ITEMS.map((item) => (
             <div
               key={item.term}
-              className="rounded-xl border border-[#e3dcd2] bg-[#fbf9f5] p-4 transition duration-150 hover:border-[#b8ad9c] hover:bg-white"
+              className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4 transition duration-150 hover:border-[#1a7a6d] hover:bg-white"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-semibold text-sm text-[#171b13]">{item.term}</h3>
-                <span className="rounded-full bg-[#eee8df] px-2.5 py-0.5 text-[11px] font-medium text-[#5e6857]">
+                <h3 className="font-bold text-sm text-gray-900">{item.term}</h3>
+                <span className="rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-semibold text-gray-600">
                   {item.category}
                 </span>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-[#5e6857]">{item.definition}</p>
+              <p className="mt-2 text-xs leading-relaxed text-gray-600">{item.definition}</p>
               {item.formulaOrSensor && (
-                <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[#28637c]">
+                <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[#0891b2]">
                   <Info className="h-3.5 w-3.5 shrink-0" />
-                  <span className="font-mono text-[11px] font-medium">{item.formulaOrSensor}</span>
+                  <span className="font-mono text-[11px] font-semibold">{item.formulaOrSensor}</span>
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 rounded-xl border border-[#cbd9b5] bg-[#f2f5ed] p-4 text-xs text-[#3d4c1c]">
+        <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 rounded-2xl border border-[#bfe3db] bg-[#e8f5f2]/60 p-4 text-xs text-[#0f5347]">
           <p className="leading-relaxed">Data provenance is grounded in peer-reviewed agro-ecological criteria and NASA Earth Science specifications.</p>
           <button
             onClick={onClose}
-            className="self-end sm:self-auto shrink-0 rounded-xl bg-[#3d4c1c] px-4 py-2 font-semibold text-white transition hover:bg-[#4a5c22] shadow-subtle"
+            className="self-end sm:self-auto shrink-0 rounded-full bg-[#1a7a6d] px-5 py-2 font-semibold text-white transition hover:bg-[#15665b] shadow-xs"
           >
             Close Glossary
           </button>

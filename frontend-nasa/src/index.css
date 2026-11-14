@@ -13,8 +13,8 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--color-farm-bg);
-  color: var(--color-farm-charcoal);
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -23,18 +23,18 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.025em;
-  color: #171b13;
+  color: var(--color-text-primary);
 }
 
-/* Custom text selection */
+/* Custom text selection in AgriPluse teal */
 ::selection {
-  background-color: #dce5cf;
-  color: #171b13;
+  background-color: #bfe3db;
+  color: #0f5347;
 }
 
 /* Focus visibility */
 *:focus-visible {
-  outline: 2px solid #3d4c1c;
+  outline: 2px solid #1a7a6d;
   outline-offset: 2px;
 }
 
@@ -50,18 +50,18 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 1rem;
 }
 
-/* Custom scrollbars with Farm Minerals earth tones */
+/* Custom scrollbars with AgriPluse clean accents */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #ede6dc;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c5bcae;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3d4c1c;
+  background: #1a7a6d;
 }

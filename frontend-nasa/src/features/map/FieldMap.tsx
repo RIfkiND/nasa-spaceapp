@@ -125,7 +125,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
 
   const parcelGeoJson = useMemo(() => generateFieldPolygons(fields), [fields]);
 
-  // Deck.gl Layers with Agro-Climate Palette
+  // Deck.gl Layers with AgriPluse Palette
   const layers = [
     // 1. Agricultural Parcel Boundaries & Extruded 3D Elevation
     new GeoJsonLayer<ParcelProperties>({
@@ -139,12 +139,12 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getElevation: (f: Feature<Geometry, ParcelProperties>) => (f.properties?.elevation || 50) * 1.5,
       getFillColor: (f: Feature<Geometry, ParcelProperties>) =>
         f.properties?.id === selectedField.id
-          ? [61, 76, 28, 180] // Forest Olive highlight
-          : [40, 99, 124, 120], // River Basin Blue for candidates
+          ? [26, 122, 109, 180] // AgriPluse Brand Teal highlight
+          : [8, 145, 178, 120],  // Hydrology Cyan for candidates
       getLineColor: (f: Feature<Geometry, ParcelProperties>) =>
         f.properties?.id === selectedField.id
-          ? [61, 76, 28, 255]
-          : [40, 99, 124, 220],
+          ? [26, 122, 109, 255]
+          : [8, 145, 178, 220],
       getLineWidth: 2.5,
       lineWidthUnits: 'pixels',
       onHover: (info: PickingInfo<Feature<Geometry, ParcelProperties>>) => {
@@ -177,7 +177,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getPosition: (d: FieldProfile) => [d.coordinates[1], d.coordinates[0]],
       getRadius: (d: FieldProfile) => (d.id === selectedField.id ? 140 : 80),
       getFillColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [61, 76, 28, 250] : [40, 99, 124, 220],
+        d.id === selectedField.id ? [26, 122, 109, 250] : [8, 145, 178, 220],
       getLineColor: () => [255, 255, 255, 255],
       onClick: (info: PickingInfo<FieldProfile>) => {
         if (info.object) onSelectField(info.object);
@@ -193,21 +193,21 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getText: (d: FieldProfile) => `${d.village}\n(${d.soil.slope}% slope)`,
       getSize: 12,
       getColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [61, 76, 28, 255] : [34, 39, 29, 230],
+        d.id === selectedField.id ? [26, 122, 109, 255] : [17, 24, 39, 230],
       getTextAnchor: 'middle',
       getAlignmentBaseline: 'bottom',
       background: true,
-      getBackgroundColor: () => [255, 255, 255, 235],
+      getBackgroundColor: () => [255, 255, 255, 240],
       backgroundPadding: [6, 4],
     }),
   ];
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#e3dcd2] bg-white shadow-subtle">
+    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs">
       {/* Top Banner Info */}
       <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#171b13] backdrop-blur-md shadow-subtle">
-          <span className="inline-block h-2 w-2 rounded-full bg-[#3d4c1c]" />
+        <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-4 py-1.5 text-xs font-semibold text-gray-800 backdrop-blur-md shadow-xs">
+          <span className="inline-block h-2 w-2 rounded-full bg-[#1a7a6d]" />
           <span>Deck.gl 3D &middot; NASA / ESRI Satellite Basemap</span>
         </div>
       </div>
@@ -222,25 +222,25 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
               bearing: 0,
             }))
           }
-          className="flex items-center gap-1.5 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#171b13] backdrop-blur-md transition hover:bg-[#f6f1ea] shadow-subtle"
+          className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white/95 px-4 py-1.5 text-xs font-semibold text-gray-800 backdrop-blur-md transition hover:border-[#1a7a6d] hover:text-[#1a7a6d] shadow-xs"
         >
-          <Layers className="h-3.5 w-3.5 text-[#3d4c1c]" />
+          <Layers className="h-3.5 w-3.5 text-[#1a7a6d]" />
           <span>{viewState.pitch > 0 ? '3D Elevation View' : '2D Plan View'}</span>
         </button>
       </div>
 
-      {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 rounded-xl border border-[#e3dcd2] bg-white/95 px-4 py-2 text-xs text-[#5e6857] backdrop-blur-md shadow-subtle">
+      {/* Map Legend - AgriPluse Pill Style */}
+      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 rounded-full border border-gray-200 bg-white/95 px-4 py-2 text-xs text-gray-600 backdrop-blur-md shadow-xs">
         <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#3d4c1c]" />
-          <span className="font-semibold text-[#171b13]">Selected Plot</span>
+          <span className="h-2.5 w-2.5 rounded-full bg-[#1a7a6d]" />
+          <span className="font-semibold text-gray-900">Selected Plot</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28637c]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#0891b2]" />
           <span>Candidate Sites</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Mountain className="h-3.5 w-3.5 text-[#9e6414]" />
+          <Mountain className="h-3.5 w-3.5 text-[#d97706]" />
           <span>Extruded Parcels</span>
         </div>
       </div>
@@ -248,12 +248,12 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       {/* Hover Tooltip */}
       {hoverInfo?.object?.properties && (
         <div
-          className="pointer-events-none absolute z-30 rounded-xl border border-[#cbd9b5] bg-white/95 p-3 text-xs text-[#171b13] shadow-card backdrop-blur-md"
+          className="pointer-events-none absolute z-30 rounded-2xl border border-[#bfe3db] bg-white/95 p-3.5 text-xs text-gray-900 shadow-card backdrop-blur-md"
           style={{ left: hoverInfo.x + 10, top: hoverInfo.y + 10 }}
         >
-          <p className="font-bold text-[#3d4c1c]">{hoverInfo.object.properties.name}</p>
-          <p className="text-[#5e6857]">Desa {hoverInfo.object.properties.village}</p>
-          <div className="mt-1.5 space-y-0.5 text-[11px] text-[#5e6857]">
+          <p className="font-bold text-[#1a7a6d]">{hoverInfo.object.properties.name}</p>
+          <p className="text-gray-500">Desa {hoverInfo.object.properties.village}</p>
+          <div className="mt-1.5 space-y-0.5 text-[11px] text-gray-600">
             <p>Soil: {hoverInfo.object.properties.soil}</p>
             <p>Slope: {hoverInfo.object.properties.slope}% &middot; Elev: {hoverInfo.object.properties.elevation}m</p>
           </div>
