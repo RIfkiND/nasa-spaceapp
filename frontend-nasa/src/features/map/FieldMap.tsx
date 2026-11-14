@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
-import type { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
+import type { PickingInfo } from '@deck.gl/core';
 import { Map } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import type { Feature, Geometry, Polygon } from 'geojson';
@@ -27,14 +27,6 @@ export interface ParcelProperties {
 }
 
 export type ParcelFeature = Feature<Polygon, ParcelProperties>;
-
-interface MapViewState {
-  longitude: number;
-  latitude: number;
-  zoom: number;
-  pitch: number;
-  bearing: number;
-}
 
 // 100% Free Open Satellite Basemap (No API key required)
 const SATELLITE_BASEMAP_STYLE: maplibregl.StyleSpecification = {
@@ -100,27 +92,17 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
   // Thematic Layer State (Task 3.2)
   const [thematicLayer, setThematicLayer] = useState<ThematicLayerMode>('status');
 
-  // 3D Deck.gl ViewState
-  const [viewState, setViewState] = useState<MapViewState>({
-    longitude: selectedField.coordinates[1],
-    latitude: selectedField.coordinates[0],
-    zoom: 11.5,
-    pitch: 45,
-    bearing: -10,
-  });
+  // Perspective Mode (3D vs 2D)
+  const [is3D, setIs3D] = useState(true);
 
-  const [prevFieldId, setPrevFieldId] = useState(selectedField.id);
-  if (selectedField.id !== prevFieldId) {
-    setPrevFieldId(selectedField.id);
-    setViewState((prev) => ({
-      ...prev,
-      longitude: selectedField.coordinates[1],
-      latitude: selectedField.coordinates[0],
-      zoom: 12.2,
-      pitch: 50,
-      bearing: 15,
-    }));
-  }
+  // Initial View State centered on active plot
+  const initialViewState = useMemo(() => ({
+    longitude: selectedField?.coordinates?.[1] ?? 109.2942,
+    latitude: selectedField?.coordinates?.[0] ?? -7.5186,
+    zoom: 12.2,
+    pitch: is3D ? 50 : 0,
+    bearing: is3D ? 15 : 0,
+  }), [selectedField?.coordinates, is3D]);
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -132,17 +114,17 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
 
   // Color functions based on active thematic layer
   const getParcelFillColor = (f: Feature<Geometry, ParcelProperties>): [number, number, number, number] => {
-    const isSelected = f.properties?.id === selectedField.id;
+    const isSelected = f?.properties?.id === selectedField?.id;
 
     if (thematicLayer === 'slope') {
-      const slope = f.properties?.slope ?? 0;
+      const slope = f?.properties?.slope ?? 0;
       if (slope > 15) return [239, 68, 68, isSelected ? 220 : 180]; // Red - High erosion risk
       if (slope >= 8) return [245, 158, 11, isSelected ? 220 : 180]; // Amber - Moderate slope
       return [34, 197, 94, isSelected ? 220 : 180]; // Green - Gentle slope
     }
 
     if (thematicLayer === 'awc') {
-      const awc = f.properties?.awc ?? 120;
+      const awc = f?.properties?.awc ?? 120;
       if (awc >= 140) return [14, 116, 144, isSelected ? 230 : 190]; // Deep Cyan - High water capacity
       if (awc >= 120) return [56, 189, 248, isSelected ? 220 : 170]; // Sky blue - Moderate
       return [249, 115, 22, isSelected ? 230 : 190]; // Orange - Water deficit prone
@@ -155,7 +137,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
   };
 
   const getParcelLineColor = (f: Feature<Geometry, ParcelProperties>): [number, number, number, number] => {
-    const isSelected = f.properties?.id === selectedField.id;
+    const isSelected = f?.properties?.id === selectedField?.id;
     if (isSelected) return [35, 127, 142, 255];
     return [255, 255, 255, 200];
   };
@@ -164,21 +146,21 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
   const layers = [
     // 1. Agricultural Parcel Boundaries & Extruded 3D Elevation
     new GeoJsonLayer<ParcelProperties>({
-      id: `field-parcels-${thematicLayer}`,
+      id: 'field-parcels',
       data: parcelGeoJson,
       pickable: true,
       stroked: true,
       filled: true,
       extruded: true,
       wireframe: true,
-      getElevation: (f: Feature<Geometry, ParcelProperties>) => (f.properties?.elevation || 50) * 1.5,
+      getElevation: (f: Feature<Geometry, ParcelProperties>) => (f?.properties?.elevation || 50) * 1.5,
       getFillColor: getParcelFillColor,
       getLineColor: getParcelLineColor,
       getLineWidth: 2.5,
       lineWidthUnits: 'pixels',
       updateTriggers: {
-        getFillColor: [thematicLayer, selectedField.id],
-        getLineColor: [thematicLayer, selectedField.id],
+        getFillColor: [thematicLayer, selectedField?.id],
+        getLineColor: [thematicLayer, selectedField?.id],
       },
       onHover: (info: PickingInfo<Feature<Geometry, ParcelProperties>>) => {
         if (info.object) {
@@ -207,11 +189,15 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       radiusMinPixels: 8,
       radiusMaxPixels: 24,
       lineWidthMinPixels: 2,
-      getPosition: (d: FieldProfile) => [d.coordinates[1], d.coordinates[0]],
-      getRadius: (d: FieldProfile) => (d.id === selectedField.id ? 140 : 80),
+      getPosition: (d: FieldProfile) => d?.coordinates ? [d.coordinates[1], d.coordinates[0]] : [109.2942, -7.5186],
+      getRadius: (d: FieldProfile) => (d?.id === selectedField?.id ? 140 : 80),
       getFillColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [35, 127, 142, 250] : [8, 145, 178, 220],
+        d?.id === selectedField?.id ? [35, 127, 142, 250] : [8, 145, 178, 220],
       getLineColor: () => [255, 255, 255, 255],
+      updateTriggers: {
+        getRadius: [selectedField?.id],
+        getFillColor: [selectedField?.id],
+      },
       onClick: (info: PickingInfo<FieldProfile>) => {
         if (info.object) onSelectField(info.object);
       },
@@ -222,11 +208,15 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       id: 'field-labels',
       data: fields,
       pickable: false,
-      getPosition: (d: FieldProfile) => [d.coordinates[1], d.coordinates[0], d.elevationMeters * 2 + 35],
-      getText: (d: FieldProfile) => `${d.village}\n(${d.soil.slope}% slope)`,
+      getPosition: (d: FieldProfile) =>
+        d?.coordinates ? [d.coordinates[1], d.coordinates[0], (d.elevationMeters || 50) * 2 + 35] : [109.2942, -7.5186, 135],
+      getText: (d: FieldProfile) => `${d?.village || ''}\n(${d?.soil?.slope ?? 0}% slope)`,
       getSize: 12,
       getColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [35, 127, 142, 255] : [20, 35, 43, 230],
+        d?.id === selectedField?.id ? [35, 127, 142, 255] : [20, 35, 43, 230],
+      updateTriggers: {
+        getColor: [selectedField?.id],
+      },
       getTextAnchor: 'middle',
       getAlignmentBaseline: 'bottom',
       background: true,
@@ -285,17 +275,11 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
 
         {/* 2D/3D Perspective Toggle */}
         <button
-          onClick={() =>
-            setViewState((prev) => ({
-              ...prev,
-              pitch: prev.pitch === 0 ? 50 : 0,
-              bearing: 0,
-            }))
-          }
+          onClick={() => setIs3D(!is3D)}
           className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#14232B] backdrop-blur-md transition hover:border-[#237F8E] hover:text-[#237F8E] shadow-xs"
         >
           <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
-          <span>{viewState.pitch > 0 ? '3D View' : '2D Plan'}</span>
+          <span>{is3D ? '3D View' : '2D Plan'}</span>
         </button>
       </div>
 
@@ -373,17 +357,14 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
 
       {/* Deck.gl + MapLibre Map Canvas */}
       <DeckGL
-        viewState={viewState}
-        onViewStateChange={(e: ViewStateChangeParameters) => {
-          setViewState(e.viewState as MapViewState);
-        }}
+        key={`${selectedField?.id}-${is3D ? '3d' : '2d'}`}
+        initialViewState={initialViewState}
         controller={true}
         layers={layers}
       >
         <Map
           mapLib={maplibregl}
           mapStyle={SATELLITE_BASEMAP_STYLE}
-          reuseMaps
         />
       </DeckGL>
     </div>
