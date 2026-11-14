@@ -205,6 +205,11 @@ export const MOCK_STRATEGIES: Record<string, Strategy[]> = {
           overall: 38,
         },
       },
+      constraintRequirements: {
+        requiresIrrigationDrySeason: true,
+        requiresMechanization: false,
+        requiresSpecializedMarket: false,
+      },
       evidence: {
         reasoning: 'Current farmer convention in Banyumas irrigation basin. Second paddy crop frequently faces severe hydrological stress if monsoon onset is delayed or dry season starts early.',
         dataSources: [
@@ -251,6 +256,11 @@ export const MOCK_STRATEGIES: Record<string, Strategy[]> = {
           laborDemand: 68,
           overall: 75,
         },
+      },
+      constraintRequirements: {
+        requiresIrrigationDrySeason: false,
+        requiresMechanization: false,
+        requiresSpecializedMarket: true,
       },
       evidence: {
         reasoning: 'Mung bean requires only 250–350 mm of water throughout its 60-day lifecycle, fitting precisely into residual soil moisture (measured by SMAP/GLDAS). Biological nitrogen fixation (Rhizobium) restores soil health depleted by dual rice cycles.',
@@ -300,6 +310,11 @@ export const MOCK_STRATEGIES: Record<string, Strategy[]> = {
           laborDemand: 55,
           overall: 66,
         },
+      },
+      constraintRequirements: {
+        requiresIrrigationDrySeason: false,
+        requiresMechanization: true,
+        requiresSpecializedMarket: false,
       },
       evidence: {
         reasoning: 'Replaces water-intensive dry-season rice with soybean and deep-rooting sorghum. Sorghum exhibits exceptional drought tolerance (ET reduction >40% vs paddy), safeguarding farm income when irrigation water cuts occur.',

@@ -1,11 +1,35 @@
 export type ClimatePhase = 'el_nino' | 'normal' | 'la_nina';
 
+export interface FarmerConstraints {
+  irrigationAccess: boolean; // True if canal/pump is available for dry season
+  machineryAccess: boolean;  // True if tractor/rotavator is accessible for tillage
+  marketAccess: boolean;     // True if guaranteed buyer/off-taker exists locally
+}
+
+export interface ClimateScenario {
+  rainfallAnomalyPercent: number; // -30% to +30%
+  temperatureAnomalyDelta: number; // 0°C to +2.5°C
+}
+
+export interface StrategyConstraintRequirements {
+  requiresIrrigationDrySeason: boolean;
+  requiresMechanization: boolean;
+  requiresSpecializedMarket: boolean;
+}
+
 export interface PriorityWeights {
   yield: number;            // 0 - 100
   waterEfficiency: number;  // 0 - 100
   soilHealth: number;       // 0 - 100
   coverDays: number;        // 0 - 100
   laborDemand: number;      // 0 - 100
+}
+
+export interface PplBriefMetadata {
+  farmerName: string;
+  poktanName: string;
+  pplOfficerName: string;
+  notes: string;
 }
 
 export interface ScoreSet {
@@ -48,6 +72,7 @@ export interface Strategy {
     mean: ScoreSet;
     worstCase: ScoreSet; // CVaR (Conditional Value at Risk)
   };
+  constraintRequirements?: StrategyConstraintRequirements;
   evidence: EvidenceCardData;
 }
 
