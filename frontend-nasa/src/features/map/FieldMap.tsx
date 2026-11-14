@@ -6,7 +6,7 @@ import { Map } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import type { Feature, Geometry, Polygon } from 'geojson';
 import type { FieldProfile } from '../../types/domain';
-import { Navigation, Mountain, Layers, Compass } from 'lucide-react';
+import { Mountain, Layers } from 'lucide-react';
 
 interface FieldMapProps {
   fields: FieldProfile[];
@@ -59,7 +59,6 @@ const SATELLITE_BASEMAP_STYLE: maplibregl.StyleSpecification = {
   ],
 };
 
-// Generate realistic agricultural parcel polygons around coordinates
 function generateFieldPolygons(fields: FieldProfile[]) {
   return {
     type: 'FeatureCollection' as const,
@@ -101,11 +100,10 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
     longitude: selectedField.coordinates[1],
     latitude: selectedField.coordinates[0],
     zoom: 11.5,
-    pitch: 45, // 3D Tilt perspective
+    pitch: 45,
     bearing: -10,
   });
 
-  // Adjust camera state when selected field changes
   const [prevFieldId, setPrevFieldId] = useState(selectedField.id);
   if (selectedField.id !== prevFieldId) {
     setPrevFieldId(selectedField.id);
@@ -125,10 +123,9 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
     object?: ParcelFeature | null;
   } | null>(null);
 
-  // Simulated agro-ecological parcel polygons
   const parcelGeoJson = useMemo(() => generateFieldPolygons(fields), [fields]);
 
-  // Deck.gl Layers
+  // Deck.gl Layers with Agro-Climate Palette
   const layers = [
     // 1. Agricultural Parcel Boundaries & Extruded 3D Elevation
     new GeoJsonLayer<ParcelProperties>({
@@ -142,12 +139,12 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getElevation: (f: Feature<Geometry, ParcelProperties>) => (f.properties?.elevation || 50) * 1.5,
       getFillColor: (f: Feature<Geometry, ParcelProperties>) =>
         f.properties?.id === selectedField.id
-          ? [16, 185, 129, 160] // Emerald highlight
-          : [56, 189, 248, 100], // Cyan for candidates
+          ? [61, 76, 28, 180] // Forest Olive highlight
+          : [40, 99, 124, 120], // River Basin Blue for candidates
       getLineColor: (f: Feature<Geometry, ParcelProperties>) =>
         f.properties?.id === selectedField.id
-          ? [16, 185, 129, 255]
-          : [56, 189, 248, 220],
+          ? [61, 76, 28, 255]
+          : [40, 99, 124, 220],
       getLineWidth: 2.5,
       lineWidthUnits: 'pixels',
       onHover: (info: PickingInfo<Feature<Geometry, ParcelProperties>>) => {
@@ -165,7 +162,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       },
     }),
 
-    // 2. Pulse / Radar Marker for Plot Centers
+    // 2. Center pins
     new ScatterplotLayer<FieldProfile>({
       id: 'field-pins',
       data: fields,
@@ -180,7 +177,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getPosition: (d: FieldProfile) => [d.coordinates[1], d.coordinates[0]],
       getRadius: (d: FieldProfile) => (d.id === selectedField.id ? 140 : 80),
       getFillColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [16, 185, 129, 250] : [56, 189, 248, 220],
+        d.id === selectedField.id ? [61, 76, 28, 250] : [40, 99, 124, 220],
       getLineColor: () => [255, 255, 255, 255],
       onClick: (info: PickingInfo<FieldProfile>) => {
         if (info.object) onSelectField(info.object);
@@ -196,30 +193,26 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       getText: (d: FieldProfile) => `${d.village}\n(${d.soil.slope}% slope)`,
       getSize: 12,
       getColor: (d: FieldProfile) =>
-        d.id === selectedField.id ? [64, 79, 29, 255] : [34, 43, 27, 230],
+        d.id === selectedField.id ? [61, 76, 28, 255] : [34, 39, 29, 230],
       getTextAnchor: 'middle',
       getAlignmentBaseline: 'bottom',
       background: true,
-      getBackgroundColor: () => [255, 255, 255, 230],
+      getBackgroundColor: () => [255, 255, 255, 235],
       backgroundPadding: [6, 4],
     }),
   ];
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#e3dcd2] bg-white shadow-xs">
+    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#e3dcd2] bg-white shadow-subtle">
       {/* Top Banner Info */}
       <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#1a2015] backdrop-blur-md shadow-xs">
-          <Navigation className="h-4 w-4 text-[#404f1d]" />
+        <div className="flex items-center gap-2 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#171b13] backdrop-blur-md shadow-subtle">
+          <span className="inline-block h-2 w-2 rounded-full bg-[#3d4c1c]" />
           <span>Deck.gl 3D &middot; NASA / ESRI Satellite Basemap</span>
-        </div>
-        <div className="hidden sm:flex items-center gap-1.5 rounded-xl border border-[#e3dcd2] bg-white/95 px-3 py-1.5 text-xs text-[#4b5563] backdrop-blur-md shadow-xs">
-          <Compass className="h-3.5 w-3.5 text-[#404f1d]" />
-          <span>Pitch: {Math.round(viewState.pitch)}° | Bearing: {Math.round(viewState.bearing)}°</span>
         </div>
       </div>
 
-      {/* Top Right: 2D/3D Toggle Only */}
+      {/* Top Right: 2D/3D Perspective Toggle */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
         <button
           onClick={() =>
@@ -229,38 +222,38 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
               bearing: 0,
             }))
           }
-          className="flex items-center gap-1.5 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#1a2015] backdrop-blur-md transition hover:bg-[#f6f1ea] shadow-xs"
+          className="flex items-center gap-1.5 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#171b13] backdrop-blur-md transition hover:bg-[#f6f1ea] shadow-subtle"
         >
-          <Layers className="h-3.5 w-3.5 text-[#404f1d]" />
-          <span>{viewState.pitch > 0 ? '3D View' : '2D View'}</span>
+          <Layers className="h-3.5 w-3.5 text-[#3d4c1c]" />
+          <span>{viewState.pitch > 0 ? '3D Elevation View' : '2D Plan View'}</span>
         </button>
       </div>
 
-      {/* 3D Legend Controls */}
-      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 rounded-xl border border-[#e3dcd2] bg-white/95 px-3.5 py-2 text-[11px] text-[#374151] backdrop-blur-md shadow-xs">
+      {/* Map Legend */}
+      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 rounded-xl border border-[#e3dcd2] bg-white/95 px-4 py-2 text-xs text-[#5e6857] backdrop-blur-md shadow-subtle">
         <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-xs" />
-          <span className="font-semibold text-[#1a2015]">Active Plot</span>
+          <span className="h-2.5 w-2.5 rounded-full bg-[#3d4c1c]" />
+          <span className="font-semibold text-[#171b13]">Selected Plot</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-sky-500 shadow-xs" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28637c]" />
           <span>Candidate Sites</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Mountain className="h-3.5 w-3.5 text-amber-600" />
-          <span>3D Topographic Parcels</span>
+          <Mountain className="h-3.5 w-3.5 text-[#9e6414]" />
+          <span>Extruded Parcels</span>
         </div>
       </div>
 
       {/* Hover Tooltip */}
       {hoverInfo?.object?.properties && (
         <div
-          className="pointer-events-none absolute z-30 rounded-xl border border-[#cbd9b5] bg-white/95 p-3 text-xs text-[#1a2015] shadow-xl backdrop-blur-md"
+          className="pointer-events-none absolute z-30 rounded-xl border border-[#cbd9b5] bg-white/95 p-3 text-xs text-[#171b13] shadow-card backdrop-blur-md"
           style={{ left: hoverInfo.x + 10, top: hoverInfo.y + 10 }}
         >
-          <p className="font-bold text-[#404f1d]">{hoverInfo.object.properties.name}</p>
-          <p className="text-[#4b5563]">Desa {hoverInfo.object.properties.village}</p>
-          <div className="mt-1.5 space-y-0.5 text-[11px] text-[#6b7280]">
+          <p className="font-bold text-[#3d4c1c]">{hoverInfo.object.properties.name}</p>
+          <p className="text-[#5e6857]">Desa {hoverInfo.object.properties.village}</p>
+          <div className="mt-1.5 space-y-0.5 text-[11px] text-[#5e6857]">
             <p>Soil: {hoverInfo.object.properties.soil}</p>
             <p>Slope: {hoverInfo.object.properties.slope}% &middot; Elev: {hoverInfo.object.properties.elevation}m</p>
           </div>

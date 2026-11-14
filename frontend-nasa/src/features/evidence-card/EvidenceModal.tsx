@@ -11,121 +11,121 @@ interface EvidenceModalProps {
 export const EvidenceModal: React.FC<EvidenceModalProps> = ({ strategy, isOpen, onClose }) => {
   if (!isOpen || !strategy) return null;
 
-  const confidenceColor = {
-    HIGH: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    MODERATE: 'bg-amber-50 text-amber-800 border-amber-200',
-    LOW: 'bg-rose-50 text-rose-800 border-rose-200',
+  const confidenceBadge = {
+    HIGH: 'bg-[#eef3e6] text-[#3d4c1c] border-[#cbd9b5]',
+    MODERATE: 'bg-[#fef8ed] text-[#9e6414] border-[#f0dfba]',
+    LOW: 'bg-[#fbf5f2] text-[#bc4c2a] border-[#f0d5cc]',
   }[strategy.confidence];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-[#e3dcd2] bg-white p-6 text-[#262c20] shadow-2xl md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs">
+      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-[#e3dcd2] bg-white p-6 sm:p-8 text-[#22271d] shadow-float">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-[#eee8df] pb-5">
+        <div className="flex items-start justify-between border-b border-[#eee8e0] pb-5">
           <div>
-            <div className="flex items-center gap-3">
-              <span className={`rounded-full border px-3 py-0.5 text-xs font-semibold ${confidenceColor}`}>
-                {strategy.confidence} CONFIDENCE
+            <div className="flex items-center gap-2">
+              <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${confidenceBadge}`}>
+                {strategy.confidence} Confidence Tier
               </span>
-              <span className="text-xs text-[#6b7280]">Strategy Evidence Dossier</span>
+              <span className="text-xs text-[#5e6857]">NASA Evidence Dossier</span>
             </div>
-            <h2 className="mt-2 text-2xl font-bold text-[#1a2015]">{strategy.name}</h2>
-            <p className="mt-1 text-sm text-[#6b7280]">{strategy.confidenceReason}</p>
+            <h2 className="mt-2 text-2xl font-bold text-[#171b13]">{strategy.name}</h2>
+            <p className="mt-1 text-xs text-[#5e6857]">{strategy.confidenceReason}</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-[#6b7280] transition hover:bg-[#f4ede6] hover:text-[#1a2015]"
+            className="rounded-lg p-2 text-[#5e6857] transition hover:bg-[#eee8df] hover:text-[#171b13]"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content sections */}
         <div className="mt-6 space-y-6">
           {/* Section: Agronomic Rationale */}
-          <div className="rounded-xl border border-[#e3dcd2] bg-[#f8f5f0] p-5">
-            <div className="flex items-center gap-2 text-[#404f1d]">
-              <FileText className="h-5 w-5" />
-              <h3 className="font-semibold text-[#1a2015]">Agronomic & Climate Rationale</h3>
+          <div className="rounded-xl border border-[#e3dcd2] bg-[#fbf9f5] p-5">
+            <div className="flex items-center gap-2 text-[#3d4c1c]">
+              <FileText className="h-4 w-4" />
+              <h3 className="font-semibold text-sm text-[#171b13]">Agronomic Rationale & Seasonal Fit</h3>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-[#374151]">
+            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#5e6857]">
               {strategy.evidence.reasoning}
             </p>
           </div>
 
-          {/* Section: NASA & Field Data Provenance */}
-          <div className="rounded-xl border border-[#e3dcd2] bg-[#f8f5f0] p-5">
-            <div className="flex items-center gap-2 text-sky-700">
-              <Database className="h-5 w-5" />
-              <h3 className="font-semibold text-[#1a2015]">Data Provenance & Sensor Inputs</h3>
+          {/* Section: NASA Sensor Inputs */}
+          <div className="rounded-xl border border-[#e3dcd2] bg-white p-5">
+            <div className="flex items-center gap-2 text-[#28637c]">
+              <Database className="h-4 w-4" />
+              <h3 className="font-semibold text-sm text-[#171b13]">NASA Earth Science Sensor Inputs</h3>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {strategy.evidence.dataSources.map((source) => (
                 <div
                   key={source.id}
-                  className="rounded-lg border border-[#e3dcd2] bg-white p-3 text-xs shadow-xs"
+                  className="rounded-xl border border-[#eee8e0] bg-[#fbf9f5] p-3 text-xs"
                 >
-                  <div className="flex items-center justify-between font-semibold text-sky-800">
+                  <div className="flex items-center justify-between font-semibold text-[#171b13]">
                     <span>{source.name}</span>
-                    <span className="rounded bg-sky-50 px-2 py-0.5 text-[10px] text-sky-700 font-mono border border-sky-100">
+                    <span className="rounded bg-white px-2 py-0.5 text-[10px] text-[#28637c] font-mono border border-[#e3dcd2]">
                       {source.resolution}
                     </span>
                   </div>
-                  <p className="mt-1 text-[#4b5563]">Role: {source.role}</p>
-                  <p className="mt-0.5 text-[#6b7280]">Category: {source.type}</p>
+                  <p className="mt-1 text-[#5e6857]">Role: {source.role}</p>
+                  <p className="mt-0.5 text-[11px] text-[#788270]">Category: {source.type}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Section: Expected Benefits */}
-          <div className="rounded-xl border border-[#cbd9b5] bg-[#f4f7ed] p-5">
-            <div className="flex items-center gap-2 text-[#404f1d]">
-              <CheckCircle2 className="h-5 w-5" />
-              <h3 className="font-semibold text-[#1a2015]">Expected Resilience & Yield Benefits</h3>
+          {/* Section: Expected Resilience Gains */}
+          <div className="rounded-xl border border-[#cbd9b5] bg-[#f2f5ed] p-5">
+            <div className="flex items-center gap-2 text-[#3d4c1c]">
+              <CheckCircle2 className="h-4 w-4" />
+              <h3 className="font-semibold text-sm text-[#171b13]">Quantified Agro-Ecological Gains</h3>
             </div>
             <ul className="mt-3 space-y-2">
               {strategy.evidence.benefits.map((benefit, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-[#33421d]">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#404f1d]" />
+                <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-[#3d4c1c]">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#3d4c1c]" />
                   <span>{benefit}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Section: Honest Information Gaps (Challenge Requirement) */}
-          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-5">
-            <div className="flex items-center gap-2 text-amber-700">
-              <AlertTriangle className="h-5 w-5" />
-              <h3 className="font-semibold text-amber-950">Information Gaps & Epistemic Limitations</h3>
+          {/* Section: Honest Limitations & Gaps */}
+          <div className="rounded-xl border border-[#f0d5cc] bg-[#fbf5f2] p-5">
+            <div className="flex items-center gap-2 text-[#bc4c2a]">
+              <AlertTriangle className="h-4 w-4" />
+              <h3 className="font-semibold text-sm text-[#bc4c2a]">Information Gaps & Epistemic Boundaries</h3>
             </div>
-            <p className="mt-1 text-xs text-amber-800/90">
-              Per NASA challenge mandate: Highlighting what is NOT measured prevents overconfident model recommendations.
+            <p className="mt-1 text-xs text-[#bc4c2a]">
+              NASA Space Apps mandate: Disclosing unmeasured ground variables prevents overconfident automated guidance.
             </p>
             <ul className="mt-3 space-y-2">
               {strategy.evidence.dataGaps.map((gap, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-amber-900">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-[#7a321a]">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#bc4c2a]" />
                   <span>{gap}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Section: Mandatory Local Extension Checks */}
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5">
-            <div className="flex items-center gap-2 text-indigo-700">
-              <CheckSquare className="h-5 w-5" />
-              <h3 className="font-semibold text-indigo-950">Mandatory Extension Officer (PPL) Verification Checklist</h3>
+          {/* Section: Extension Checklist (Clean Organic Styling) */}
+          <div className="rounded-xl border border-[#e3dcd2] bg-[#fbf9f5] p-5">
+            <div className="flex items-center gap-2 text-[#3d4c1c]">
+              <CheckSquare className="h-4 w-4" />
+              <h3 className="font-semibold text-sm text-[#171b13]">Extension Officer (PPL) Field Verification Checklist</h3>
             </div>
-            <p className="mt-1 text-xs text-indigo-800/80">
-              Items that must be physically verified by field officers or farmers before executing this rotation:
+            <p className="mt-1 text-xs text-[#5e6857]">
+              Pre-planting inspection requirements before adopting this crop succession:
             </p>
             <ul className="mt-3 space-y-2">
               {strategy.evidence.localChecks.map((check, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-indigo-950">
-                  <div className="mt-0.5 rounded border border-indigo-300 p-0.5 text-indigo-600 bg-white">
+                <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-[#171b13]">
+                  <div className="mt-0.5 rounded border border-[#b8ad9c] p-0.5 text-[#3d4c1c] bg-white">
                     <CheckSquare className="h-3 w-3" />
                   </div>
                   <span>{check}</span>
@@ -136,12 +136,12 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({ strategy, isOpen, 
         </div>
 
         {/* Footer */}
-        <div className="mt-8 flex justify-end border-t border-[#eee8df] pt-4">
+        <div className="mt-8 flex justify-end border-t border-[#eee8e0] pt-4">
           <button
             onClick={onClose}
-            className="rounded-xl bg-[#404f1d] px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#4c5b20]"
+            className="rounded-xl bg-[#3d4c1c] px-6 py-2.5 text-xs font-semibold text-white shadow-subtle transition hover:bg-[#4a5c22]"
           >
-            Dismiss Dossier
+            Close Dossier
           </button>
         </div>
       </div>

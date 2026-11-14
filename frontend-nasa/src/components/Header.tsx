@@ -15,67 +15,67 @@ export const Header: React.FC<HeaderProps> = ({
   selectedVillage,
 }) => {
   return (
-    <header className="sticky top-0 z-40 border-b border-[#e3dcd2] bg-white/95 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-40 border-b border-[#e3dcd2] bg-[#fbf9f5]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#404f1d] text-white shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3d4c1c] text-[#f7f3ec] shadow-xs">
             <Compass className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-black tracking-tight text-[#1a2015]">FIELD SHIFT</h1>
-              <span className="rounded bg-[#eef3e6] px-2 py-0.5 text-[10px] font-bold text-[#404f1d] border border-[#cbd9b5]">
-                NASA SPACE APPS 2026
+              <span className="text-base font-black tracking-tight text-[#171b13]">FIELD SHIFT</span>
+              <span className="rounded-full bg-[#eef3e6] px-2 py-0.5 text-[10px] font-semibold text-[#3d4c1c] border border-[#cbd9b5]">
+                NASA Space Apps
               </span>
             </div>
-            <p className="text-[11px] text-[#6b7280]">
-              Crop Rotation Decision Support &middot; {selectedVillage}
+            <p className="text-xs text-[#5e6857]">
+              Adapting Farms with NASA Data &middot; <span className="font-medium text-[#171b13]">{selectedVillage}</span>
             </p>
           </div>
         </div>
 
-        {/* Navigation Tabs (Light Farm Minerals Aesthetic) */}
-        <nav className="flex items-center rounded-xl border border-[#e3dcd2] bg-[#f2ede4] p-1 text-xs font-semibold">
+        {/* Navigation Tabs */}
+        <nav className="flex items-center rounded-xl border border-[#e3dcd2] bg-[#eee8df] p-1 text-xs font-medium">
           <button
             onClick={() => onTabChange('map')}
-            className={`rounded-lg px-3 py-1.5 transition ${
+            className={`rounded-lg px-3.5 py-1.5 transition duration-150 ${
               activeTab === 'map'
-                ? 'bg-[#404f1d] text-white shadow-sm'
-                : 'text-[#6b7280] hover:text-[#1a2015]'
+                ? 'bg-white text-[#171b13] shadow-xs font-semibold'
+                : 'text-[#5e6857] hover:text-[#171b13]'
             }`}
           >
-            1. Field Map
+            Overview & Map
           </button>
           <button
             onClick={() => onTabChange('profile')}
-            className={`rounded-lg px-3 py-1.5 transition ${
+            className={`rounded-lg px-3.5 py-1.5 transition duration-150 ${
               activeTab === 'profile'
-                ? 'bg-[#404f1d] text-white shadow-sm'
-                : 'text-[#6b7280] hover:text-[#1a2015]'
+                ? 'bg-white text-[#171b13] shadow-xs font-semibold'
+                : 'text-[#5e6857] hover:text-[#171b13]'
             }`}
           >
-            2. Field Profile
+            Soil & Climatology
           </button>
           <button
             onClick={() => onTabChange('comparison')}
-            className={`rounded-lg px-3 py-1.5 transition ${
+            className={`rounded-lg px-3.5 py-1.5 transition duration-150 ${
               activeTab === 'comparison'
-                ? 'bg-[#404f1d] text-white shadow-sm'
-                : 'text-[#6b7280] hover:text-[#1a2015]'
+                ? 'bg-white text-[#171b13] shadow-xs font-semibold'
+                : 'text-[#5e6857] hover:text-[#171b13]'
             }`}
           >
-            3. Strategy Matrix
+            Rotation Optimizer
           </button>
           <button
             onClick={() => onTabChange('export')}
-            className={`rounded-lg px-3 py-1.5 transition ${
+            className={`rounded-lg px-3.5 py-1.5 transition duration-150 ${
               activeTab === 'export'
-                ? 'bg-[#404f1d] text-white shadow-sm'
-                : 'text-[#6b7280] hover:text-[#1a2015]'
+                ? 'bg-white text-[#171b13] shadow-xs font-semibold'
+                : 'text-[#5e6857] hover:text-[#171b13]'
             }`}
           >
-            4. Summary Brief
+            Consultation Brief
           </button>
         </nav>
 
@@ -83,9 +83,9 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenGlossary}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e3dcd2] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1a2015] shadow-xs transition hover:bg-[#f6f1ea] hover:border-[#404f1d]"
+            className="flex items-center gap-1.5 rounded-xl border border-[#e3dcd2] bg-white px-3.5 py-2 text-xs font-medium text-[#171b13] shadow-subtle transition hover:bg-[#f6f1ea] hover:border-[#3d4c1c]"
           >
-            <BookOpen className="h-3.5 w-3.5 text-[#404f1d]" />
+            <BookOpen className="h-4 w-4 text-[#3d4c1c]" />
             <span>NASA Glossary</span>
           </button>
         </div>

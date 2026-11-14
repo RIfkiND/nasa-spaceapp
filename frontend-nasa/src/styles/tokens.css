@@ -1,17 +1,29 @@
 :root {
   /* Farm Minerals Design System Primitives (https://www.farmminerals.com) */
-  --color-farm-primary: #404f1d;        /* Deep Olive Green (rgb 64, 79, 29) */
-  --color-farm-primary-hover: #4c5b20;  /* Moss Green (rgb 76, 91, 32) */
-  --color-farm-sage: #636f3d;           /* Sage Green (rgb 99, 111, 61) */
-  --color-farm-cream: #f4ede6;          /* Warm Mineral Cream (rgb 244, 237, 230) */
-  --color-farm-charcoal: #262c20;       /* Dark Charcoal Earth Text */
-  
-  /* Light Theme Surfaces & Borders */
-  --color-farm-bg: #f7f3ec;             /* Clean Warm Mineral Canvas */
-  --color-farm-card: #ffffff;           /* Clean White Card Surface */
-  --color-farm-card-subtle: #f8f5f0;    /* Light Cream Inset Box */
-  --color-farm-border: #e3dcd2;         /* Mineral Border */
-  --color-farm-border-subtle: #eee8df;  /* Subtle Divider Border */
+  --color-farm-primary: #3d4c1c;        /* Deep Olive Green */
+  --color-farm-primary-hover: #4a5c22;  /* Moss Forest Green */
+  --color-farm-sage: #5e6b3b;           /* Sage Green */
+  --color-farm-sage-bg: #f2f5ed;        /* Soft Sage Canvas */
+  --color-farm-cream: #f7f3ec;          /* Warm Mineral Cream */
+  --color-farm-charcoal: #22271d;       /* Dark Charcoal Earth Text */
+  --color-farm-muted: #5e6857;          /* Muted Secondary Text */
+
+  /* Semantic Agro-Climate Palette */
+  --color-farm-terracotta: #bc4c2a;     /* Drought / Hazard / High Risk */
+  --color-farm-water: #28637c;          /* River Basin / Hydrometeorology */
+  --color-farm-amber: #9e6414;          /* Soil Fertility / Caution */
+
+  /* Surfaces & Dividers */
+  --color-farm-bg: #f7f3ec;             /* Clean Mineral Background */
+  --color-farm-surface: #ffffff;        /* Pure Surface */
+  --color-farm-surface-subtle: #f9f7f3; /* Warm Tint Inset */
+  --color-farm-border: #e3dcd2;         /* Mineral Crisp Border */
+  --color-farm-border-subtle: #eee8e0;  /* Quiet Divider */
+
+  /* Elevation */
+  --shadow-subtle: 0 1px 3px rgba(34, 39, 29, 0.05);
+  --shadow-card: 0 4px 14px rgba(34, 39, 29, 0.06);
+  --shadow-float: 0 14px 32px rgba(34, 39, 29, 0.10);
 
   /* Typography */
   --font-heading: 'Aeonik', 'Inter', system-ui, -apple-system, sans-serif;

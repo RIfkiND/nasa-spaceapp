@@ -13,15 +13,34 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #f7f3ec; /* Farm Minerals Warm Mineral Cream */
-  color: #262c20;            /* Dark Charcoal Earth Text */
+  background-color: var(--color-farm-bg);
+  color: var(--color-farm-charcoal);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  letter-spacing: -0.02em;
-  color: #1a2015;
+  letter-spacing: -0.025em;
+  color: #171b13;
+}
+
+/* Custom text selection */
+::selection {
+  background-color: #dce5cf;
+  color: #171b13;
+}
+
+/* Focus visibility */
+*:focus-visible {
+  outline: 2px solid #3d4c1c;
+  outline-offset: 2px;
+}
+
+/* Tabular figures for data metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Map canvas container */
@@ -44,5 +63,5 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #404f1d;
+  background: #3d4c1c;
 }
