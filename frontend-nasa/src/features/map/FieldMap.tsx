@@ -1,17 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
-import type { PickingInfo, MapViewState } from '@deck.gl/core';
+import type { PickingInfo, MapViewState, ViewStateChangeParameters } from '@deck.gl/core';
 import { Map } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import type { Feature, Geometry, Polygon } from 'geojson';
 import type { FieldProfile } from '../../types/domain';
+import type { Language } from '../../types/landing';
 import { Mountain, Layers, Droplets, Activity } from 'lucide-react';
+import { FloatingMapHeader } from './FloatingMapHeader';
+import { FloatingSearchBar } from './FloatingSearchBar';
+import { PlotDetailSideCard } from './PlotDetailSideCard';
 
 interface FieldMapProps {
   fields: FieldProfile[];
   selectedField: FieldProfile;
   onSelectField: (field: FieldProfile) => void;
+  onOpenAnalysis?: (field: FieldProfile) => void;
+  onOpenGlossary?: () => void;
+  onOpenDataSources?: () => void;
+  onBackToLanding?: () => void;
+  currentLang?: Language;
+  onToggleLang?: () => void;
 }
 
 export type ThematicLayerMode = 'status' | 'slope' | 'awc';
@@ -88,21 +98,117 @@ function generateFieldPolygons(fields: FieldProfile[]) {
   };
 }
 
-export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps) {
+export function FieldMap({
+  fields,
+  selectedField,
+  onSelectField,
+  onOpenAnalysis,
+  onOpenGlossary,
+  onOpenDataSources,
+  onBackToLanding,
+  currentLang = 'id',
+  onToggleLang,
+}: FieldMapProps) {
   // Thematic Layer State (Task 3.2)
   const [thematicLayer, setThematicLayer] = useState<ThematicLayerMode>('status');
 
   // Perspective Mode (3D vs 2D)
   const [is3D, setIs3D] = useState(true);
 
-  // Initial View State centered on active plot
-  const initialViewState: MapViewState = useMemo(() => ({
+  // Floating Side Card open state
+  const [isSideCardOpen, setIsSideCardOpen] = useState(true);
+
+  // Quick Filter State ('all' | 'clay_loam' | 'steep' | 'high_awc')
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  // Filtered fields based on active quick filter chip
+  const filteredFields = useMemo(() => {
+    if (activeFilter === 'clay_loam') {
+      return fields.filter((f) => f.soil.texture.toLowerCase().includes('clay loam'));
+    }
+    if (activeFilter === 'steep') {
+      return fields.filter((f) => f.soil.slope > 8);
+    }
+    if (activeFilter === 'high_awc') {
+      return fields.filter((f) => f.soil.awc >= 140);
+    }
+    return fields;
+  }, [fields, activeFilter]);
+
+  // ViewState state for smooth cinematic orbit
+  const [viewState, setViewState] = useState<MapViewState>({
     longitude: selectedField?.coordinates?.[1] ?? 109.2942,
     latitude: selectedField?.coordinates?.[0] ?? -7.5186,
     zoom: 12.2,
-    pitch: is3D ? 50 : 0,
-    bearing: is3D ? 15 : 0,
-  }), [selectedField?.coordinates, is3D]);
+    pitch: 50,
+    bearing: 15,
+  });
+
+  const isAnimatingRef = useRef(false);
+  const animFrameRef = useRef<number | null>(null);
+  const prevFieldIdRef = useRef(selectedField.id);
+  const viewStateRef = useRef(viewState);
+
+  // Keep viewStateRef synchronised without triggering effects
+  useEffect(() => {
+    viewStateRef.current = viewState;
+  }, [viewState]);
+
+  // Cinematic 360-degree Camera Orbit Animation when selected plot changes
+  useEffect(() => {
+    if (prevFieldIdRef.current === selectedField.id) return;
+    prevFieldIdRef.current = selectedField.id;
+
+    // Automatically open side card when a plot is chosen
+    setIsSideCardOpen(true);
+
+    const startLng = viewStateRef.current.longitude;
+    const startLat = viewStateRef.current.latitude;
+    const startZoom = viewStateRef.current.zoom;
+    const startPitch = viewStateRef.current.pitch ?? 0;
+    const startBearing = viewStateRef.current.bearing ?? 0;
+
+    const targetLng = selectedField.coordinates[1];
+    const targetLat = selectedField.coordinates[0];
+    const targetZoom = 12.6;
+    const targetPitch = is3D ? 55 : 0;
+    const targetBearing = is3D ? startBearing + 360 : 0;
+
+    const duration = 2400; // ~2.4 seconds
+    const startTime = performance.now();
+    isAnimatingRef.current = true;
+
+    const animate = (currentTime: number) => {
+      if (!isAnimatingRef.current) return;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth cubic ease-out: 1 - (1 - t)^3
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      setViewState({
+        longitude: startLng + (targetLng - startLng) * ease,
+        latitude: startLat + (targetLat - startLat) * ease,
+        zoom: startZoom + (targetZoom - startZoom) * ease,
+        pitch: startPitch + (targetPitch - startPitch) * ease,
+        bearing: startBearing + (targetBearing - startBearing) * ease,
+      });
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        isAnimatingRef.current = false;
+      }
+    };
+
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      isAnimatingRef.current = false;
+    };
+  }, [selectedField.id, is3D, selectedField.coordinates]);
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -110,7 +216,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
     object?: ParcelFeature | null;
   } | null>(null);
 
-  const parcelGeoJson = useMemo(() => generateFieldPolygons(fields), [fields]);
+  const parcelGeoJson = useMemo(() => generateFieldPolygons(filteredFields), [filteredFields]);
 
   // Color functions based on active thematic layer
   const getParcelFillColor = (f: Feature<Geometry, ParcelProperties>): [number, number, number, number] => {
@@ -172,7 +278,10 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
       onClick: (info: PickingInfo<Feature<Geometry, ParcelProperties>>) => {
         if (info.object?.properties?.id) {
           const match = fields.find((f) => f.id === info.object?.properties?.id);
-          if (match) onSelectField(match);
+          if (match) {
+            onSelectField(match);
+            setIsSideCardOpen(true);
+          }
         }
       },
     }),
@@ -180,7 +289,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
     // 2. Center pins
     new ScatterplotLayer<FieldProfile>({
       id: 'field-pins',
-      data: fields,
+      data: filteredFields,
       pickable: true,
       opacity: 0.95,
       stroked: true,
@@ -199,14 +308,17 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
         getFillColor: [selectedField?.id],
       },
       onClick: (info: PickingInfo<FieldProfile>) => {
-        if (info.object) onSelectField(info.object);
+        if (info.object) {
+          onSelectField(info.object);
+          setIsSideCardOpen(true);
+        }
       },
     }),
 
     // 3. Floating 3D Text Labels above Plots
     new TextLayer<FieldProfile>({
       id: 'field-labels',
-      data: fields,
+      data: filteredFields,
       pickable: false,
       getPosition: (d: FieldProfile) =>
         d?.coordinates ? [d.coordinates[1], d.coordinates[0], (d.elevationMeters || 50) * 2 + 35] : [109.2942, -7.5186, 135],
@@ -226,22 +338,51 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
   ];
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#E6EBF0] bg-white shadow-xs">
-      {/* Top Banner Info */}
-      <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-1.5 text-xs font-semibold text-[#14232B] backdrop-blur-md shadow-xs">
-          <span className="inline-block h-2 w-2 rounded-full bg-[#237F8E]" />
-          <span>Deck.gl 3D &middot; NASA / ESRI Satellite Basemap</span>
-        </div>
+    <div className="relative h-screen w-screen overflow-hidden bg-[#F4F7FA]">
+      {/* 1. Floating Header */}
+      {onOpenGlossary && onOpenDataSources && onBackToLanding && (
+        <FloatingMapHeader
+          currentLang={currentLang}
+          onToggleLang={onToggleLang}
+          onOpenGlossary={onOpenGlossary}
+          onOpenDataSources={onOpenDataSources}
+          onBackToLanding={onBackToLanding}
+          selectedVillage={selectedField.village}
+        />
+      )}
+
+      {/* 2. Floating Omni-Search Bar with Quick Filter Chips */}
+      <div className="pointer-events-auto fixed top-20 left-4 z-30">
+        <FloatingSearchBar
+          fields={fields}
+          selectedField={selectedField}
+          onSelectField={(f) => {
+            onSelectField(f);
+            setIsSideCardOpen(true);
+          }}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+        />
       </div>
 
-      {/* Top Right Controls: Thematic Layer Switcher & 2D/3D Perspective Toggle */}
-      <div className="absolute top-4 right-4 z-20 flex flex-wrap items-center gap-2">
+      {/* 3. Floating Plot Detail Side Card */}
+      {onOpenAnalysis && (
+        <PlotDetailSideCard
+          field={selectedField}
+          isOpen={isSideCardOpen}
+          onClose={() => setIsSideCardOpen(false)}
+          onOpenAnalysis={onOpenAnalysis}
+          currentLang={currentLang}
+        />
+      )}
+
+      {/* 4. Bottom Right Floating Thematic Layer Switcher & 2D/3D Perspective Toggle */}
+      <div className="pointer-events-auto fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-30 flex flex-wrap items-center gap-2">
         {/* Layer Selector */}
-        <div className="flex items-center rounded-full border border-[#E6EBF0] bg-white/95 p-1 text-[11px] font-semibold text-[#5F6B74] backdrop-blur-md shadow-xs">
+        <div className="flex items-center rounded-full border border-[#E6EBF0] bg-white/95 p-1 text-[11px] font-semibold text-[#5F6B74] backdrop-blur-md shadow-float">
           <button
             onClick={() => setThematicLayer('status')}
-            className={`rounded-full px-3 py-1 transition ${
+            className={`rounded-full px-3 py-1.5 transition ${
               thematicLayer === 'status'
                 ? 'bg-[#237F8E] text-white font-bold shadow-xs'
                 : 'hover:text-[#14232B]'
@@ -251,7 +392,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
           </button>
           <button
             onClick={() => setThematicLayer('slope')}
-            className={`flex items-center gap-1 rounded-full px-3 py-1 transition ${
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition ${
               thematicLayer === 'slope'
                 ? 'bg-[#237F8E] text-white font-bold shadow-xs'
                 : 'hover:text-[#14232B]'
@@ -262,7 +403,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
           </button>
           <button
             onClick={() => setThematicLayer('awc')}
-            className={`flex items-center gap-1 rounded-full px-3 py-1 transition ${
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition ${
               thematicLayer === 'awc'
                 ? 'bg-[#237F8E] text-white font-bold shadow-xs'
                 : 'hover:text-[#14232B]'
@@ -275,16 +416,23 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
 
         {/* 2D/3D Perspective Toggle */}
         <button
-          onClick={() => setIs3D(!is3D)}
-          className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#14232B] backdrop-blur-md transition hover:border-[#237F8E] hover:text-[#237F8E] shadow-xs"
+          onClick={() => {
+            setIs3D(!is3D);
+            setViewState((v) => ({
+              ...v,
+              pitch: is3D ? 0 : 50,
+              bearing: is3D ? 0 : 15,
+            }));
+          }}
+          className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-2 text-xs font-semibold text-[#14232B] backdrop-blur-md transition hover:border-[#237F8E] hover:text-[#237F8E] shadow-float"
         >
           <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
           <span>{is3D ? '3D View' : '2D Plan'}</span>
         </button>
       </div>
 
-      {/* Dynamic Map Legend - AgriPluse Pill Style */}
-      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-3 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-2 text-xs text-[#5F6B74] backdrop-blur-md shadow-xs">
+      {/* 5. Dynamic Map Legend - Floating Pill at Bottom Left */}
+      <div className="pointer-events-auto fixed bottom-18 sm:bottom-6 left-4 sm:left-6 z-30 flex flex-wrap items-center gap-3 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-2 text-xs text-[#5F6B74] backdrop-blur-md shadow-float">
         {thematicLayer === 'status' && (
           <>
             <div className="flex items-center gap-1.5">
@@ -293,7 +441,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
             </div>
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#0891b2]" />
-              <span>Petak Kandidat</span>
+              <span>Petak Terkatalog</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Mountain className="h-3.5 w-3.5 text-amber-600" />
@@ -337,7 +485,7 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
         )}
       </div>
 
-      {/* Hover Tooltip */}
+      {/* 6. Hover Tooltip */}
       {hoverInfo?.object?.properties && (
         <div
           className="pointer-events-none absolute z-30 rounded-2xl border border-[#237F8E]/30 bg-white/95 p-3.5 text-xs text-[#14232B] shadow-card backdrop-blur-md"
@@ -355,14 +503,21 @@ export function FieldMap({ fields, selectedField, onSelectField }: FieldMapProps
         </div>
       )}
 
-      {/* Deck.gl + MapLibre Map Canvas */}
+      {/* 7. Full-Screen Deck.gl + MapLibre Map Canvas */}
       <DeckGL<null>
-        key={`${selectedField?.id}-${is3D ? '3d' : '2d'}`}
-        initialViewState={initialViewState}
+        viewState={viewState}
+        onViewStateChange={(e: ViewStateChangeParameters) => {
+          if (isAnimatingRef.current) {
+            isAnimatingRef.current = false;
+            if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+          }
+          setViewState(e.viewState as MapViewState);
+        }}
         controller={true}
         layers={layers}
       >
         <Map
+          {...viewState}
           mapLib={maplibregl}
           mapStyle={SATELLITE_BASEMAP_STYLE}
         />
