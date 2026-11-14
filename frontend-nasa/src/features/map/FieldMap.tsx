@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import DeckGL from '@deck.gl/react';
 import { ScatterplotLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
 import type { PickingInfo, MapViewState, ViewStateChangeParameters } from '@deck.gl/core';
@@ -11,6 +11,7 @@ import { Mountain, Layers, Droplets, Activity } from 'lucide-react';
 import { FloatingMapHeader } from './FloatingMapHeader';
 import { FloatingSearchBar } from './FloatingSearchBar';
 import { PlotDetailSideCard } from './PlotDetailSideCard';
+import { MapErrorBoundary } from '../../components/MapErrorBoundary';
 
 interface FieldMapProps {
   fields: FieldProfile[];
@@ -147,39 +148,29 @@ export function FieldMap({
   const isAnimatingRef = useRef(false);
   const animFrameRef = useRef<number | null>(null);
   const prevFieldIdRef = useRef(selectedField.id);
-  const viewStateRef = useRef(viewState);
-
-  // Keep viewStateRef synchronised without triggering effects
-  useEffect(() => {
-    viewStateRef.current = viewState;
-  }, [viewState]);
-
-  // Cinematic 360-degree Camera Orbit Animation when selected plot changes
-  useEffect(() => {
-    if (prevFieldIdRef.current === selectedField.id) return;
-    prevFieldIdRef.current = selectedField.id;
-
-    // Automatically open side card when a plot is chosen
+  // Cinematic 360-degree Camera Orbit Animation to any field
+  const animateToField = useCallback((field: FieldProfile) => {
     setIsSideCardOpen(true);
 
-    const startLng = viewStateRef.current.longitude;
-    const startLat = viewStateRef.current.latitude;
-    const startZoom = viewStateRef.current.zoom;
-    const startPitch = viewStateRef.current.pitch ?? 0;
-    const startBearing = viewStateRef.current.bearing ?? 0;
+    const startLng = viewState.longitude;
+    const startLat = viewState.latitude;
+    const startZoom = viewState.zoom;
+    const startPitch = viewState.pitch ?? 0;
+    const startBearing = viewState.bearing ?? 0;
 
-    const targetLng = selectedField.coordinates[1];
-    const targetLat = selectedField.coordinates[0];
+    const targetLng = field.coordinates[1];
+    const targetLat = field.coordinates[0];
     const targetZoom = 12.6;
-    const targetPitch = is3D ? 55 : 0;
+    const targetPitch = is3D ? 50 : 0;
     const targetBearing = is3D ? startBearing + 360 : 0;
 
-    const duration = 2400; // ~2.4 seconds
-    const startTime = performance.now();
+    const duration = 2000; // ~2 seconds
+    let startTime: number | null = null;
     isAnimatingRef.current = true;
 
     const animate = (currentTime: number) => {
       if (!isAnimatingRef.current) return;
+      if (startTime === null) startTime = currentTime;
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
@@ -198,17 +189,35 @@ export function FieldMap({
         animFrameRef.current = requestAnimationFrame(animate);
       } else {
         isAnimatingRef.current = false;
+        // Keep bearing cleanly normalized
+        setViewState((v) => ({ ...v, bearing: targetBearing % 360 }));
       }
     };
 
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     animFrameRef.current = requestAnimationFrame(animate);
+  }, [viewState, is3D]);
 
+  const handleSelectField = useCallback((field: FieldProfile) => {
+    onSelectField(field);
+    animateToField(field);
+  }, [onSelectField, animateToField]);
+
+  // Watch for external selectedField prop changes
+  useEffect(() => {
+    if (prevFieldIdRef.current !== selectedField.id) {
+      prevFieldIdRef.current = selectedField.id;
+      animateToField(selectedField);
+    }
+  }, [selectedField, animateToField]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       isAnimatingRef.current = false;
     };
-  }, [selectedField.id, is3D, selectedField.coordinates]);
+  }, []);
 
   const [hoverInfo, setHoverInfo] = useState<{
     x: number;
@@ -251,6 +260,7 @@ export function FieldMap({
   // Deck.gl Layers with AgriPluse Palette
   const layers = [
     // 1. Agricultural Parcel Boundaries & Extruded 3D Elevation
+    // eslint-disable-next-line react-hooks/refs
     new GeoJsonLayer<ParcelProperties>({
       id: 'field-parcels',
       data: parcelGeoJson,
@@ -279,14 +289,14 @@ export function FieldMap({
         if (info.object?.properties?.id) {
           const match = fields.find((f) => f.id === info.object?.properties?.id);
           if (match) {
-            onSelectField(match);
-            setIsSideCardOpen(true);
+            handleSelectField(match);
           }
         }
       },
     }),
 
     // 2. Center pins
+    // eslint-disable-next-line react-hooks/refs
     new ScatterplotLayer<FieldProfile>({
       id: 'field-pins',
       data: filteredFields,
@@ -309,8 +319,7 @@ export function FieldMap({
       },
       onClick: (info: PickingInfo<FieldProfile>) => {
         if (info.object) {
-          onSelectField(info.object);
-          setIsSideCardOpen(true);
+          handleSelectField(info.object);
         }
       },
     }),
@@ -356,10 +365,7 @@ export function FieldMap({
         <FloatingSearchBar
           fields={fields}
           selectedField={selectedField}
-          onSelectField={(f) => {
-            onSelectField(f);
-            setIsSideCardOpen(true);
-          }}
+          onSelectField={handleSelectField}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
         />
@@ -503,25 +509,26 @@ export function FieldMap({
         </div>
       )}
 
-      {/* 7. Full-Screen Deck.gl + MapLibre Map Canvas */}
-      <DeckGL<null>
-        viewState={viewState}
-        onViewStateChange={(e: ViewStateChangeParameters) => {
-          if (isAnimatingRef.current) {
-            isAnimatingRef.current = false;
-            if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-          }
-          setViewState(e.viewState as MapViewState);
-        }}
-        controller={true}
-        layers={layers}
-      >
-        <Map
-          {...viewState}
-          mapLib={maplibregl}
-          mapStyle={SATELLITE_BASEMAP_STYLE}
-        />
-      </DeckGL>
+      {/* 7. Full-Screen Deck.gl + MapLibre Map Canvas with WebGL Error Boundary */}
+      <MapErrorBoundary>
+        <DeckGL<null>
+          viewState={viewState}
+          onViewStateChange={(e: ViewStateChangeParameters) => {
+            if (isAnimatingRef.current) {
+              isAnimatingRef.current = false;
+              if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+            }
+            setViewState(e.viewState as MapViewState);
+          }}
+          controller={true}
+          layers={layers}
+        >
+          <Map
+            mapLib={maplibregl}
+            mapStyle={SATELLITE_BASEMAP_STYLE}
+          />
+        </DeckGL>
+      </MapErrorBoundary>
     </div>
   );
 }
