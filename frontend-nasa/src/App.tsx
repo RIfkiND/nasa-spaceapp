@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MOCK_FIELDS, MOCK_STRATEGIES } from './api/mock/mockData';
 import { Header } from './components/Header';
 import { FieldMap } from './features/map/FieldMap';
@@ -8,15 +8,32 @@ import { StrategyBoard } from './features/strategy-comparison/StrategyBoard';
 import { EvidenceModal } from './features/evidence-card/EvidenceModal';
 import { GlossaryModal } from './features/glossary/GlossaryModal';
 import { SummaryBrief } from './features/export/SummaryBrief';
+import { DataSourcesModal } from './components/landing/DataSourcesModal';
+import { LandingPage } from './pages/LandingPage';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase } from './types/domain';
+import type { Language } from './types/landing';
 import { isSupabaseConfigured } from './api/supabase';
 import { ArrowRight, Database, Check, Sprout } from 'lucide-react';
 
 export function App() {
+  // Mode: Landing Page (default) vs Interactive Workspace App
+  const [viewMode, setViewMode] = useState<'landing' | 'workspace'>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes('/app') || hash.includes('app') || hash.includes('workspace')) {
+        return 'workspace';
+      }
+    }
+    return 'landing';
+  });
+
+  const [currentLang, setCurrentLang] = useState<Language>('id');
   const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
   const [selectedField, setSelectedField] = useState<FieldProfile>(MOCK_FIELDS[0]);
   const [activeTab, setActiveTab] = useState<'map' | 'profile' | 'comparison' | 'export'>('map');
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
 
   // Climate forcing state
@@ -34,31 +51,76 @@ export function App() {
   // Current strategies for the selected field
   const currentStrategies: Strategy[] = MOCK_STRATEGIES[selectedField.id] || MOCK_STRATEGIES['field-kotayasa-01'];
 
+  // Handle URL hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.includes('app') || hash.includes('workspace')) {
+        setViewMode('workspace');
+      } else if (hash.includes('landing') || hash === '' || hash === '#') {
+        setViewMode('landing');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleOpenWorkspace = () => {
+    setViewMode('workspace');
+    window.location.hash = '#app';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToLanding = () => {
+    setViewMode('landing');
+    window.location.hash = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleLang = () => {
+    setCurrentLang((prev) => (prev === 'id' ? 'en' : 'id'));
+  };
+
+  // If in Landing Mode, render the Landing Page
+  if (viewMode === 'landing') {
+    return (
+      <LandingPage
+        onOpenWorkspace={handleOpenWorkspace}
+        currentLang={currentLang}
+        onToggleLang={handleToggleLang}
+      />
+    );
+  }
+
+  // Otherwise, render the Interactive Workspace
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-gray-900">
+    <div className="min-h-screen bg-[#F4F7FA] text-[#14232B]">
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onOpenGlossary={() => setIsGlossaryOpen(true)}
+        onOpenDataSources={() => setIsDataSourcesOpen(true)}
+        onBackToLanding={handleBackToLanding}
         selectedVillage={selectedField.village}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         {/* Sub-header Context Bar with AgriPluse styling */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Database className="h-4 w-4 text-[#1a7a6d]" />
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#E6EBF0] pb-4">
+          <div className="flex items-center gap-2 text-xs text-[#5F6B74]">
+            <Database className="h-4 w-4 text-[#237F8E]" />
             <span>
               Data Source:{' '}
               {isSupabaseConfigured ? (
-                <strong className="text-[#1a7a6d]">Supabase Cloud (ljxtsjmlqzuebngrfdyd)</strong>
+                <strong className="text-[#237F8E]">Supabase Cloud (ljxtsjmlqzuebngrfdyd)</strong>
               ) : (
-                <strong className="text-[#1a7a6d]">NASA Earth Science Multi-Sensor Assimilation</strong>
+                <strong className="text-[#237F8E]">NASA Earth Science Multi-Sensor Assimilation</strong>
               )}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="inline-block h-2 w-2 rounded-full bg-[#1a7a6d]" />
+          <div className="flex items-center gap-2 text-xs text-[#5F6B74]">
+            <span className="inline-block h-2 w-2 rounded-full bg-[#237F8E]" />
             <span>Serayu Basin Hydrology &middot; WGS84 EPSG:4326</span>
           </div>
         </div>
@@ -68,19 +130,19 @@ export function App() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
               <div>
-                <span className="text-[11px] font-bold tracking-wider text-[#1a7a6d] uppercase">
+                <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
                   / PILOT OBSERVATION SITES
                 </span>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-                  Pilot Agricultural Plots in <span className="text-[#1a7a6d]">Banyumas</span>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#14232B]">
+                  Pilot Agricultural Plots in <span className="text-[#237F8E]">Banyumas</span>
                 </h2>
-                <p className="mt-1 max-w-2xl text-xs text-gray-600">
+                <p className="mt-1 max-w-2xl text-xs text-[#5F6B74]">
                   Representative sites capturing alluvial lowlands, volcanic foothill terraces, and rainfed plateau agro-ecosystems across Central Java.
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('profile')}
-                className="self-start sm:self-auto flex items-center gap-2 rounded-full bg-[#1a7a6d] px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#15665b]"
+                className="self-start sm:self-auto flex items-center gap-2 rounded-full bg-[#237F8E] px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#1B6572]"
               >
                 <span>Inspect Soil & Climatology</span>
                 <ArrowRight className="h-4 w-4" />
@@ -89,7 +151,7 @@ export function App() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[580px]">
               {/* Map Viewport */}
-              <div className="lg:col-span-2 h-full rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-xs">
+              <div className="lg:col-span-2 h-full rounded-2xl overflow-hidden border border-[#E6EBF0] bg-white shadow-xs">
                 <FieldMap
                   fields={fields}
                   selectedField={selectedField}
@@ -100,10 +162,10 @@ export function App() {
               {/* Plot Selector Column */}
               <div className="flex flex-col space-y-3 overflow-y-auto pr-1">
                 <div className="flex items-center justify-between pb-1">
-                  <h3 className="font-bold text-sm text-gray-900">
+                  <h3 className="font-bold text-sm text-[#14232B]">
                     Candidate Study Plots
                   </h3>
-                  <span className="text-[11px] text-gray-500 tabular-nums font-medium">
+                  <span className="text-[11px] text-[#5F6B74] tabular-nums font-medium">
                     {fields.length} plots cataloged
                   </span>
                 </div>
@@ -116,37 +178,37 @@ export function App() {
                       onClick={() => setSelectedField(field)}
                       className={`cursor-pointer rounded-2xl border p-4 transition duration-150 ${
                         isSelected
-                          ? 'border-[#1a7a6d] bg-[#f0f9f6] ring-1 ring-[#1a7a6d] shadow-xs'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? 'border-[#237F8E] bg-[#E3F1F3]/50 ring-1 ring-[#237F8E] shadow-xs'
+                          : 'border-[#E6EBF0] bg-white hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h4 className="font-bold text-sm text-gray-900">{field.name}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <h4 className="font-bold text-sm text-[#14232B]">{field.name}</h4>
+                          <p className="text-xs text-[#5F6B74] mt-0.5">
                             {field.village}, Kec. {field.district}
                           </p>
                         </div>
                         {isSelected && (
-                          <span className="flex items-center gap-1 rounded-full bg-[#e8f5f2] px-2.5 py-0.5 text-[10px] font-bold text-[#1a7a6d] border border-[#bfe3db]">
+                          <span className="flex items-center gap-1 rounded-full bg-[#E3F1F3] px-2.5 py-0.5 text-[10px] font-bold text-[#1B6572] border border-[#237F8E]/20">
                             <Check className="h-3 w-3" /> Active
                           </span>
                         )}
                       </div>
 
                       {/* Clean flat metrics */}
-                      <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-600">
-                        <span>Soil: <strong className="text-gray-900">{field.soil.texture}</strong></span>
-                        <span>Slope: <strong className="text-gray-900 tabular-nums">{field.soil.slope}%</strong></span>
-                        <span>Area: <strong className="text-gray-900 tabular-nums">{field.areaHectares} ha</strong></span>
+                      <div className="mt-3 flex items-center justify-between border-t border-[#E6EBF0]/70 pt-2 text-xs text-[#5F6B74]">
+                        <span>Soil: <strong className="text-[#14232B]">{field.soil.texture}</strong></span>
+                        <span>Slope: <strong className="text-[#14232B] tabular-nums">{field.soil.slope}%</strong></span>
+                        <span>Area: <strong className="text-[#14232B] tabular-nums">{field.areaHectares} ha</strong></span>
                       </div>
                     </div>
                   );
                 })}
 
-                <div className="rounded-2xl border border-[#bfe3db] bg-[#e8f5f2]/70 p-4 text-xs text-[#0f5347]">
-                  <p className="font-bold text-[#0f5347]">Direct Satellite Assimilation</p>
-                  <p className="mt-1 text-[11px] text-gray-600 leading-relaxed">
+                <div className="rounded-2xl border border-[#237F8E]/30 bg-[#E3F1F3]/70 p-4 text-xs text-[#1E5B4F]">
+                  <p className="font-bold text-[#1E5B4F]">Direct Satellite Assimilation</p>
+                  <p className="mt-1 text-[11px] text-[#5F6B74] leading-relaxed">
                     Selecting a plot re-indexes 25-year NASA POWER daily solar irradiance, GPM IMERG dry spells, and SMAP root-zone soil water capacity.
                   </p>
                 </div>
@@ -160,19 +222,19 @@ export function App() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
               <div>
-                <span className="text-[11px] font-bold tracking-wider text-[#1a7a6d] uppercase">
+                <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
                   / PEDOLOGY & HYDROMETEOROLOGY
                 </span>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-                  Soil Profile & NASA <span className="text-[#1a7a6d]">Climatology</span>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#14232B]">
+                  Soil Profile & NASA <span className="text-[#237F8E]">Climatology</span>
                 </h2>
-                <p className="mt-1 max-w-2xl text-xs text-gray-600">
+                <p className="mt-1 max-w-2xl text-xs text-[#5F6B74]">
                   Harmonized Landsat-Sentinel 30m phenology, ECOSTRESS 70m evapotranspiration stress, and 25-year monsoon precipitation patterns.
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('comparison')}
-                className="self-start sm:self-auto flex items-center gap-2 rounded-full bg-[#1a7a6d] px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#15665b]"
+                className="self-start sm:self-auto flex items-center gap-2 rounded-full bg-[#237F8E] px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#1B6572]"
               >
                 <span>Optimize Crop Rotations</span>
                 <ArrowRight className="h-4 w-4" />
@@ -188,19 +250,19 @@ export function App() {
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
               <div>
-                <span className="text-[11px] font-bold tracking-wider text-[#1a7a6d] uppercase">
+                <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
                   / ROTATION OPTIMIZER
                 </span>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-                  Crop Rotation Multi-Objective <span className="text-[#1a7a6d]">Optimizer</span>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#14232B]">
+                  Crop Rotation Multi-Objective <span className="text-[#237F8E]">Optimizer</span>
                 </h2>
-                <p className="mt-1 max-w-2xl text-xs text-gray-600">
+                <p className="mt-1 max-w-2xl text-xs text-[#5F6B74]">
                   Simulating Pareto frontier trade-offs and Conditional Value at Risk (CVaR) under projected ENSO climate conditions.
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('export')}
-                className="self-start sm:self-auto flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-xs font-semibold text-gray-800 shadow-xs transition hover:bg-gray-50 hover:border-[#1a7a6d] hover:text-[#1a7a6d]"
+                className="self-start sm:self-auto flex items-center gap-2 rounded-full border border-[#E6EBF0] bg-white px-5 py-2.5 text-xs font-semibold text-[#14232B] shadow-xs transition hover:bg-[#F7F9FB] hover:border-[#237F8E] hover:text-[#237F8E]"
               >
                 <span>Generate Extension Brief</span>
                 <ArrowRight className="h-4 w-4" />
@@ -236,7 +298,7 @@ export function App() {
         )}
 
         {/* AgriPluse Signature CTA Banner */}
-        <div className="mt-12 overflow-hidden rounded-2xl bg-[#0f5347] p-8 text-white shadow-card">
+        <div className="mt-12 overflow-hidden rounded-2xl bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] p-8 text-white shadow-card">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
@@ -253,7 +315,7 @@ export function App() {
             </div>
             <button
               onClick={() => setActiveTab('export')}
-              className="shrink-0 flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold text-[#0f5347] shadow-sm transition hover:bg-emerald-50"
+              className="shrink-0 flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold text-[#1E5B4F] shadow-sm transition hover:bg-emerald-50"
             >
               <span>Get Consultation Brief</span>
               <ArrowRight className="h-4 w-4" />
@@ -274,15 +336,21 @@ export function App() {
         onClose={() => setEvidenceStrategy(null)}
       />
 
+      <DataSourcesModal
+        isOpen={isDataSourcesOpen}
+        onClose={() => setIsDataSourcesOpen(false)}
+        currentLang={currentLang}
+      />
+
       {/* Footer */}
-      <footer className="mt-16 border-t border-gray-200 bg-white py-8 text-center text-xs text-gray-500">
+      <footer className="mt-16 border-t border-[#E6EBF0] bg-white py-8 text-center text-xs text-[#5F6B74]">
         <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-gray-900">FIELD SHIFT</span>
+            <span className="font-bold text-[#14232B]">FIELD SHIFT</span>
             <span>&middot;</span>
             <span>NASA Space Apps Challenge 2026</span>
           </div>
-          <span className="text-[11px] text-gray-500">
+          <span className="text-[11px] text-[#5F6B74]">
             Sensors: HLS 30m &middot; ECOSTRESS 70m &middot; SMAP L4 9km &middot; GPM IMERG V07 &middot; ISRIC SoilGrids
           </span>
         </div>

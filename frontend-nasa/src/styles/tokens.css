@@ -1,33 +1,54 @@
 :root {
-  /* AgriPluse Design System Primitives */
-  --color-primary: #1a7a6d;             /* Primary Brand Teal */
-  --color-primary-hover: #15665b;       /* Darker Teal Hover */
-  --color-primary-dark: #0f5347;        /* Deep CTA Banner Teal */
-  --color-primary-light: #e8f5f2;       /* Soft Light Teal Tint */
-  --color-primary-border: #bfe3db;      /* Crisp Teal Border */
+  /* Brand & Neutral Tokens (DESIGN.md — Field Shift 2.1) */
+  --color-primary: #237F8E;
+  --color-primary-dark: #1B6572;
+  --color-primary-hover: #1B6572;
+  --color-primary-light: #E3F1F3;
+  --color-primary-border: #bfe3db;
+  --color-leaf: #6BA544;
+  --color-leaf-deep: #1E5B4F;
+  --color-bg: #F4F7FA;
+  --color-bg-page: #F4F7FA;
+  --color-surface: #FFFFFF;
+  --color-bg-surface: #FFFFFF;
+  --color-surface-muted: #F7F9FB;
+  --color-bg-subtle: #F7F9FB;
+  --color-text: #14232B;
+  --color-text-primary: #14232B;
+  --color-text-muted: #5F6B74;
+  --color-text-secondary: #5F6B74;
+  --color-border: #E6EBF0;
+  --color-border-subtle: #F1F5F9;
 
-  /* Neutral Surface & Typography */
-  --color-text-primary: #111827;        /* Near-Black Headings & Primary Text */
-  --color-text-secondary: #4b5563;      /* Balanced Charcoal Secondary Text */
-  --color-text-muted: #9ca3af;          /* Light Muted Gray */
-  --color-bg-page: #f8fafc;             /* Clean Canvas Background */
-  --color-bg-surface: #ffffff;          /* Pure White Cards */
-  --color-bg-subtle: #f1f5f9;           /* Inset Tint */
-  --color-border: #e5e7eb;              /* Default Border */
-  --color-border-subtle: #f3f4f6;       /* Soft Divider */
+  /* Semantics (DESIGN.md 2.2) */
+  --conf-high: #2E7D4F;
+  --conf-medium: #B7791F;
+  --conf-low: #B4443A;
+  --conf-high-bg: rgba(46, 125, 79, 0.12);
+  --conf-medium-bg: rgba(183, 121, 31, 0.12);
+  --conf-low-bg: rgba(180, 68, 58, 0.12);
+  --color-gap: #E8ECEF;
+  --color-dominated: #8A949B;
 
-  /* Semantic & Environmental Accents */
-  --color-accent-amber: #d97706;        /* Soil Fertility & Warm Accent */
-  --color-accent-water: #0891b2;        /* Hydrology & Water Cyan */
-  --color-accent-hazard: #dc2626;       /* Drought Risk & Warning */
-  --color-accent-growth: #16a34a;       /* Active Crop Growth */
+  /* Environmental Accents */
+  --color-accent-amber: #d97706;
+  --color-accent-water: #237F8E;
+  --color-accent-hazard: #B4443A;
+  --color-accent-growth: #6BA544;
 
-  /* Elevation & Shadows */
-  --shadow-subtle: 0 1px 3px rgba(17, 24, 39, 0.05);
-  --shadow-card: 0 4px 16px rgba(17, 24, 39, 0.06);
-  --shadow-float: 0 16px 36px rgba(17, 24, 39, 0.12);
+  /* Strategy Series Colors (DESIGN.md 2.3) */
+  --series-baseline: #237F8E;
+  --series-opt-a: #6BA544;
+  --series-opt-b: #E0A030;
+  --series-4: #7A6FC2;
+  --series-5: #D2694F;
 
-  /* Typography */
-  --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Shadows (DESIGN.md 4) */
+  --shadow-subtle: 0 1px 3px rgba(20, 35, 43, 0.04);
+  --shadow-card: 0 4px 20px rgba(20, 35, 43, 0.05);
+  --shadow-float: 0 10px 30px rgba(20, 35, 43, 0.10);
+
+  /* Fonts (DESIGN.md 3) */
+  --font-heading: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
 }

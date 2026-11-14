@@ -1,10 +1,12 @@
 import React from 'react';
-import { Sprout, BookOpen } from 'lucide-react';
+import { Sprout, BookOpen, Home, Layers } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'map' | 'profile' | 'comparison' | 'export';
   onTabChange: (tab: 'map' | 'profile' | 'comparison' | 'export') => void;
   onOpenGlossary: () => void;
+  onOpenDataSources?: () => void;
+  onBackToLanding?: () => void;
   selectedVillage: string;
 }
 
@@ -12,84 +14,126 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onTabChange,
   onOpenGlossary,
+  onOpenDataSources,
+  onBackToLanding,
   selectedVillage,
 }) => {
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-[#E6EBF0] bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        {/* Brand */}
+        {/* Brand & Landing Link */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e8f5f2] text-[#1a7a6d] shadow-xs">
-            <Sprout className="h-5 w-5" />
-          </div>
-          <div>
+          {onBackToLanding ? (
+            <button
+              onClick={onBackToLanding}
+              className="group flex items-center gap-2 rounded-2xl p-1 -ml-1 text-left hover:bg-[#F7F9FB] transition"
+              title="Kembali ke Beranda Landing Page"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E3F1F3] text-[#237F8E] shadow-xs group-hover:bg-[#237F8E] group-hover:text-white transition">
+                <Sprout className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold tracking-tight text-[#14232B]">
+                    FIELD <span className="text-[#237F8E]">SHIFT</span>
+                  </span>
+                  <span className="rounded-full bg-[#E3F1F3] px-2 py-0.5 text-[10px] font-bold text-[#1B6572] border border-[#237F8E]/20">
+                    Workspace
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#5F6B74]">
+                  ← <span className="underline decoration-dotted">Kembali ke Beranda</span> &middot; <span className="font-semibold text-[#14232B]">{selectedVillage}</span>
+                </p>
+              </div>
+            </button>
+          ) : (
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold tracking-tight text-gray-900">
-                FIELD <span className="text-[#1a7a6d]">SHIFT</span>
-              </span>
-              <span className="rounded-full bg-[#e8f5f2] px-2.5 py-0.5 text-[10px] font-semibold text-[#1a7a6d] border border-[#bfe3db]">
-                NASA Space Apps
-              </span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E3F1F3] text-[#237F8E] shadow-xs">
+                <Sprout className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="text-base font-bold tracking-tight text-[#14232B]">
+                  FIELD <span className="text-[#237F8E]">SHIFT</span>
+                </span>
+                <p className="text-xs text-[#5F6B74]">{selectedVillage}</p>
+              </div>
             </div>
-            <p className="text-xs text-gray-500">
-              Adapting Farms with NASA Data &middot; <span className="font-medium text-gray-800">{selectedVillage}</span>
-            </p>
-          </div>
+          )}
         </div>
 
         {/* Navigation Tabs - AgriPluse Pill Switcher */}
-        <nav className="flex items-center rounded-full border border-gray-200 bg-gray-50 p-1 text-xs font-medium">
+        <nav className="flex items-center rounded-full border border-[#E6EBF0] bg-[#F7F9FB] p-1 text-xs font-semibold">
           <button
             onClick={() => onTabChange('map')}
             className={`rounded-full px-4 py-1.5 transition duration-150 ${
               activeTab === 'map'
-                ? 'bg-[#1a7a6d] text-white shadow-xs font-semibold'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-[#237F8E] text-white shadow-xs font-bold'
+                : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Overview & Map
+            Peta & Petak
           </button>
           <button
             onClick={() => onTabChange('profile')}
             className={`rounded-full px-4 py-1.5 transition duration-150 ${
               activeTab === 'profile'
-                ? 'bg-[#1a7a6d] text-white shadow-xs font-semibold'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-[#237F8E] text-white shadow-xs font-bold'
+                : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Soil & Climatology
+            Profil Lahan & Iklim
           </button>
           <button
             onClick={() => onTabChange('comparison')}
             className={`rounded-full px-4 py-1.5 transition duration-150 ${
               activeTab === 'comparison'
-                ? 'bg-[#1a7a6d] text-white shadow-xs font-semibold'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-[#237F8E] text-white shadow-xs font-bold'
+                : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Rotation Optimizer
+            Optimasi Rotasi
           </button>
           <button
             onClick={() => onTabChange('export')}
             className={`rounded-full px-4 py-1.5 transition duration-150 ${
               activeTab === 'export'
-                ? 'bg-[#1a7a6d] text-white shadow-xs font-semibold'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-[#237F8E] text-white shadow-xs font-bold'
+                : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Consultation Brief
+            Lembar Penyuluh
           </button>
         </nav>
 
-        {/* Right CTA Button - AgriPluse Pill Style */}
+        {/* Right CTA Buttons */}
         <div className="flex items-center gap-2">
+          {onOpenDataSources && (
+            <button
+              onClick={onOpenDataSources}
+              className="hidden md:flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs transition hover:border-[#237F8E] hover:text-[#237F8E]"
+            >
+              <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
+              <span>Data & Sumber</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenGlossary}
-            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-xs transition hover:border-[#1a7a6d] hover:text-[#1a7a6d]"
+            className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs transition hover:border-[#237F8E] hover:text-[#237F8E]"
           >
-            <BookOpen className="h-4 w-4 text-[#1a7a6d]" />
-            <span>NASA Glossary</span>
+            <BookOpen className="h-3.5 w-3.5 text-[#237F8E]" />
+            <span>Glosarium</span>
           </button>
+
+          {onBackToLanding && (
+            <button
+              onClick={onBackToLanding}
+              className="flex items-center gap-1.5 rounded-full bg-[#E3F1F3] px-3.5 py-1.5 text-xs font-bold text-[#1B6572] shadow-xs hover:bg-[#237F8E] hover:text-white transition"
+            >
+              <Home className="h-3.5 w-3.5" />
+              <span>Beranda</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
