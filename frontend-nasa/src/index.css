@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Leaflet map styles */
-@import "leaflet/dist/leaflet.css";
+/* MapLibre GL styles */
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -16,12 +16,11 @@ body {
   color: #f1f5f9;
 }
 
-/* Fix Leaflet map z-index and container sizing */
-.leaflet-container {
+/* Map canvas container */
+.maplibregl-map {
   width: 100%;
   height: 100%;
   border-radius: 0.75rem;
-  z-index: 10;
 }
 
 /* Custom scrollbars */
