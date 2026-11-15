@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sprout, BookOpen, Home, Layers } from 'lucide-react';
+import { Sprout, BookOpen, Home, Layers, Globe } from 'lucide-react';
+import type { Language } from '../types/landing';
 
 interface HeaderProps {
   activeTab: 'map' | 'profile' | 'comparison' | 'export';
@@ -8,6 +9,8 @@ interface HeaderProps {
   onOpenDataSources?: () => void;
   onBackToLanding?: () => void;
   selectedVillage: string;
+  currentLang?: Language;
+  onToggleLang?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,7 +20,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDataSources,
   onBackToLanding,
   selectedVillage,
+  currentLang = 'id',
+  onToggleLang,
 }) => {
+  const isId = currentLang === 'id';
+
   return (
     <header className="sticky top-0 z-40 border-b border-[#E6EBF0] bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -27,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onBackToLanding}
               className="group flex items-center gap-2 rounded-2xl p-1 -ml-1 text-left hover:bg-[#F7F9FB] transition"
-              title="Kembali ke Beranda Landing Page"
+              title={isId ? 'Kembali ke Beranda Landing Page' : 'Back to Home Landing Page'}
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E3F1F3] text-[#237F8E] shadow-xs group-hover:bg-[#237F8E] group-hover:text-white transition">
                 <Sprout className="h-5 w-5" />
@@ -42,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-[#5F6B74]">
-                  ← <span className="underline decoration-dotted">Kembali ke Beranda</span> &middot; <span className="font-semibold text-[#14232B]">{selectedVillage}</span>
+                  ← <span className="underline decoration-dotted">{isId ? 'Kembali ke Beranda' : 'Back to Home'}</span> &middot; <span className="font-semibold text-[#14232B]">{selectedVillage}</span>
                 </p>
               </div>
             </button>
@@ -71,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            1. Peta & Petak
+            1. {isId ? 'Peta & Petak' : 'Map & Plots'}
           </button>
           <button
             onClick={() => onTabChange('profile')}
@@ -81,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            2. Profil Lahan & Iklim
+            2. {isId ? 'Profil Lahan & Iklim' : 'Soil & Climatology'}
           </button>
           <button
             onClick={() => onTabChange('comparison')}
@@ -91,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            3. Optimasi Rotasi
+            3. {isId ? 'Optimasi Rotasi' : 'Rotation Optimizer'}
           </button>
           <button
             onClick={() => onTabChange('export')}
@@ -101,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            4. Lembar Konsultasi
+            4. {isId ? 'Lembar Konsultasi' : 'Consultation Brief'}
           </button>
         </nav>
 
@@ -113,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="hidden md:flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs transition hover:border-[#237F8E] hover:text-[#237F8E]"
             >
               <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
-              <span>Data & Sumber</span>
+              <span>{isId ? 'Katalog Data (26)' : 'Data Catalog (26)'}</span>
             </button>
           )}
 
@@ -122,8 +129,20 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#14232B] shadow-xs transition hover:border-[#237F8E] hover:text-[#237F8E]"
           >
             <BookOpen className="h-3.5 w-3.5 text-[#237F8E]" />
-            <span>Glosarium</span>
+            <span>{isId ? 'Glosarium' : 'Glossary'}</span>
           </button>
+
+          {onToggleLang && (
+            <button
+              onClick={onToggleLang}
+              className="flex items-center gap-1 rounded-full border border-[#E6EBF0] bg-white px-3 py-1.5 text-xs font-bold text-[#14232B] shadow-xs hover:border-[#237F8E] transition"
+              aria-label="Ganti Bahasa"
+              title={isId ? 'Ganti ke Bahasa Inggris' : 'Switch to Indonesian'}
+            >
+              <Globe className="h-3.5 w-3.5 text-[#237F8E]" />
+              <span className="tabular-nums uppercase">{currentLang}</span>
+            </button>
+          )}
 
           {onBackToLanding && (
             <button
@@ -131,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1.5 rounded-full bg-[#E3F1F3] px-3.5 py-1.5 text-xs font-bold text-[#1B6572] shadow-xs hover:bg-[#237F8E] hover:text-white transition"
             >
               <Home className="h-3.5 w-3.5" />
-              <span>Beranda</span>
+              <span>{isId ? 'Beranda' : 'Home'}</span>
             </button>
           )}
         </div>

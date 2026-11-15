@@ -89,7 +89,7 @@ export function CtaFooterSection({ onOpenWorkspace, currentLang = 'en' }: CtaFoo
             <div className="shrink-0 w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white px-8 py-4 text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition active:scale-[0.98] cursor-pointer"
               >
                 <span>{isId ? 'Buka Field Shift Workspace' : 'Launch Field Shift Workspace'}</span>
@@ -121,7 +121,7 @@ export function CtaFooterSection({ onOpenWorkspace, currentLang = 'en' }: CtaFoo
 
             {/* Attribution & Copyright */}
             <div className="flex flex-wrap items-center justify-center gap-4 text-[#5F6B74] font-medium text-[11px] sm:text-xs">
-              <span>{isId ? 'Didukung oleh NASA POWER, SMAP, ECOSTRESS & MODIS' : 'Powered by NASA POWER, SMAP, ECOSTRESS & MODIS'}</span>
+              <span>{isId ? 'Didukung oleh NASA POWER, SRTM & AppEEARS (HLS, SMAP, ECOSTRESS)' : 'Powered by NASA POWER, SRTM & AppEEARS (HLS, SMAP, ECOSTRESS)'}</span>
               <span className="hidden sm:inline text-slate-300">|</span>
               <span>&copy; {new Date().getFullYear()} Field Shift. {isId ? 'Inisiatif Data Terbuka.' : 'Open Data Initiative.'}</span>
             </div>

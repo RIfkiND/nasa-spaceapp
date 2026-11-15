@@ -65,9 +65,15 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
             </span>
             <span className="text-xs font-semibold text-[#5F6B74]">mm/m</span>
           </div>
-          <p className="mt-0.5 text-xs text-[#5F6B74]">Asimilasi SoilGrids & SMAP L4</p>
+          <p className="mt-0.5 text-xs text-[#5F6B74]">SoilGrids 0–30 cm &middot; Saxton &amp; Rawls (2006)</p>
           <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] text-xs font-medium text-[#1E5B4F] flex items-center gap-1">
-            <span>Cadangan lengas perakaran optimal</span>
+            <span>
+              {field.soil.awc >= 140
+                ? 'Cadangan tinggi: membawa surplus musim hujan ke MT3'
+                : field.soil.awc >= 100
+                ? 'Kapasitas simpan moderat antar musim'
+                : 'Kapasitas rendah: tanaman musim kemarau butuh irigasi'}
+            </span>
           </div>
         </div>
 
@@ -91,7 +97,11 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
             <strong className="font-mono tabular-nums text-[#14232B]">{field.elevationMeters} mdpl</strong> &middot; Risiko Erosi {field.soil.erosionRisk}
           </p>
           <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] text-xs font-medium text-[#B7791F]">
-            {field.soil.slope > 10 ? 'Wajib terasering & penutup tanah' : 'Dataran aman limpasan erosi'}
+            {field.soil.erosionRisk === 'High'
+              ? 'Lereng curam: hindari bera terbuka, jaga tutupan tanah'
+              : field.soil.erosionRisk === 'Moderate'
+              ? 'Hindari periode bera panjang di musim hujan'
+              : 'Lereng landai: erosi terutama dari bera saat hujan lebat'}
           </div>
         </div>
 
@@ -126,15 +136,15 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
           <div>
             <h3 className="font-bold text-[#14232B] text-base flex items-center gap-2">
               <Thermometer className="h-4.5 w-4.5 text-[#B7791F]" />
-              Siklus Klimatologi Dekadal (NASA POWER &middot; GPM IMERG V07 &middot; SMAP)
+              Siklus Klimatologi Bulanan (NASA POWER &middot; SMAP)
             </h3>
             <p className="text-xs text-[#5F6B74] mt-0.5">
-              Presipitasi bulanan, batas suhu ekstrem, dan estimasi lengas tanah 0–100cm di Lembah Serayu
+              Presipitasi bulanan, batas suhu ekstrem, dan estimasi lengas tanah di grid sel NASA POWER
             </p>
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-[#E3F1F3] px-3.5 py-1 text-xs text-[#1B6572] font-mono tabular-nums font-bold border border-[#237F8E]/25">
-              2000–2025 Terkalibrasi
+              1991–2025 NASA POWER
             </span>
           </div>
         </div>
@@ -241,7 +251,12 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
         </div>
 
         <div className="mt-6 h-56 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          {field.ndviTimeSeries.length === 0 ? (
+            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center text-xs text-[#5F6B74]">
+              HLS 30 m NDVI untuk petak ini sedang diekstraksi oleh NASA AppEEARS. Grafik akan otomatis terisi saat data selesai diproses.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={field.ndviTimeSeries} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="ndviGradient" x1="0" y1="0" x2="0" y2="1">
@@ -304,6 +319,7 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
               />
             </AreaChart>
           </ResponsiveContainer>
+          )}
         </div>
       </div>
 

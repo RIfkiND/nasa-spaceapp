@@ -38,10 +38,10 @@ const CARDS: ValueCard[] = [
     subtitleEn: 'Spaceborne Ingestion',
     subtitleId: 'Ingesti Antariksa',
     icon: Satellite,
-    tagsEn: ['NASA POWER', 'SMAP Radar', 'ECOSTRESS LST', 'MODIS NDVI', 'CHIRPS Rain'],
-    tagsId: ['NASA POWER', 'Radar SMAP', 'ECOSTRESS LST', 'MODIS NDVI', 'Hujan CHIRPS'],
-    descEn: 'We assimilate 26 audited NASA satellite layers into a 30m gridded daily feed — capturing sunlight, soil moisture, and evapotranspiration without ground sensors.',
-    descId: 'Kami mengasimilasi 26 lapisan satelit NASA teruji ke dalam data harian grid 30m — memantau sinar matahari, kelembapan tanah, dan evapotranspirasi tanpa sensor fisik di tanah.',
+    tagsEn: ['NASA POWER', 'SRTM', 'SoilGrids', 'HLS NDVI', 'SMAP Radar', 'ONI / DMI'],
+    tagsId: ['NASA POWER', 'SRTM', 'SoilGrids', 'HLS NDVI', 'Radar SMAP', 'ONI / DMI'],
+    descEn: 'NASA POWER daily climate since 1991, SRTM terrain and ENSO/IOD indices drive the analysis today; HLS NDVI and SMAP soil moisture are being added through NASA AppEEARS.',
+    descId: 'Iklim harian NASA POWER sejak 1991, medan SRTM, dan indeks ENSO/IOD menjadi pendorong analisis kami; HLS NDVI dan lengas tanah SMAP diintegrasikan via NASA AppEEARS.',
     isDark: false,
   },
   {
@@ -64,10 +64,10 @@ const CARDS: ValueCard[] = [
     subtitleEn: 'Auditable Science',
     subtitleId: 'Sains yang Dapat Diaudit',
     icon: FlaskConical,
-    tagsEn: ['Pareto Optimal', 'Auditable Weights', 'Uncertainty Bounds', '100% Open Data', 'Peer-Reviewed'],
-    tagsId: ['Pareto Optimal', 'Bobot Terbuka', 'Rentang Ketidakpastian', '100% Sains Terbuka', 'Peer-Reviewed'],
-    descEn: 'No black-box AI scores. Every weight and confidence interval is transparent, backed by agronomic field trials, and fully verifiable by agricultural researchers.',
-    descId: 'Bukan skor AI black-box. Setiap bobot dan interval keyakinan transparan, didukung uji coba agronomi lapangan, dan dapat diverifikasi sepenuhnya oleh peneliti pertanian.',
+    tagsEn: ['Pareto Optimal', 'Auditable Weights', 'Stated Limitations', '100% Open Data', 'Open Source'],
+    tagsId: ['Pareto Optimal', 'Bobot Terbuka', 'Batasan Transparan', '100% Sains Terbuka', 'Open Source'],
+    descEn: 'No black-box AI scores. Every weight and confidence interval is transparent, documented with its assumptions and limits, and reproducible from open NASA and USDA data.',
+    descId: 'Bukan skor AI black-box. Setiap bobot dan rentang keyakinan transparan, terdokumentasi lengkap dengan batasan ilmiahnya, serta dapat direproduksi dari data terbuka NASA.',
     isDark: false,
   },
   {
@@ -77,10 +77,10 @@ const CARDS: ValueCard[] = [
     subtitleEn: 'Field-Ready Delivery',
     subtitleId: 'Penyampaian Siap Lapangan',
     icon: Sprout,
-    tagsEn: ['3,150+ Plots', '14,250 Ha', '+32% Yield', 'Banyumas Basin', 'Extension Ready'],
-    tagsId: ['3.150+ Petak', '14.250 Ha', '+32% Panen', 'Basin Banyumas', 'Siap Penyuluh'],
-    descEn: 'Translated into actionable planting calendars and water efficiency guidelines ready for field extension workers and farmer cooperatives on the ground.',
-    descId: 'Diterjemahkan menjadi kalender tanam siap aksi dan panduan efisiensi air yang siap diterapkan oleh penyuluh lapangan serta koperasi tani daerah.',
+    tagsEn: ['7 Banyumas Plots', 'Evidence Cards', 'PPL Consultation', 'Extension Ready'],
+    tagsId: ['7 Petak Banyumas', 'Kartu Bukti', 'Konsultasi PPL', 'Siap Penyuluh'],
+    descEn: 'Translated into actionable planting calendars and water efficiency guidelines ready for field extension workers (PPL) and farmer groups on the ground.',
+    descId: 'Diterjemahkan menjadi kalender tanam siap aksi dan panduan efisiensi air untuk penyuluh pertanian lapangan (PPL) dan kelompok tani.',
     isDark: false,
   },
 ];
@@ -246,7 +246,7 @@ export function WhyFieldShiftSection({ onOpenWorkspace, currentLang = 'en' }: Wh
                         </p>
                         <button
                           type="button"
-                          onClick={onOpenWorkspace}
+                          onClick={() => onOpenWorkspace()}
                           className="mt-3.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#237F8E] hover:text-[#1B6572] transition cursor-pointer"
                         >
                           <span>{isId ? 'Pelajari Arsitektur' : 'Explore Architecture'}</span>

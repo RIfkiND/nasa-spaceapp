@@ -61,14 +61,14 @@ const STEPS: StepItem[] = [
     titleId: 'Analisis Kondisi Agro-Klimatik',
     shortTitleEn: 'Analyze Telemetry',
     shortTitleId: 'Analisis Telemetri',
-    descEn: 'Field Shift ingests NASA POWER solar flux, SMAP 0–100cm root moisture, ECOSTRESS thermal stress, and Sentinel-2 NDVI canopy vigor into a unified dashboard.',
-    descId: 'Field Shift mengasimilasi radiasi matahari NASA POWER, kelembapan perakaran SMAP 0–100cm, stres termal ECOSTRESS, dan vigor kanopi NDVI ke dalam satu dasbor terpadu.',
+    descEn: 'Field Shift combines NASA POWER daily climate (1991–2025), SRTM slope, SoilGrids soil texture and ENSO/IOD indices with HLS NDVI into a unified dashboard.',
+    descId: 'Field Shift memadukan iklim harian NASA POWER (1991–2025), lereng SRTM, tekstur tanah SoilGrids, dan indeks ENSO/IOD dengan HLS NDVI dalam satu dasbor.',
     icon: BarChart3,
     image:
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80',
     alt: 'Satellite remote sensing data overlaying farm topography',
-    metricEn: '4 Orbit Datasets',
-    metricId: '4 Dataset Satelit',
+    metricEn: '35 Years NASA POWER',
+    metricId: '35 Tahun NASA POWER',
   },
   {
     id: 'compare',
@@ -79,14 +79,14 @@ const STEPS: StepItem[] = [
     titleId: 'Simulasikan Rotasi Tanaman Adaptif',
     shortTitleEn: 'Compare & Decide',
     shortTitleId: 'Bandingkan & Putuskan',
-    descEn: 'Simulate alternative rotation paths against historical worst-case El Niño and drought seasons. Identify Pareto-optimal crop sequences that maximize yield and soil nitrogen.',
-    descId: 'Simulasikan jalur rotasi alternatif terhadap skenario historis terburuk El Niño dan kekeringan. Identifikasi urutan tanaman Pareto-optimal yang memaksimalkan hasil dan nitrogen tanah.',
+    descEn: 'Simulate alternative rotation paths against historical worst-case El Niño and drought seasons. Identify Pareto-optimal crop sequences that balance irrigation need, living soil cover and erosion.',
+    descId: 'Simulasikan jalur rotasi alternatif terhadap skenario historis terburuk El Niño dan kekeringan. Identifikasi urutan tanaman Pareto-optimal yang menyeimbangkan irigasi, tutupan tanah, dan erosi.',
     icon: GitCompareArrows,
     image:
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80',
     alt: 'Interactive risk-weighted crop rotation comparison matrix',
-    metricEn: '+32% Yield Resilience',
-    metricId: '+32% Ketahanan Panen',
+    metricEn: '96% vs 67% Living Cover',
+    metricId: '96% vs 67% Tutupan Hidup',
   },
   {
     id: 'execute',
@@ -207,7 +207,7 @@ export function HowItWorksSection({ onOpenWorkspace, currentLang = 'en' }: HowIt
 
                         <button
                           type="button"
-                          onClick={onOpenWorkspace}
+                          onClick={() => onOpenWorkspace()}
                           className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white transition active:scale-95 shadow-xs hover:shadow cursor-pointer"
                           title={isId ? 'Buka di Workspace' : 'Open in Workspace'}
                         >
@@ -232,7 +232,7 @@ export function HowItWorksSection({ onOpenWorkspace, currentLang = 'en' }: HowIt
                         </span>
                         <button
                           type="button"
-                          onClick={onOpenWorkspace}
+                          onClick={() => onOpenWorkspace()}
                           className="inline-flex items-center gap-1.5 text-[#237F8E] hover:text-[#1B6572] font-bold transition cursor-pointer"
                         >
                           <span>{isId ? 'Buka Simulator' : 'Launch Simulator'}</span>
@@ -299,7 +299,7 @@ export function HowItWorksSection({ onOpenWorkspace, currentLang = 'en' }: HowIt
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onOpenWorkspace}
+              onClick={() => onOpenWorkspace()}
               aria-label={isId ? 'Buka Field Shift Workspace' : 'Launch Field Shift Workspace'}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-[#237F8E] text-white hover:bg-[#1B6572] transition shadow-2xs"
             >

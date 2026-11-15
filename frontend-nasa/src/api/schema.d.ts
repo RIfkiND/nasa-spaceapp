@@ -21,16 +21,501 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rotations/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sites */
+        get: operations["sites_api_v1_rotations_sites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rotations/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare Rotations */
+        post: operations["compare_rotations_api_v1_rotations_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Fields */
+        get: operations["list_fields_api_v1_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/fields/{field_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Field */
+        get: operations["get_field_api_v1_fields__field_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** HealthResponse */
-        HealthResponse: {
+        /** AnalogsOut */
+        AnalogsOut: {
+            /** Grouping */
+            grouping: string;
+            /** Phase */
+            phase: string;
+            /** Years */
+            years: number[];
+        };
+        /** ApiResponse[ComparisonOut] */
+        ApiResponse_ComparisonOut_: {
+            /** Success */
+            success: boolean;
+            data?: components["schemas"]["ComparisonOut"] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[FieldProfileOut] */
+        ApiResponse_FieldProfileOut_: {
+            /** Success */
+            success: boolean;
+            data?: components["schemas"]["FieldProfileOut"] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[HealthData] */
+        ApiResponse_HealthData_: {
+            /** Success */
+            success: boolean;
+            data?: components["schemas"]["HealthData"] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[list[FieldProfileOut]] */
+        ApiResponse_list_FieldProfileOut__: {
+            /** Success */
+            success: boolean;
+            /** Data */
+            data?: components["schemas"]["FieldProfileOut"][] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[list[SiteInfo]] */
+        ApiResponse_list_SiteInfo__: {
+            /** Success */
+            success: boolean;
+            /** Data */
+            data?: components["schemas"]["SiteInfo"][] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ClimateMonth */
+        ClimateMonth: {
+            /** Month */
+            month: string;
+            /**
+             * Rainfall
+             * @description Mean monthly rainfall 1991-2020, mm
+             */
+            rainfall: number;
+            /** Tempmin */
+            tempMin: number;
+            /** Tempmax */
+            tempMax: number;
+            /**
+             * Soilmoisture
+             * @description Root-zone soil wetness, 0-1
+             */
+            soilMoisture: number;
+        };
+        /** CompareRequest */
+        CompareRequest: {
+            /**
+             * Site
+             * @example nevada_mason_valley
+             */
+            site: string;
+            priorities?: components["schemas"]["Priorities"];
+            /**
+             * Risk Aversion
+             * @description 0 = average years only, 1 = worst 20 % only
+             * @default 0.5
+             */
+            risk_aversion: number;
+            /**
+             * Enso Phase
+             * @description Default: latest observed
+             */
+            enso_phase?: ("el_nino" | "la_nina" | "neutral") | null;
+            /**
+             * Iod Phase
+             * @description Default: latest observed
+             */
+            iod_phase?: ("positive" | "negative" | "neutral") | null;
+            /**
+             * Field Id
+             * @description Use this field's slope and soil water capacity (from /api/v1/fields)
+             */
+            field_id?: string | null;
+            scenario?: components["schemas"]["ScenarioIn"];
+            /**
+             * Baseline
+             * @description Farmer's current rotation: one {season: crop} object per year; seasons left out are fallow. Replaces the default baseline.
+             */
+            baseline?: {
+                [key: string]: string;
+            }[] | null;
+        };
+        /** ComparisonOut */
+        ComparisonOut: {
+            /** Site */
+            site: string;
+            analogs: components["schemas"]["AnalogsOut"];
+            /** Weights */
+            weights: {
+                [key: string]: number;
+            };
+            /** Risk Aversion */
+            risk_aversion: number;
+            /** Strategies */
+            strategies: components["schemas"]["StrategyOut"][];
+            field_ctx?: components["schemas"]["FieldContextOut"] | null;
+            scenario: components["schemas"]["ScenarioOut"];
+            /** Disclaimer */
+            disclaimer: string;
+        };
+        /** DataAvailability */
+        DataAvailability: {
+            /** Hasobservedrotation */
+            hasObservedRotation: boolean;
+            /** Hasfieldsoilsurvey */
+            hasFieldSoilSurvey: boolean;
+            /** Hassatellitendvi */
+            hasSatelliteNdvi: boolean;
+            /** Hasdailyprecipitation */
+            hasDailyPrecipitation: boolean;
+            /**
+             * Overallconfidence
+             * @enum {string}
+             */
+            overallConfidence: "HIGH" | "MODERATE" | "LOW";
+            /** Missingdatanotes */
+            missingDataNotes: string[];
+        };
+        /** ErrorInfo */
+        ErrorInfo: {
+            /**
+             * Code
+             * @description Stable machine-readable error code
+             */
+            code: string;
+            /**
+             * Message
+             * @description Human-readable message, safe to show to users
+             */
+            message: string;
+            /**
+             * Details
+             * @description Field-level validation details
+             */
+            details?: {
+                [key: string]: unknown;
+            }[] | null;
+        };
+        /** EvidenceCardOut */
+        EvidenceCardOut: {
+            /** Why */
+            why: string;
+            /** Evidence */
+            evidence: string[];
+            /** Benefits */
+            benefits: string[];
+            /** Gaps */
+            gaps: string[];
+            /** Risks For Local Review */
+            risks_for_local_review: string[];
+            /**
+             * Confidence
+             * @enum {string}
+             */
+            confidence: "low" | "medium" | "high";
+            /** Confidence Reasons */
+            confidence_reasons: string[];
+        };
+        /** FieldContextOut */
+        FieldContextOut: {
+            /** Field Id */
+            field_id: string;
+            /** Slope Pct */
+            slope_pct: number;
+            /** Awc Mm Per M */
+            awc_mm_per_m: number;
+        };
+        /** FieldProfileOut */
+        FieldProfileOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Regency */
+            regency: string;
+            /** District */
+            district: string;
+            /** Village */
+            village: string;
+            /**
+             * Coordinates
+             * @description [lat, lng]
+             */
+            coordinates: number[];
+            /** Elevationmeters */
+            elevationMeters: number;
+            /** Areahectares */
+            areaHectares?: number | null;
+            /** Currentrotation */
+            currentRotation: string[];
+            soil: components["schemas"]["FieldSoil"];
+            /** Climatehistory */
+            climateHistory: components["schemas"]["ClimateMonth"][];
+            /** Ndvitimeseries */
+            ndviTimeSeries: components["schemas"]["NdviPoint"][];
+            dataAvailability: components["schemas"]["DataAvailability"];
+            provenance: components["schemas"]["Provenance"];
+        };
+        /** FieldSoil */
+        FieldSoil: {
+            /** Type */
+            type: string;
+            /** Texture */
+            texture: string;
+            /** Organicmatter */
+            organicMatter: string;
+            /**
+             * Awc
+             * @description Available water capacity, mm per m of soil
+             */
+            awc: number;
+            /**
+             * Slope
+             * @description Slope, percent rise
+             */
+            slope: number;
+            /**
+             * Erosionrisk
+             * @enum {string}
+             */
+            erosionRisk: "Low" | "Moderate" | "High";
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HealthData */
+        HealthData: {
             /** Status */
             status: string;
             /** Env */
             env: string;
+        };
+        /** MetricsOut */
+        MetricsOut: {
+            /** Irrigation Mean Mm */
+            irrigation_mean_mm: number;
+            /** Irrigation Cvar Mm */
+            irrigation_cvar_mm: number;
+            /** Cover Share */
+            cover_share: number;
+            /** Legume Share */
+            legume_share: number;
+            /** Families */
+            families: number;
+            /** Pest Break Share */
+            pest_break_share: number;
+            /** Erosion Index */
+            erosion_index: number;
+            /** Soil Health */
+            soil_health: number;
+        };
+        /** NdviPoint */
+        NdviPoint: {
+            /** Month */
+            month: string;
+            /** Ndvi */
+            ndvi: number;
+            /**
+             * Phase
+             * @enum {string}
+             */
+            phase: "Land Prep" | "Vegetative" | "Reproductive" | "Fallow (Bera)";
+            /** Observations */
+            observations: number;
+        };
+        /** PageMeta */
+        PageMeta: {
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+        };
+        /** Priorities */
+        Priorities: {
+            /**
+             * Water
+             * @description Weight for low irrigation need
+             * @default 1
+             */
+            water: number;
+            /**
+             * Soil Health
+             * @default 1
+             */
+            soil_health: number;
+            /**
+             * Erosion
+             * @description Weight for low erosion exposure
+             * @default 1
+             */
+            erosion: number;
+            /**
+             * Pest Break
+             * @default 0.5
+             */
+            pest_break: number;
+        };
+        /** Provenance */
+        Provenance: {
+            /** Elevationslope */
+            elevationSlope: string;
+            /** Soil */
+            soil: string;
+            /** Climate */
+            climate: string;
+            /** Ndvi */
+            ndvi?: string | null;
+        };
+        /** ScenarioIn */
+        ScenarioIn: {
+            /**
+             * Rain Anomaly Pct
+             * @description Rainfall change, %
+             * @default 0
+             */
+            rain_anomaly_pct: number;
+            /**
+             * Temp Delta C
+             * @description Air temperature change, C
+             * @default 0
+             */
+            temp_delta_c: number;
+        };
+        /** ScenarioOut */
+        ScenarioOut: {
+            /** Rain Anomaly Pct */
+            rain_anomaly_pct: number;
+            /** Temp Delta C */
+            temp_delta_c: number;
+        };
+        /** SiteInfo */
+        SiteInfo: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Seasons */
+            seasons: {
+                [key: string]: number;
+            };
+            /** Crops */
+            crops: string[];
+            /** Crop Labels */
+            crop_labels: {
+                [key: string]: string;
+            };
+            /** Latest Enso Phase */
+            latest_enso_phase: string;
+            /** Latest Iod Phase */
+            latest_iod_phase: string;
+            /** Sources */
+            sources: string[];
+        };
+        /** StrategyOut */
+        StrategyOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "baseline" | "alternative";
+            /** Sequence */
+            sequence: {
+                [key: string]: string;
+            }[];
+            metrics: components["schemas"]["MetricsOut"];
+            /** Utilities */
+            utilities: {
+                [key: string]: number;
+            };
+            /** Score */
+            score: number;
+            /** Rank */
+            rank: number;
+            /** Pareto Optimal */
+            pareto_optimal: boolean;
+            card: components["schemas"]["EvidenceCardOut"];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -56,7 +541,124 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthResponse"];
+                    "application/json": components["schemas"]["ApiResponse_HealthData_"];
+                };
+            };
+        };
+    };
+    sites_api_v1_rotations_sites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_SiteInfo__"];
+                };
+            };
+        };
+    };
+    compare_rotations_api_v1_rotations_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ComparisonOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_fields_api_v1_fields_get: {
+        parameters: {
+            query?: {
+                site?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_FieldProfileOut__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_field_api_v1_fields__field_id__get: {
+        parameters: {
+            query?: {
+                site?: string;
+            };
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_FieldProfileOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

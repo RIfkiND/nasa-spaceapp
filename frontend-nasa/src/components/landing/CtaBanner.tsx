@@ -41,15 +41,15 @@ interface CtaBannerProps {
                 </h2>
                 <p className="mt-2 text-xs sm:text-sm text-white/95 leading-relaxed font-normal">
                   {isId
-                    ? 'Pilih petak sawah di pilot Banyumas, eksplorasi kurva fenologi NDVI dan stres air ECOSTRESS, lalu susun rencana rotasi berketahanan iklim bersama penyuluh pertanian.'
-                    : 'Select study plots across Banyumas, explore multi-sensor NDVI and ECOSTRESS water stress curves, and formulate resilient crop rotation sheets.'}
+                    ? 'Pilih petak sawah di pilot Banyumas, eksplorasi kurva fenologi NDVI dan neraca air NASA POWER, lalu susun rencana rotasi berketahanan iklim bersama penyuluh pertanian.'
+                    : 'Select study plots across Banyumas, explore NDVI and NASA POWER water balance, and formulate resilient crop rotation sheets.'}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
               <button
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-xs sm:text-sm font-bold text-[#1B6572] shadow-lg transition hover:bg-emerald-50 active:scale-95"
               >
                 <span>{isId ? 'Buka Workspace Peta' : 'Launch Workspace'}</span>

@@ -13,7 +13,8 @@ dependencies = [
   "uvicorn[standard]>=0.30",
   "pydantic>=2.7",
   "pydantic-settings>=2.3",
-  "slowapi>=0.1.9",
+  "limits>=3.13",
+  "asyncpg>=0.29",
 ]
 
 [project.optional-dependencies]
@@ -25,13 +26,13 @@ dev = [
   "ruff>=0.5",
   "black>=24.0",
   "mypy>=1.10",
-  "bandit>=1.7",
+  "bandit[sarif]>=1.7.8",
   "pip-audit>=2.7",
+  "cyclonedx-bom>=4.0",
 ]
 # Optional stacks: each team installs what its module needs, e.g. pip install -e ".[dev,db]"
 db = [
   "sqlalchemy[asyncio]>=2.0",
-  "asyncpg>=0.29",
   "geoalchemy2>=0.15",
   "alembic>=1.13",
 ]

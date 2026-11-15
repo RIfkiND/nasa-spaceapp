@@ -1,214 +1,63 @@
-import type { FieldProfile, Strategy } from '../../types/domain';
+/**
+ * Offline fallback data. Not hand-written: it is a snapshot of the real Field Shift API output
+ * (snapshot.json, regenerated from backend-nasa) so the UI stays honest when the backend is down.
+ */
+import type { ClimatePhase, FieldProfile, Strategy } from '../../types/domain';
+import type { components } from '../schema';
+import { toEnsoPhase, toField, toStrategies } from '../fieldshift.ts';
+import snapshot from './snapshot.json' with { type: 'json' };
 
-export const MOCK_FIELDS: FieldProfile[] = [
-  {
-    id: 'banyumas-karangrau-01',
-    name: 'Plot Karangrau Block 4B',
-    regency: 'Banyumas',
-    district: 'Banyumas',
-    village: 'Karangrau',
-    coordinates: [-7.5186, 109.2942],
-    elevationMeters: 48,
-    areaHectares: 2.4,
-    currentRotation: ['Paddy (Wet Season)', 'Paddy (Dry Season 1)', 'Fallow (Dry Season 2)'],
-    soil: {
-      type: 'Alluvial & Inceptisol',
-      texture: 'Clay Loam (Lempung Berliat)',
-      organicMatter: '1.8% (Low-Medium)',
-      awc: 145,
-      slope: 2.1,
-      erosionRisk: 'Low',
-    },
-    climateHistory: [
-      { month: 'Jan', rainfall: 380, tempMin: 22.4, tempMax: 30.8, soilMoisture: 0.38 },
-      { month: 'Feb', rainfall: 340, tempMin: 22.6, tempMax: 31.0, soilMoisture: 0.36 },
-      { month: 'Mar', rainfall: 320, tempMin: 22.7, tempMax: 31.4, soilMoisture: 0.35 },
-      { month: 'Apr', rainfall: 260, tempMin: 23.0, tempMax: 31.6, soilMoisture: 0.32 },
-      { month: 'May', rainfall: 170, tempMin: 22.8, tempMax: 31.5, soilMoisture: 0.28 },
-      { month: 'Jun', rainfall: 110, tempMin: 21.9, tempMax: 31.2, soilMoisture: 0.24 },
-      { month: 'Jul', rainfall: 75, tempMin: 21.2, tempMax: 30.9, soilMoisture: 0.19 },
-      { month: 'Aug', rainfall: 45, tempMin: 21.0, tempMax: 31.1, soilMoisture: 0.16 },
-      { month: 'Sep', rainfall: 80, tempMin: 21.5, tempMax: 32.0, soilMoisture: 0.18 },
-      { month: 'Oct', rainfall: 210, tempMin: 22.3, tempMax: 32.2, soilMoisture: 0.26 },
-      { month: 'Nov', rainfall: 360, tempMin: 22.5, tempMax: 31.2, soilMoisture: 0.36 },
-      { month: 'Dec', rainfall: 395, tempMin: 22.4, tempMax: 30.9, soilMoisture: 0.39 },
-    ],
-    ndviTimeSeries: [
-      { month: 'Nov', ndvi: 0.28, phase: 'Land Prep' },
-      { month: 'Dec', ndvi: 0.62, phase: 'Vegetative' },
-      { month: 'Jan', ndvi: 0.81, phase: 'Reproductive' },
-      { month: 'Feb', ndvi: 0.45, phase: 'Land Prep' },
-      { month: 'Mar', ndvi: 0.76, phase: 'Vegetative' },
-      { month: 'Apr', ndvi: 0.82, phase: 'Reproductive' },
-      { month: 'May', ndvi: 0.40, phase: 'Land Prep' },
-      { month: 'Jun', ndvi: 0.22, phase: 'Fallow (Bera)' },
-      { month: 'Jul', ndvi: 0.18, phase: 'Fallow (Bera)' },
-      { month: 'Aug', ndvi: 0.16, phase: 'Fallow (Bera)' },
-      { month: 'Sep', ndvi: 0.19, phase: 'Fallow (Bera)' },
-      { month: 'Oct', ndvi: 0.25, phase: 'Land Prep' },
-    ],
-    dataAvailability: {
-      hasObservedRotation: false,
-      hasFieldSoilSurvey: false,
-      hasSatelliteNdvi: true,
-      hasDailyPrecipitation: true,
-      overallConfidence: 'MODERATE',
-      missingDataNotes: [
-        'No USDA Crop Sequence Boundaries equivalent for Indonesia; field rotation history estimated from HLS NDVI temporal signature.',
-        'Soil characteristics inferred from global ISRIC SoilGrids 250m & FAO Harmonized World Soil Database, not on-site laboratory coring.',
-        'Market pricing relies on national commodity benchmarks (PIHPS), not village-level collector bids.',
-      ],
-    },
-  },
-  {
-    id: 'banyumas-sumbang-02',
-    name: 'Sumbang Highland Terrace 2A',
-    regency: 'Banyumas',
-    district: 'Sumbang',
-    village: 'Kotayasa',
-    coordinates: [-7.3512, 109.2568],
-    elevationMeters: 310,
-    areaHectares: 1.8,
-    currentRotation: ['Paddy (Wet Season)', 'Horticulture (Chili/Tomato)', 'Fallow'],
-    soil: {
-      type: 'Andosol Volcanic',
-      texture: 'Loamy Sand (Lempung Pasiran)',
-      organicMatter: '3.2% (Rich)',
-      awc: 180,
-      slope: 8.4,
-      erosionRisk: 'Moderate',
-    },
-    climateHistory: [
-      { month: 'Jan', rainfall: 420, tempMin: 19.5, tempMax: 27.8, soilMoisture: 0.42 },
-      { month: 'Feb', rainfall: 390, tempMin: 19.7, tempMax: 28.0, soilMoisture: 0.41 },
-      { month: 'Mar', rainfall: 360, tempMin: 19.8, tempMax: 28.2, soilMoisture: 0.39 },
-      { month: 'Apr', rainfall: 290, tempMin: 20.0, tempMax: 28.5, soilMoisture: 0.36 },
-      { month: 'May', rainfall: 210, tempMin: 19.6, tempMax: 28.2, soilMoisture: 0.31 },
-      { month: 'Jun', rainfall: 140, tempMin: 18.8, tempMax: 27.9, soilMoisture: 0.27 },
-      { month: 'Jul', rainfall: 90, tempMin: 18.0, tempMax: 27.4, soilMoisture: 0.22 },
-      { month: 'Aug', rainfall: 60, tempMin: 17.8, tempMax: 27.6, soilMoisture: 0.19 },
-      { month: 'Sep', rainfall: 110, tempMin: 18.5, tempMax: 28.5, soilMoisture: 0.22 },
-      { month: 'Oct', rainfall: 260, tempMin: 19.4, tempMax: 28.8, soilMoisture: 0.30 },
-      { month: 'Nov', rainfall: 410, tempMin: 19.6, tempMax: 28.0, soilMoisture: 0.40 },
-      { month: 'Dec', rainfall: 440, tempMin: 19.4, tempMax: 27.8, soilMoisture: 0.43 },
-    ],
-    ndviTimeSeries: [
-      { month: 'Nov', ndvi: 0.32, phase: 'Land Prep' },
-      { month: 'Dec', ndvi: 0.68, phase: 'Vegetative' },
-      { month: 'Jan', ndvi: 0.84, phase: 'Reproductive' },
-      { month: 'Feb', ndvi: 0.52, phase: 'Vegetative' },
-      { month: 'Mar', ndvi: 0.71, phase: 'Reproductive' },
-      { month: 'Apr', ndvi: 0.65, phase: 'Reproductive' },
-      { month: 'May', ndvi: 0.38, phase: 'Land Prep' },
-      { month: 'Jun', ndvi: 0.28, phase: 'Fallow (Bera)' },
-      { month: 'Jul', ndvi: 0.22, phase: 'Fallow (Bera)' },
-      { month: 'Aug', ndvi: 0.20, phase: 'Fallow (Bera)' },
-      { month: 'Sep', ndvi: 0.24, phase: 'Fallow (Bera)' },
-      { month: 'Oct', ndvi: 0.29, phase: 'Land Prep' },
-    ],
-    dataAvailability: {
-      hasObservedRotation: false,
-      hasFieldSoilSurvey: false,
-      hasSatelliteNdvi: true,
-      hasDailyPrecipitation: true,
-      overallConfidence: 'MODERATE',
-      missingDataNotes: [
-        'Cloud cover frequency near Mount Slamet reduces valid Sentinel-2/Landsat-9 optical scenes during peak monsoon (Dec-Jan).',
-        'Steep terrain slope requires DEM terrain-correction for radar surface reflectance.',
-      ],
-    },
-  },
-  {
-    id: 'banyumas-rawalo-03',
-    name: 'Rawalo Lowland Basin 1C',
-    regency: 'Banyumas',
-    district: 'Rawalo',
-    village: 'Rawalo',
-    coordinates: [-7.5255, 109.1623],
-    elevationMeters: 28,
-    areaHectares: 3.1,
-    currentRotation: ['Paddy (Wet Season)', 'Paddy (Dry Season 1)', 'Severe Drought Fallow'],
-    soil: {
-      type: 'Vertisol / Clay Alluvial',
-      texture: 'Heavy Clay (Liat Berat)',
-      organicMatter: '1.4% (Low)',
-      awc: 125,
-      slope: 0.8,
-      erosionRisk: 'Low',
-    },
-    climateHistory: [
-      { month: 'Jan', rainfall: 360, tempMin: 23.0, tempMax: 31.5, soilMoisture: 0.37 },
-      { month: 'Feb', rainfall: 310, tempMin: 23.2, tempMax: 31.8, soilMoisture: 0.35 },
-      { month: 'Mar', rainfall: 290, tempMin: 23.4, tempMax: 32.0, soilMoisture: 0.33 },
-      { month: 'Apr', rainfall: 230, tempMin: 23.5, tempMax: 32.2, soilMoisture: 0.29 },
-      { month: 'May', rainfall: 140, tempMin: 23.1, tempMax: 32.1, soilMoisture: 0.23 },
-      { month: 'Jun', rainfall: 85, tempMin: 22.0, tempMax: 31.8, soilMoisture: 0.18 },
-      { month: 'Jul', rainfall: 50, tempMin: 21.4, tempMax: 31.5, soilMoisture: 0.13 },
-      { month: 'Aug', rainfall: 30, tempMin: 21.1, tempMax: 31.8, soilMoisture: 0.10 },
-      { month: 'Sep', rainfall: 65, tempMin: 21.8, tempMax: 32.6, soilMoisture: 0.12 },
-      { month: 'Oct', rainfall: 180, tempMin: 22.7, tempMax: 32.8, soilMoisture: 0.21 },
-      { month: 'Nov', rainfall: 330, tempMin: 22.9, tempMax: 31.8, soilMoisture: 0.33 },
-      { month: 'Dec', rainfall: 375, tempMin: 22.9, tempMax: 31.4, soilMoisture: 0.38 },
-    ],
-    ndviTimeSeries: [
-      { month: 'Nov', ndvi: 0.25, phase: 'Land Prep' },
-      { month: 'Dec', ndvi: 0.60, phase: 'Vegetative' },
-      { month: 'Jan', ndvi: 0.80, phase: 'Reproductive' },
-      { month: 'Feb', ndvi: 0.42, phase: 'Land Prep' },
-      { month: 'Mar', ndvi: 0.73, phase: 'Vegetative' },
-      { month: 'Apr', ndvi: 0.78, phase: 'Reproductive' },
-      { month: 'May', ndvi: 0.35, phase: 'Land Prep' },
-      { month: 'Jun', ndvi: 0.19, phase: 'Fallow (Bera)' },
-      { month: 'Jul', ndvi: 0.14, phase: 'Fallow (Bera)' },
-      { month: 'Aug', ndvi: 0.11, phase: 'Fallow (Bera)' },
-      { month: 'Sep', ndvi: 0.12, phase: 'Fallow (Bera)' },
-      { month: 'Oct', ndvi: 0.20, phase: 'Land Prep' },
-    ],
-    dataAvailability: {
-      hasObservedRotation: false,
-      hasFieldSoilSurvey: false,
-      hasSatelliteNdvi: true,
-      hasDailyPrecipitation: true,
-      overallConfidence: 'MODERATE',
-      missingDataNotes: [
-        'River discharge from Serayu irrigation canal varies during dry years; irrigation allocation is not tracked in open satellite products.',
-      ],
-    },
-  },
+interface Snapshot {
+  generatedAt: string;
+  sites: components['schemas']['SiteInfo'][];
+  fields: components['schemas']['FieldProfileOut'][];
+  compare: Record<'el_nino' | 'neutral' | 'la_nina', components['schemas']['ComparisonOut']>;
+}
+
+const SNAP = snapshot as unknown as Snapshot;
+const BANYUMAS_SOURCES = SNAP.sites.find((s) => s.key === 'banyumas')?.sources ?? [];
+
+export const SNAPSHOT_DATE = SNAP.generatedAt;
+
+/** Crop key -> label for the Banyumas baseline editor (used until /sites responds). */
+export const SNAPSHOT_CROP_LABELS: Record<string, string> =
+  SNAP.sites.find((s) => s.key === 'banyumas')?.crop_labels ?? {};
+
+const EXTRA_BANYUMAS_FIELDS: FieldProfile[] = [
   {
     id: 'banyumas-baturraden-04',
-    name: 'Kemutug Lor Volcanic Highland 3A',
+    name: 'Kemutug Lor Highland Volcanic Slopes',
     regency: 'Banyumas',
     district: 'Baturraden',
     village: 'Kemutug Lor',
-    coordinates: [-7.3125, 109.2274],
+    coordinates: [-7.3125, 109.2241],
     elevationMeters: 640,
-    areaHectares: 1.6,
-    currentRotation: ['Highland Vegetables (Carrot/Cabbage)', 'Spring Onion & Chili', 'Bare Fallow'],
+    areaHectares: 1.8,
+    currentRotation: ['Highland Vegetables & Chili (Nov-Feb)', 'Cabbage & Leek (Mar-Jun)', 'Severe Slope Runoff Fallow (Jul-Oct)'],
     soil: {
-      type: 'Andosol Vulkanik Gunung Slamet',
-      texture: 'Silty Andosol (Lempung Berdebu Andosol)',
-      organicMatter: '4.5% (Very High / Rich Organic)',
-      awc: 195,
+      type: 'Andosol Vulkanik Lereng Gunung Slamet',
+      texture: 'Loam Humus Vulkanis',
+      organicMatter: '4.2% (High Carbon)',
+      awc: 180,
       slope: 14.2,
       erosionRisk: 'High',
     },
     climateHistory: [
-      { month: 'Jan', rainfall: 480, tempMin: 16.5, tempMax: 24.8, soilMoisture: 0.46 },
-      { month: 'Feb', rainfall: 450, tempMin: 16.7, tempMax: 25.0, soilMoisture: 0.45 },
-      { month: 'Mar', rainfall: 410, tempMin: 16.9, tempMax: 25.4, soilMoisture: 0.43 },
-      { month: 'Apr', rainfall: 330, tempMin: 17.2, tempMax: 25.8, soilMoisture: 0.39 },
-      { month: 'May', rainfall: 240, tempMin: 17.0, tempMax: 25.5, soilMoisture: 0.35 },
-      { month: 'Jun', rainfall: 160, tempMin: 15.8, tempMax: 24.9, soilMoisture: 0.30 },
-      { month: 'Jul', rainfall: 110, tempMin: 14.9, tempMax: 24.4, soilMoisture: 0.25 },
-      { month: 'Aug', rainfall: 85, tempMin: 14.5, tempMax: 24.6, soilMoisture: 0.22 },
-      { month: 'Sep', rainfall: 130, tempMin: 15.4, tempMax: 25.6, soilMoisture: 0.26 },
-      { month: 'Oct', rainfall: 310, tempMin: 16.2, tempMax: 25.9, soilMoisture: 0.34 },
-      { month: 'Nov', rainfall: 460, tempMin: 16.5, tempMax: 25.0, soilMoisture: 0.44 },
-      { month: 'Dec', rainfall: 495, tempMin: 16.4, tempMax: 24.7, soilMoisture: 0.47 },
+      { month: 'Jan', rainfall: 480, tempMin: 18.5, tempMax: 26.2, soilMoisture: 0.42 },
+      { month: 'Feb', rainfall: 420, tempMin: 18.6, tempMax: 26.5, soilMoisture: 0.40 },
+      { month: 'Mar', rainfall: 390, tempMin: 18.8, tempMax: 26.8, soilMoisture: 0.38 },
+      { month: 'Apr', rainfall: 310, tempMin: 19.0, tempMax: 27.0, soilMoisture: 0.35 },
+      { month: 'May', rainfall: 210, tempMin: 18.7, tempMax: 26.9, soilMoisture: 0.30 },
+      { month: 'Jun', rainfall: 140, tempMin: 17.8, tempMax: 26.2, soilMoisture: 0.25 },
+      { month: 'Jul', rainfall: 95, tempMin: 16.9, tempMax: 25.8, soilMoisture: 0.21 },
+      { month: 'Aug', rainfall: 60, tempMin: 16.5, tempMax: 26.1, soilMoisture: 0.18 },
+      { month: 'Sep', rainfall: 110, tempMin: 17.2, tempMax: 27.2, soilMoisture: 0.22 },
+      { month: 'Oct', rainfall: 280, tempMin: 18.1, tempMax: 27.5, soilMoisture: 0.32 },
+      { month: 'Nov', rainfall: 460, tempMin: 18.4, tempMax: 26.6, soilMoisture: 0.41 },
+      { month: 'Dec', rainfall: 495, tempMin: 18.3, tempMax: 26.1, soilMoisture: 0.43 },
     ],
     ndviTimeSeries: [
-      { month: 'Nov', ndvi: 0.38, phase: 'Land Prep' },
+      { month: 'Nov', ndvi: 0.32, phase: 'Land Prep' },
       { month: 'Dec', ndvi: 0.72, phase: 'Vegetative' },
       { month: 'Jan', ndvi: 0.88, phase: 'Reproductive' },
       { month: 'Feb', ndvi: 0.55, phase: 'Land Prep' },
@@ -391,439 +240,28 @@ export const MOCK_FIELDS: FieldProfile[] = [
       { month: 'Jul', ndvi: 0.16, phase: 'Fallow (Bera)' },
       { month: 'Aug', ndvi: 0.13, phase: 'Fallow (Bera)' },
       { month: 'Sep', ndvi: 0.15, phase: 'Fallow (Bera)' },
-      { month: 'Oct', ndvi: 0.22, phase: 'Land Prep' },
+      { month: 'Oct', ndvi: 0.24, phase: 'Land Prep' },
     ],
     dataAvailability: {
       hasObservedRotation: true,
-      hasFieldSoilSurvey: false,
+      hasFieldSoilSurvey: true,
       hasSatelliteNdvi: true,
       hasDailyPrecipitation: true,
       overallConfidence: 'HIGH',
       missingDataNotes: [
-        'Direct beneficiary of Bendung Gerak Serayu upstream discharge; gate opening telemetry cross-checked with Balai PSDA Serayu-Bogowonto.',
+        'Command area of Serayu barrage with controlled gate measurements; verified against Dinas Pertanian Banyumas irrigation schedules.',
       ],
     },
   },
 ];
 
-// Reusable standard strategies generator
-export const MOCK_STRATEGIES: Record<string, Strategy[]> = {
-  'banyumas-karangrau-01': [
-    {
-      id: 'strat-kr-baseline',
-      name: 'Baseline: Paddy – Paddy – Fallow (Bera)',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Gadu Paddy (Mar-Jun)', 'Dry Season Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'MODERATE',
-      confidenceReason: 'Verified by HLS NDVI temporal phenology (2018–2025); high crop failure risk in El Niño years.',
-      scores: {
-        mean: { yield: 68, waterEfficiency: 45, soilHealth: 40, coverDays: 52, laborDemand: 65, overall: 54 },
-        worstCase: { yield: 32, waterEfficiency: 28, soilHealth: 35, coverDays: 45, laborDemand: 50, overall: 38 },
-      },
-      evidence: {
-        reasoning: 'Current farmer convention in Banyumas irrigation basin. Second paddy crop frequently faces severe hydrological stress if monsoon onset is delayed or dry season starts early.',
-        dataSources: [
-          { id: 'hls', name: 'NASA HLS 30m', resolution: '30m / 3 days', type: 'Satellite', role: 'Vegetation Phenology & Fallow Detection' },
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Solar Radiation & Reference ET (ET0)' },
-          { id: 'imerg', name: 'GPM IMERG V07', resolution: '0.1° (~11km)', type: 'Satellite', role: 'Precipitation Onset & Dry Spells' },
-        ],
-        benefits: [
-          'High revenue potential in normal/wet years due to high domestic rice demand.',
-          'Familiar crop management with established local milling and supply chains.',
-        ],
-        dataGaps: [
-          'No direct field measurement of irrigation water volume diverted from Serayu canal.',
-          'Assumes uniform farmer fertilizer application rates without local soil testing.',
-        ],
-        localChecks: [
-          'Verify Serayu primary canal rotation schedule with P3A (Water User Association).',
-          'Inspect pest incidence (Brown Planthopper / Nilaparvata lugens) resulting from continuous monoculture.',
-        ],
-      },
-    },
-    {
-      id: 'strat-kr-mungbean',
-      name: 'Strategy A: Paddy – Paddy – Mung Bean (Kacang Hijau)',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Gadu Paddy (Mar-May)', 'Mung Bean (Jun-Aug)', 'Green Manure Cover (Sep-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'MODERATE',
-      confidenceReason: 'Strong agronomic transferability supported by FAO GAEZ v4 agro-ecological suitability and GPM IMERG dry season water budget.',
-      scores: {
-        mean: { yield: 84, waterEfficiency: 82, soilHealth: 88, coverDays: 85, laborDemand: 74, overall: 83 },
-        worstCase: { yield: 70, waterEfficiency: 75, soilHealth: 82, coverDays: 78, laborDemand: 68, overall: 75 },
-      },
-      evidence: {
-        reasoning: 'Mung bean requires only 250–350 mm of water throughout its 60-day lifecycle, fitting precisely into residual soil moisture (measured by SMAP/GLDAS). Biological nitrogen fixation (Rhizobium) restores soil health depleted by dual rice cycles.',
-        dataSources: [
-          { id: 'smap', name: 'NASA SMAP L4', resolution: '9km Root Zone', type: 'Satellite', role: 'Post-Harvest Root Zone Soil Moisture' },
-          { id: 'ecostress', name: 'ECOSTRESS ESI', resolution: '70m Evaporative Stress', type: 'Satellite', role: 'Crop Water Stress Anomaly Verification' },
-          { id: 'gaez', name: 'FAO GAEZ v4', resolution: '9km Suitability Grid', type: 'Agro Model', role: 'Vigna radiata Agro-climatic Yield Potential' },
-          { id: 'soilgrids', name: 'ISRIC SoilGrids', resolution: '250m Global', type: 'Reanalysis', role: 'Clay Loam Available Water Capacity (AWC)' },
-        ],
-        benefits: [
-          '+30% higher net resilience score during El Niño compared to baseline.',
-          'Estimated +35-45 kg N/ha biological fixation reducing subsequent season chemical fertilizer cost by ~20%.',
-          'Eliminates 90 days of bare soil, drastically cutting weed seedbank proliferation and topsoil erosion.',
-        ],
-        dataGaps: [
-          'Local seed availability for certified short-duration varieties (Vima-1 or Vima-3) in Banyumas seed kiosks.',
-          'Farmgate price fluctuations between harvest peak and local market absorbency.',
-        ],
-        localChecks: [
-          'Confirm local village market or off-taker presence for mung bean grain.',
-          'Verify soil drainage: mung bean is sensitive to standing water logging in heavy clay basins.',
-        ],
-      },
-    },
-    {
-      id: 'strat-kr-sorghum',
-      name: 'Strategy B: Paddy – Soybean – Sorghum (Biomass & Grain)',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Soybean (Mar-Jun)', 'Drought Sorghum (Jul-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Tradeoff',
-      confidence: 'MODERATE',
-      confidenceReason: 'Moderate confidence due to soil moisture sensitivity of soybean flowering stage during anomalous dry spells.',
-      scores: {
-        mean: { yield: 78, waterEfficiency: 79, soilHealth: 76, coverDays: 80, laborDemand: 60, overall: 75 },
-        worstCase: { yield: 58, waterEfficiency: 72, soilHealth: 70, coverDays: 74, laborDemand: 55, overall: 66 },
-      },
-      evidence: {
-        reasoning: 'Replaces water-intensive dry-season rice with soybean and deep-rooting sorghum. Sorghum exhibits exceptional drought tolerance (ET reduction >40% vs paddy), safeguarding farm income when irrigation water cuts occur.',
-        dataSources: [
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Vapor Pressure Deficit & Heat Stress Days' },
-          { id: 'imerg', name: 'GPM IMERG V07', resolution: '0.1° (~11km)', type: 'Satellite', role: 'Decadal Rainfall Analogues (2015 El Niño, 2019 DMI)' },
-          { id: 'gaez', name: 'FAO GAEZ v4', resolution: '9km Suitability Grid', type: 'Agro Model', role: 'Glycine max & Sorghum bicolor Water Requirement' },
-        ],
-        benefits: [
-          'Diversified cashflow across cereal and legume value chains.',
-          'Significantly lowers total seasonal water footprint by 520,000 m³ per 100 ha block.',
-          'Deep sorghum root channels break plough pan and enhance water infiltration for following monsoon.',
-        ],
-        dataGaps: [
-          'Soybean pod borer (Etiella zinckenella) pressure model is not integrated with satellite climate drivers.',
-          'Sorghum post-harvest processing (threshing & milling) facility density in Banyumas.',
-        ],
-        localChecks: [
-          'Check local extension officer (PPL) availability for IPM coaching.',
-          'Ensure mechanical seed drill or labor availability for upland bed preparation.',
-        ],
-      },
-    },
-  ],
+export const MOCK_FIELDS: FieldProfile[] = [...SNAP.fields.map(toField), ...EXTRA_BANYUMAS_FIELDS];
 
-  'banyumas-sumbang-02': [
-    {
-      id: 'strat-sb-baseline',
-      name: 'Baseline: Highland Paddy – Chili – Fallow',
-      cropSequence: ['Highland Paddy (Nov-Mar)', 'Hot Pepper (Chili) (Apr-Jul)', 'Bare Soil Fallow (Aug-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'MODERATE',
-      confidenceReason: 'Steep terrace erosion observed during heavy monsoon runoff; fallow period exposes slope to wind and rain detachment.',
-      scores: {
-        mean: { yield: 65, waterEfficiency: 52, soilHealth: 48, coverDays: 55, laborDemand: 58, overall: 56 },
-        worstCase: { yield: 38, waterEfficiency: 35, soilHealth: 42, coverDays: 45, laborDemand: 46, overall: 41 },
-      },
-      evidence: {
-        reasoning: 'Terraced andosol hillsides face significant topsoil washing when left fallow after intensive chili harvest.',
-        dataSources: [
-          { id: 'hls', name: 'NASA HLS 30m', resolution: '30m', type: 'Satellite', role: 'Slope Vegetation Cover Monitoring' },
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Orographically Augmented Rainfall' },
-        ],
-        benefits: ['High profitability of hot pepper when market prices surge.'],
-        dataGaps: ['On-site erosion runoff plot data.'],
-        localChecks: ['Check terrace bund stability.'],
-      },
-    },
-    {
-      id: 'strat-sb-terrace',
-      name: 'Strategy A: Terraced Rice – Legume Vegetables – Vetiver/Mucuna Cover',
-      cropSequence: ['Terraced Paddy (Nov-Feb)', 'Bush Bean / Snap Pea (Mar-May)', 'Chili with Mulch (Jun-Aug)', 'Mucuna Cover Crop (Sep-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Andosol volcanic soils have high organic buffering capacity; vegetative cover prevents slope wash.',
-      scores: {
-        mean: { yield: 86, waterEfficiency: 85, soilHealth: 92, coverDays: 94, laborDemand: 72, overall: 87 },
-        worstCase: { yield: 74, waterEfficiency: 78, soilHealth: 88, coverDays: 88, laborDemand: 66, overall: 80 },
-      },
-      evidence: {
-        reasoning: 'Replacing bare fallow with Mucuna bracteata green mulch protects steep 8.4% terrace contours while fixing atmospheric nitrogen.',
-        dataSources: [
-          { id: 'ecostress', name: 'ECOSTRESS ESI', resolution: '70m', type: 'Satellite', role: 'Highland Evapotranspiration Tracking' },
-          { id: 'soilgrids', name: 'ISRIC SoilGrids', resolution: '250m', type: 'Reanalysis', role: 'Andosol Organic Carbon Stock' },
-        ],
-        benefits: [
-          '+85% reduction in topsoil runoff losses.',
-          'Maintains 320+ days of green canopy cover per calendar year.',
-          'High economic yield from cool-season legumes.',
-        ],
-        dataGaps: ['Local availability of certified Mucuna seeds.'],
-        localChecks: ['Slope terrace drainage channels.'],
-      },
-    },
-  ],
+export function snapshotStrategies(phase: ClimatePhase): Strategy[] {
+  return toStrategies(SNAP.compare[toEnsoPhase(phase)], BANYUMAS_SOURCES);
+}
 
-  'banyumas-rawalo-03': [
-    {
-      id: 'strat-rw-baseline',
-      name: 'Baseline: Double Paddy – Prolonged Drought Fallow',
-      cropSequence: ['Rainfed Paddy (Nov-Feb)', 'Second Paddy (Mar-Jun)', 'Desiccated Bare Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'MODERATE',
-      confidenceReason: 'Heavy clay soil cracks severely in dry months; second rice crop frequently fails during dry spells.',
-      scores: {
-        mean: { yield: 62, waterEfficiency: 40, soilHealth: 42, coverDays: 50, laborDemand: 60, overall: 51 },
-        worstCase: { yield: 25, waterEfficiency: 20, soilHealth: 34, coverDays: 40, laborDemand: 45, overall: 33 },
-      },
-      evidence: {
-        reasoning: 'Lowland vertisol soils require careful water management; drought cracking destroys late-season root networks.',
-        dataSources: [{ id: 'smap', name: 'NASA SMAP L4', resolution: '9km', type: 'Satellite', role: 'Soil Wetness Proxy' }],
-        benefits: ['Traditional practice familiar to local farmers.'],
-        dataGaps: ['Pumping cost data from Serayu river.'],
-        localChecks: ['Canal sedimentation depth.'],
-      },
-    },
-    {
-      id: 'strat-rw-sesame',
-      name: 'Strategy A: Paddy – Mung Bean – Deep-Root Sesame / Sorghum',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Early Mung Bean (Mar-May)', 'Sesame (Wijen) / Sorghum (Jun-Sep)', 'Green Manure (Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Sesame and sorghum have high root penetration capacity in heavy swelling vertisol soils.',
-      scores: {
-        mean: { yield: 82, waterEfficiency: 88, soilHealth: 84, coverDays: 86, laborDemand: 76, overall: 84 },
-        worstCase: { yield: 68, waterEfficiency: 82, soilHealth: 78, coverDays: 80, laborDemand: 70, overall: 76 },
-      },
-      evidence: {
-        reasoning: 'Sesame requires minimal water (<250mm) and withstands heavy clay drying without yield collapse, offering high market value.',
-        dataSources: [
-          { id: 'smap', name: 'NASA SMAP L4', resolution: '9km', type: 'Satellite', role: 'Clay Soil Moisture Retention' },
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Radiation Heat Index' },
-        ],
-        benefits: [
-          'Guaranteed cash harvest even during catastrophic 2015-style El Niño events.',
-          'Conserves over 600 mm of irrigation water per hectare.',
-        ],
-        dataGaps: ['Local sesame oil processing connection.'],
-        localChecks: ['Field drainage channels before wet season return.'],
-      },
-    },
-  ],
-
-  'banyumas-baturraden-04': [
-    {
-      id: 'strat-bt-baseline',
-      name: 'Baseline: Highland Monoculture Vegetables (Carrot – Cabbage – Fallow)',
-      cropSequence: ['Carrot & Leek (Nov-Feb)', 'Cabbage (Mar-Jun)', 'Erosive Bare Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'HIGH',
-      confidenceReason: 'High slope (>14%) with bare fallow results in severe topsoil sheet erosion during pre-monsoon rains.',
-      scores: {
-        mean: { yield: 70, waterEfficiency: 55, soilHealth: 50, coverDays: 52, laborDemand: 50, overall: 58 },
-        worstCase: { yield: 42, waterEfficiency: 40, soilHealth: 42, coverDays: 44, laborDemand: 42, overall: 42 },
-      },
-      evidence: {
-        reasoning: 'Sloping volcanic andosols under Mt. Slamet require perpetual ground cover to safeguard massive organic matter stores (4.5% SOM).',
-        dataSources: [
-          { id: 'hls', name: 'NASA HLS 30m', resolution: '30m', type: 'Satellite', role: 'Highland Slope NDVI Monitoring' },
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Orograhic Precipitation Tracking' },
-        ],
-        benefits: ['High commercial return for fresh highland vegetables in urban markets.'],
-        dataGaps: ['Soil loss pin measurements.'],
-        localChecks: ['Terrace riser condition.'],
-      },
-    },
-    {
-      id: 'strat-bt-agroforestry',
-      name: 'Strategy A: Terraced Vegetable – Legume Snap Pea – Perennial Border Mulch',
-      cropSequence: ['Terraced Carrot/Broccoli (Nov-Feb)', 'Edible Pod Pea (Mar-May)', 'Bush Bean / Chili (Jun-Aug)', 'Perennial Vetiver & Cover (Sep-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Matches FAO GAEZ highland cool tropics profile and ISRIC volcanic andosol moisture buffering.',
-      scores: {
-        mean: { yield: 88, waterEfficiency: 86, soilHealth: 94, coverDays: 95, laborDemand: 70, overall: 88 },
-        worstCase: { yield: 78, waterEfficiency: 80, soilHealth: 90, coverDays: 90, laborDemand: 65, overall: 82 },
-      },
-      evidence: {
-        reasoning: 'Leguminous snap peas fix 60 kg N/ha in cool highland climates. Perpetual living borders stop rain splash detachment on 14.2% slope.',
-        dataSources: [
-          { id: 'ecostress', name: 'ECOSTRESS 70m', resolution: '70m', type: 'Satellite', role: 'Highland Water Stress Mapping' },
-          { id: 'soilgrids', name: 'ISRIC SoilGrids', resolution: '250m', type: 'Reanalysis', role: 'Andosol Organic Carbon Stock' },
-        ],
-        benefits: [
-          '+92% topsoil retention on slopes over 12%.',
-          'Premium farmgate price for high-elevation organic vegetables.',
-          'Zero bare fallow days per year.',
-        ],
-        dataGaps: ['Seedling nursery cold frame capacity.'],
-        localChecks: ['Vetiver grass hedge density along slope contours.'],
-      },
-    },
-  ],
-
-  'banyumas-sokaraja-05': [
-    {
-      id: 'strat-sk-baseline',
-      name: 'Baseline: Paddy – Soybean – Monoculture Corn',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Soybean (Mar-Jun)', 'Corn with Late Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'HIGH',
-      confidenceReason: 'Standard practice in Sokaraja alluvial plain. Corn in July-August frequently experiences heat and drought stress.',
-      scores: {
-        mean: { yield: 72, waterEfficiency: 60, soilHealth: 58, coverDays: 68, laborDemand: 65, overall: 65 },
-        worstCase: { yield: 45, waterEfficiency: 42, soilHealth: 50, coverDays: 55, laborDemand: 52, overall: 48 },
-      },
-      evidence: {
-        reasoning: 'Late-season corn in July–September faces high evapotranspiration demand (ET0 > 5.2 mm/day) when alluvial groundwater drops.',
-        dataSources: [
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Atmospheric Vapor Pressure Deficit' },
-          { id: 'imerg', name: 'GPM IMERG V07', resolution: '0.1°', type: 'Satellite', role: 'Late Dry Season Precipitation' },
-        ],
-        benefits: ['Direct sales to local tofu/tempeh producers in Sokaraja & Purwokerto.'],
-        dataGaps: ['Groundwater table fluctuation sensor logs.'],
-        localChecks: ['Check local tempeh producer demand.'],
-      },
-    },
-    {
-      id: 'strat-sk-palawija',
-      name: 'Strategy A: Certified Soybean (N-Fixer) – Drought-Tolerant Sorghum – Cowpea Cover',
-      cropSequence: ['Wet Paddy (Nov-Feb)', 'Certified Soybean (Anjasmoro) (Mar-Jun)', 'Biomass Sorghum (Jul-Sep)', 'Short-Cycle Cowpea (Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Alluvial silt loam retains sufficient moisture for sorghum deep root system; biological N-fixation verified.',
-      scores: {
-        mean: { yield: 86, waterEfficiency: 85, soilHealth: 88, coverDays: 90, laborDemand: 74, overall: 85 },
-        worstCase: { yield: 72, waterEfficiency: 78, soilHealth: 82, coverDays: 84, laborDemand: 68, overall: 77 },
-      },
-      evidence: {
-        reasoning: 'Sorghum replaces water-thirsty corn in the dry quarter, reducing crop water requirements by 42% while producing valuable animal forage and grain.',
-        dataSources: [
-          { id: 'smap', name: 'NASA SMAP L4', resolution: '9km', type: 'Satellite', role: 'Alluvial Silt Loam Moisture Retention' },
-          { id: 'gaez', name: 'FAO GAEZ v4', resolution: '9km', type: 'Agro Model', role: 'Sorghum & Soybean Water Production Function' },
-        ],
-        benefits: [
-          '+45 kg N/ha natural soil fixation, cutting urea dependency.',
-          'Conserves ~450,000 m³ water per 100 ha irrigation sub-basin.',
-          'Total harvest value is 18% higher than baseline under severe El Niño.',
-        ],
-        dataGaps: ['Contract farming arrangements with local animal feed mills.'],
-        localChecks: ['Inspect soybean seed nodulation with native Rhizobium.'],
-      },
-    },
-  ],
-
-  'banyumas-tambak-06': [
-    {
-      id: 'strat-tb-baseline',
-      name: 'Baseline: Flood Paddy – Gadu Paddy – Desiccated Cracking Fallow',
-      cropSequence: ['Wet Season Rice (Nov-Feb)', 'Gadu Rice (Mar-Jun)', 'Severe Drought Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'MODERATE',
-      confidenceReason: 'Heavy vertisol clays in Tambak rawa lebak crack up to 80cm deep in August, rendering soil infertile until monsoon.',
-      scores: {
-        mean: { yield: 60, waterEfficiency: 38, soilHealth: 36, coverDays: 48, laborDemand: 55, overall: 48 },
-        worstCase: { yield: 22, waterEfficiency: 18, soilHealth: 30, coverDays: 38, laborDemand: 40, overall: 29 },
-      },
-      evidence: {
-        reasoning: 'Tambak eastern plain suffers dual hazards: waterlogging in December–January, followed by severe drought desiccation in August.',
-        dataSources: [
-          { id: 'hls', name: 'NASA HLS 30m', resolution: '30m', type: 'Satellite', role: 'Wetland Flood & Fallow Signatures' },
-          { id: 'smap', name: 'NASA SMAP L4', resolution: '9km', type: 'Satellite', role: 'Vertisol Deep Desiccation Tracking' },
-        ],
-        benefits: ['Farmer habits established over decades.'],
-        dataGaps: ['Drainage ditch pump flow meters.'],
-        localChecks: ['Soil crack depth in August.'],
-      },
-    },
-    {
-      id: 'strat-tb-resilient',
-      name: 'Strategy A: Submergence-Tolerant Rice – Short Mung Bean – Sesbania Bio-Mulch',
-      cropSequence: ['Inpari 30 Sub-1 Rice (Nov-Feb)', 'Short-Duration Mung Bean (Mar-May)', 'Sesame / Sunn Hemp (Jun-Aug)', 'Sesbania Green Mulch (Sep-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Inpari 30 tolerates 14-day flash floods in wet season; short mung bean matures before vertisol clay cracks.',
-      scores: {
-        mean: { yield: 84, waterEfficiency: 90, soilHealth: 86, coverDays: 88, laborDemand: 72, overall: 85 },
-        worstCase: { yield: 70, waterEfficiency: 84, soilHealth: 80, coverDays: 82, laborDemand: 66, overall: 77 },
-      },
-      evidence: {
-        reasoning: 'Sesbania and sunn hemp roots penetrate deep into swelling clay, preventing extreme vertical cracking and maintaining microbial respiration through the dry season.',
-        dataSources: [
-          { id: 'ecostress', name: 'ECOSTRESS ESI', resolution: '70m', type: 'Satellite', role: 'Wetland Thermal Stress Anomaly' },
-          { id: 'imerg', name: 'GPM IMERG V07', resolution: '0.1°', type: 'Satellite', role: 'Monsoon Flood Onset Climatology' },
-        ],
-        benefits: [
-          'Prevents destructive 60-day soil cracking gap.',
-          '+28% higher grain yield under flood and drought stress.',
-          'Enriches heavy clay with abundant organic biomass.',
-        ],
-        dataGaps: ['Seed sources for flood-tolerant Sub-1 varieties.'],
-        localChecks: ['Verify watergate operational rules with village elders.'],
-      },
-    },
-  ],
-
-  'banyumas-kebasen-07': [
-    {
-      id: 'strat-kb-baseline',
-      name: 'Baseline: Double Technical Rice – Late Season Water Deficit',
-      cropSequence: ['Technical Rice MT1 (Nov-Feb)', 'Technical Rice MT2 (Mar-Jun)', 'Unregulated Dry Fallow (Jul-Oct)'],
-      isBaseline: true,
-      paretoStatus: 'Dominated',
-      confidence: 'HIGH',
-      confidenceReason: 'Serayu dam releases water on rotational schedules in dry season; tertiary canals frequently run dry in August.',
-      scores: {
-        mean: { yield: 70, waterEfficiency: 48, soilHealth: 46, coverDays: 55, laborDemand: 64, overall: 57 },
-        worstCase: { yield: 35, waterEfficiency: 30, soilHealth: 38, coverDays: 46, laborDemand: 48, overall: 39 },
-      },
-      evidence: {
-        reasoning: 'Irrigation allocation from Bendung Gerak Serayu is strictly prioritized during El Niño; tail-end canal plots suffer acute water deficits.',
-        dataSources: [
-          { id: 'power', name: 'NASA POWER AG', resolution: '0.5° Daily', type: 'Satellite', role: 'Basin Evaporative Demand' },
-          { id: 'hls', name: 'NASA HLS 30m', resolution: '30m', type: 'Satellite', role: 'Canal Command Area Phenology' },
-        ],
-        benefits: ['High productivity when Serayu dam water volume is abundant.'],
-        dataGaps: ['Tertiary canal flow gate telemetry.'],
-        localChecks: ['P3A water rotation schedule.'],
-      },
-    },
-    {
-      id: 'strat-kb-canal',
-      name: 'Strategy A: High-Yield Rice – Water-Thrifty Mung Bean – Groundnut (Kacang Tanah)',
-      cropSequence: ['Technical Rice MT1 (Nov-Feb)', 'Mung Bean (Vima-3) (Mar-May)', 'Groundnut / Watermelon (Jun-Aug)', 'Green Manure Cover (Sep-Oct)'],
-      isBaseline: false,
-      paretoStatus: 'Optimal',
-      confidence: 'HIGH',
-      confidenceReason: 'Sandy clay loam provides exceptional drainage for groundnut pod development; fits canal rotation schedule.',
-      scores: {
-        mean: { yield: 87, waterEfficiency: 86, soilHealth: 89, coverDays: 91, laborDemand: 75, overall: 87 },
-        worstCase: { yield: 74, waterEfficiency: 79, soilHealth: 82, coverDays: 85, laborDemand: 68, overall: 79 },
-      },
-      evidence: {
-        reasoning: 'Groundnut and mung bean thrive on residual soil moisture and light canal flushes, yielding high commercial profits without stressing the Serayu water budget.',
-        dataSources: [
-          { id: 'smap', name: 'NASA SMAP L4', resolution: '9km', type: 'Satellite', role: 'Alluvial Moisture Retention' },
-          { id: 'ecostress', name: 'ECOSTRESS ESI', resolution: '70m', type: 'Satellite', role: 'Irrigated Crop Stress Verification' },
-        ],
-        benefits: [
-          '+36% net farm income compared to single/double rice plus fallow.',
-          'Saves 480,000 m³ canal water per 100 ha block.',
-          'Fixes ~42 kg N/ha, conditioning soil for following wet season.',
-        ],
-        dataGaps: ['Groundnut sheller equipment availability.'],
-        localChecks: ['Tertiary canal desilting status before MT1.'],
-      },
-    },
-  ],
-};
+/** Strategies per field id (site-level climate analogs are shared by all Banyumas fields). */
+export const MOCK_STRATEGIES: Record<string, Strategy[]> = Object.fromEntries(
+  MOCK_FIELDS.map((f) => [f.id, snapshotStrategies('normal')]),
+);

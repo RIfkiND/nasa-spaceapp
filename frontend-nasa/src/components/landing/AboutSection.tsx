@@ -25,8 +25,8 @@ const CARDS: FeatureCard[] = [
     id: 'spaceborne',
     titleEn: 'Spaceborne Telemetry',
     titleId: 'Telemetri Antariksa',
-    subtitleEn: 'NASA POWER, SMAP & ECOSTRESS 30m grid data',
-    subtitleId: 'Data grid 30m NASA POWER, SMAP & ECOSTRESS',
+    subtitleEn: 'NASA POWER climate 1991–2025, SRTM terrain & SoilGrids',
+    subtitleId: 'Data iklim NASA POWER 1991–2025, elevasi SRTM & SoilGrids',
     image:
       'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80',
     alt: 'Agricultural drone surveying green tea and rice terraces',
@@ -49,8 +49,8 @@ const CARDS: FeatureCard[] = [
     id: 'precision',
     titleEn: 'Precision Field Impact',
     titleId: 'Dampak Lapangan Presisi',
-    subtitleEn: '+32% yield loss reduction & balanced soil moisture',
-    subtitleId: 'Pengurangan risiko gagal panen +32% & kelembapan tanah terjaga',
+    subtitleEn: 'Erosion exposure ~8× lower than rice–rice–fallow (engine output, Banyumas)',
+    subtitleId: 'Paparan erosi ~8× lebih rendah dibanding padi–padi–bera (analisis engine Banyumas)',
     image:
       'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=800&q=80',
     alt: 'Precision drone spraying over fertile green farmland',
@@ -94,6 +94,16 @@ export function AboutSection({ onOpenWorkspace, currentLang = 'en' }: AboutSecti
                   </>
                 )}
               </h2>
+            </div>
+
+            <div className="shrink-0">
+              <button
+                type="button"
+                onClick={() => onOpenWorkspace()}
+                className="rounded-full border border-slate-300 hover:border-[#237F8E] bg-white hover:bg-[#E3F1F3]/50 px-6 py-2.5 text-xs font-bold tracking-wider text-slate-800 hover:text-[#1B6572] transition active:scale-[0.98] shadow-2xs cursor-pointer"
+              >
+                {isId ? 'Jelajahi Solusi' : 'Explore Solutions'}
+              </button>
             </div>
           </div>
         </ScrollReveal>

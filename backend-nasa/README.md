@@ -7,7 +7,7 @@ Kerangka backend dan AI. Belum ada fitur; baru `/health` dan router `/api/v1` ko
 ```
 app/
   main.py          create_app(): CORS dari env, error handler, router
-  core/            config (env), logging (text/JSON), errors, rate_limit
+  core/            config (env), logging (text/JSON), errors, schemas (envelope), rate_limit
   api/router.py    router /api/v1 — daftarkan router fitur di sini
   features/        satu paket per fitur: router.py (tipis), schemas.py, service.py
     health/        GET /health
@@ -44,7 +44,7 @@ Docker (dari root repo): salin `../.env.example` ke `../.env`, isi `POSTGRES_PAS
 | Extra | Isi | Untuk |
 | --- | --- | --- |
 | `dev` | pytest, ruff, black, mypy, bandit, pip-audit | semua anggota |
-| `db` | SQLAlchemy async, asyncpg, GeoAlchemy2, Alembic | modul yang memakai PostGIS |
+| `db` | SQLAlchemy async, GeoAlchemy2, Alembic | modul yang memakai PostGIS |
 | `cache` | redis | cache / antrean |
 | `worker` | arq | job komputasi panjang |
 | `ml` | numpy, pandas, scikit-learn, xarray | modul AI |
@@ -66,4 +66,31 @@ di `models/registry.yaml`, dan simpan salinan `configs/experiment.example.yaml` 
 - Endpoint I/O memakai `async def`; komputasi berat dijalankan di threadpool.
 - Router tipis, logika di `service.py` / `app/ai`, schema request dan response terpisah.
 - Tanpa `print()`, pakai `logging`. Rahasia hanya dari env.
+- Format response wajib `ApiResponse` lewat `ok()` (lihat `../docs/adr/0002-response-envelope.md`).
+- Urutan import: ECC menyebut isort; di sini dijalankan oleh ruff (aturan `I`, kompatibel dengan
+  profil black), jadi tidak perlu memasang isort terpisah.
+- Pre-commit: dari root repo jalankan `pre-commit install` sekali.
 - Test dulu (TDD), coverage ≥ 80%.
+
+## Rotation comparison API
+
+Needs the processed data from `fieldshift-data-kit` (`run_all.ps1 -Process`). Point
+`PROCESSED_DIR` in `.env` at `fieldshift-data-kit/data/processed` (absolute path) or copy it
+to `datasets/processed`.
+
+- `GET /api/v1/rotations/sites`: sites with processed data, seasons, crops, latest ENSO/IOD phase
+- `POST /api/v1/rotations/compare`: ranked strategies with metrics and evidence cards
+- `GET /api/v1/fields?site=banyumas` and `GET /api/v1/fields/{field_id}`: real field profiles
+  (camelCase, same shape as `FieldProfile` in `frontend-nasa/src/types/domain.ts`)
+
+Docker: `docker-compose.yml` mounts `PROCESSED_HOST_DIR` (default
+`../fieldshift-data-kit/data/processed`) read-only at `/app/datasets/processed`.
+
+```json
+{"site": "banyumas",
+ "priorities": {"water": 1, "soil_health": 1, "erosion": 1, "pest_break": 0.5},
+ "risk_aversion": 0.5,
+ "baseline": [{"MT1_wet": "rice", "MT2_wet_dry": "rice"}]}
+```
+
+Design and limits: `docs/adr/0004-rotation-engine.md`.
