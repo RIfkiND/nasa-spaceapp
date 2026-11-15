@@ -72,8 +72,8 @@ function syntheticNdviFromClimate(f: FieldProfileOut): NdviPointOut[] {
 
   return f.climateHistory.map((m, idx) => {
     const rainNorm = m.rainfall / maxRain;
-    const moistureNorm = clamp01(m.soil_moisture);
-    const thermalPenalty = clamp01((m.temp_max - 31) * 0.035);
+    const moistureNorm = clamp01(m.soilMoisture);
+    const thermalPenalty = clamp01((m.tempMax - 31) * 0.035);
     const slopePenalty = clamp01((f.soil.slope - 8) * 0.012);
     const awcBoost = clamp01((f.soil.awc - 90) / 110) * 0.08;
     const seasonalNoise = (((seed + idx * 37) % 17) - 8) / 200;
