@@ -36,11 +36,10 @@ export const PlotDetailSideCard: React.FC<PlotDetailSideCardProps> = ({
 
   return (
     <aside
-      className={`fixed left-4 right-4 top-20 z-40 max-w-sm sm:left-auto sm:right-4 sm:max-w-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-        isOpen
-          ? 'translate-x-0 opacity-100 pointer-events-auto'
-          : 'translate-x-12 opacity-0 pointer-events-none'
-      }`}
+      className={`fixed left-4 right-4 top-20 z-40 max-w-sm sm:left-auto sm:right-4 sm:max-w-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${isOpen
+        ? 'translate-x-0 opacity-100 pointer-events-auto'
+        : 'translate-x-12 opacity-0 pointer-events-none'
+        }`}
       aria-hidden={!isOpen}
       aria-label="Panel Detail Petak"
     >

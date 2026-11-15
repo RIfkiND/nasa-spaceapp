@@ -161,20 +161,18 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
         <button
           type="button"
           onClick={() => setIsFilterOpen((prev) => !prev)}
-          className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 cursor-pointer ${
-            activeFilter !== 'all'
-              ? 'bg-[#237F8E] text-white shadow-xs'
-              : isFilterOpen
-                ? 'bg-[#E3F1F3] text-[#1B6572]'
-                : 'border border-[#E6EBF0] text-[#14232B] hover:border-[#237F8E] hover:text-[#237F8E]'
-          }`}
+          className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 cursor-pointer ${activeFilter !== 'all'
+            ? 'bg-[#237F8E] text-white shadow-xs'
+            : isFilterOpen
+              ? 'bg-[#E3F1F3] text-[#1B6572]'
+              : 'border border-[#E6EBF0] text-[#14232B] hover:border-[#237F8E] hover:text-[#237F8E]'
+            }`}
           aria-expanded={isFilterOpen}
           title={isId ? 'Buka/Tutup Filter Cepat' : 'Toggle Quick Filters'}
         >
           <Filter
-            className={`h-3.5 w-3.5 transition-transform duration-200 ease-out ${
-              activeFilter !== 'all' ? 'text-white' : 'text-[#237F8E]'
-            } ${isFilterOpen ? 'rotate-12 scale-110' : 'rotate-0 scale-100'}`}
+            className={`h-3.5 w-3.5 transition-transform duration-200 ease-out ${activeFilter !== 'all' ? 'text-white' : 'text-[#237F8E]'
+              } ${isFilterOpen ? 'rotate-12 scale-110' : 'rotate-0 scale-100'}`}
           />
           <span className="hidden sm:inline">{isId ? 'Filter' : 'Filters'}</span>
           {activeFilter !== 'all' && (
@@ -196,11 +194,10 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
                   ? 'Gunakan Lokasi Perangkat Saya'
                   : 'Use My Device Location'
             }
-            className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 ${
-              userCoords
-                ? 'bg-[#E3F1F3] text-[#1B6572] hover:bg-[#d0ebef]'
-                : 'border border-[#E6EBF0] text-[#14232B] hover:border-[#237F8E] hover:text-[#237F8E]'
-            }`}
+            className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 ${userCoords
+              ? 'bg-[#E3F1F3] text-[#1B6572] hover:bg-[#d0ebef]'
+              : 'border border-[#E6EBF0] text-[#14232B] hover:border-[#237F8E] hover:text-[#237F8E]'
+              }`}
           >
             {isLocating ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin text-[#237F8E]" />
@@ -268,11 +265,10 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
 
       {/* Collapsible Quick Filter Drawer with smooth height & fade micro-transition */}
       <div
-        className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-          isFilterOpen
-            ? 'mt-2 max-h-40 opacity-100 translate-y-0 pointer-events-auto'
-            : 'max-h-0 opacity-0 -translate-y-2 pointer-events-none'
-        }`}
+        className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${isFilterOpen
+          ? 'mt-2 max-h-40 opacity-100 translate-y-0 pointer-events-auto'
+          : 'max-h-0 opacity-0 -translate-y-2 pointer-events-none'
+          }`}
         aria-hidden={!isFilterOpen}
       >
         <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#E6EBF0] bg-white/95 p-2.5 shadow-float backdrop-blur-md">
@@ -285,11 +281,10 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
               <button
                 key={chip.id}
                 onClick={() => onFilterChange(chip.id)}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition active:scale-95 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#237F8E] text-white shadow-xs font-bold'
-                    : 'border border-[#CAD4DC] bg-[#F7F9FB] text-[#14232B] hover:border-[#237F8E] hover:bg-[#E3F1F3]'
-                }`}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition active:scale-95 cursor-pointer ${isActive
+                  ? 'bg-[#237F8E] text-white shadow-xs font-bold'
+                  : 'border border-[#CAD4DC] bg-[#F7F9FB] text-[#14232B] hover:border-[#237F8E] hover:bg-[#E3F1F3]'
+                  }`}
               >
                 {chip.label}
               </button>
