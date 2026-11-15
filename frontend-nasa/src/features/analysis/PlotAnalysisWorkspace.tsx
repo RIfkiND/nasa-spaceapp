@@ -25,6 +25,8 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronRight,
+  Menu,
+  X,
 } from 'lucide-react';
 import { SNAPSHOT_DATE } from '../../api/mock/mockData';
 
@@ -123,18 +125,34 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
 }) => {
   const isId = currentLang === 'id';
   const [activeSubTab, setActiveSubTab] = useState<SubTabKey>('profile');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Helper step index (0, 1, 2)
   const currentStepIdx = WORKFLOW_STEPS.findIndex((s) => s.key === activeSubTab);
 
   return (
     <div className="min-h-screen bg-[#F4F7FA] text-[#14232B] flex flex-col lg:flex-row">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileSidebarOpen && (
+        <div
+          role="presentation"
+          className="fixed inset-0 bg-black/45 backdrop-blur-xs z-40 transition-opacity lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* ================================================================ */}
-      {/* 1. LEFT STICKY SIDEBAR NAVIGATION WITH WORKFLOW STEPPER          */}
+      {/* 1. RESPONSIVE SIDEBAR (DRAWER ON MOBILE, STICKY ON DESKTOP)     */}
       {/* ================================================================ */}
-      <aside className="w-full lg:w-84 shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-[#E6EBF0] lg:sticky lg:top-0 lg:h-screen flex flex-col justify-between overflow-y-auto p-4 sm:p-5 z-30 shadow-[4px_0_24px_rgba(15,23,42,0.03)]">
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white flex flex-col justify-between overflow-y-auto p-4 sm:p-5 shadow-2xl transition-transform duration-300 ease-in-out
+          lg:static lg:w-84 lg:shrink-0 lg:border-r lg:border-[#E6EBF0] lg:h-screen lg:sticky lg:top-0 lg:shadow-[4px_0_24px_rgba(15,23,42,0.03)] lg:translate-x-0
+          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
         <div className="space-y-6">
-          {/* Back Navigation & App Brand */}
+          {/* Back Navigation & App Brand / Mobile Close */}
           <div className="flex items-center justify-between pb-3 border-b border-[#E6EBF0]">
             <button
               type="button"
@@ -143,7 +161,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               title={isId ? 'Kembali ke Peta Satelit 3D' : 'Back to 3D Satellite Map'}
             >
               <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5 text-[#237F8E]" />
-              <span>{isId ? 'Peta 3D Banyumas' : '3D Map'}</span>
+              <span>{isId ? 'Peta 3D' : '3D Map'}</span>
             </button>
 
             <div className="flex items-center gap-1.5">
@@ -160,6 +178,16 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               <span className="rounded-full bg-[#E3F1F3] px-2.5 py-0.5 text-[10px] font-extrabold text-[#1B6572] font-mono border border-[#237F8E]/20">
                 WORKSPACE
               </span>
+
+              {/* Close Drawer Button on Mobile */}
+              <button
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="lg:hidden flex h-8 w-8 items-center justify-center rounded-xl border border-[#E6EBF0] bg-slate-50 text-[#5F6B74] hover:text-[#14232B] hover:bg-slate-100 transition active:scale-95 ml-1 cursor-pointer"
+                aria-label={isId ? 'Tutup Menu' : 'Close Menu'}
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -239,7 +267,10 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => setActiveSubTab(step.key)}
+                      onClick={() => {
+                        setActiveSubTab(step.key);
+                        setIsMobileSidebarOpen(false);
+                      }}
                       className={`relative z-10 w-full text-left rounded-2xl p-3 sm:p-3.5 transition-all duration-200 flex items-start gap-3 cursor-pointer border ${
                         isActive
                           ? 'bg-[#E3F1F3]/60 border-[#237F8E] shadow-xs'
@@ -341,15 +372,27 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
       {/* ================================================================ */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Sticky Top Status Header */}
-        <header className="sticky top-0 z-20 border-b border-[#E6EBF0] bg-white/95 px-4 sm:px-6 py-3.5 shadow-2xs backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs text-[#5F6B74]">
-            <span className="font-semibold text-[#14232B]">{field.name}</span>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-[#237F8E] font-bold">
-              {isId
-                ? WORKFLOW_STEPS[currentStepIdx].titleId
-                : WORKFLOW_STEPS[currentStepIdx].titleEn}
-            </span>
+        <header className="sticky top-0 z-20 border-b border-[#E6EBF0] bg-white/95 px-4 sm:px-6 py-3 shadow-2xs backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Hamburger Button on Mobile / Tablet */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-[#E6EBF0] bg-[#F7F9FB] hover:bg-[#E3F1F3] text-[#14232B] hover:text-[#237F8E] transition active:scale-95 shadow-2xs cursor-pointer shrink-0"
+              aria-label={isId ? 'Buka Menu Navigasi' : 'Open Navigation Menu'}
+            >
+              <Menu className="h-4.5 w-4.5" />
+            </button>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-[#5F6B74] truncate">
+              <span className="font-bold text-[#14232B] truncate">{field.name}</span>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <span className="text-[#237F8E] font-bold truncate">
+                {isId
+                  ? WORKFLOW_STEPS[currentStepIdx].titleId
+                  : WORKFLOW_STEPS[currentStepIdx].titleEn}
+              </span>
+            </div>
           </div>
 
           {/* Step Action Advance Button & Language Switcher */}
@@ -407,6 +450,41 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
 
         {/* Dynamic Step Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {/* Mobile Quick Horizontal Stepper Pills */}
+          <div className="lg:hidden flex items-center gap-1.5 p-1 rounded-2xl bg-white border border-[#E6EBF0] mb-5 shadow-2xs">
+            {WORKFLOW_STEPS.map((step) => {
+              const isActive = activeSubTab === step.key;
+              const StepIcon = step.icon;
+              return (
+                <button
+                  key={step.key}
+                  type="button"
+                  onClick={() => setActiveSubTab(step.key)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition text-center truncate cursor-pointer ${
+                    isActive
+                      ? 'bg-[#237F8E] text-white shadow-xs'
+                      : 'text-[#5F6B74] hover:bg-[#F7F9FB]'
+                  }`}
+                >
+                  <StepIcon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate text-[11px]">
+                    {isId
+                      ? step.key === 'profile'
+                        ? 'Lahan'
+                        : step.key === 'optimizer'
+                        ? 'Optimasi'
+                        : 'PPL'
+                      : step.key === 'profile'
+                      ? 'Soil'
+                      : step.key === 'optimizer'
+                      ? 'Optimizer'
+                      : 'Brief'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* SUB-TAB 1: PEDOLOGY & NASA SATELLITE CLIMATOLOGY (WITH MINI MAP INSET) */}
           {activeSubTab === 'profile' && (
             <div className="space-y-6">
