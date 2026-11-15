@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import type { Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from '../../types/domain';
+import type {
+  Strategy,
+  PriorityWeights,
+  ClimatePhase,
+  FarmerConstraints,
+  ClimateScenario,
+  TrainedModelInfo,
+  PersistenceStatus,
+} from '../../types/domain';
 import { DEFAULT_CAUTION } from '../../lib/scoring';
 import {
   ShieldCheck,
@@ -13,6 +21,9 @@ import {
   AlertTriangle,
   Radar as RadarIcon,
   LayoutGrid,
+  Cpu,
+  Database,
+  RefreshCw,
 } from 'lucide-react';
 import {
   RadarChart,
@@ -33,6 +44,10 @@ interface StrategyBoardProps {
   scenario: ClimateScenario;
   onOpenEvidence: (strategy: Strategy) => void;
   isCalculating?: boolean;
+  modelInfo?: TrainedModelInfo | null;
+  persistence?: PersistenceStatus | null;
+  onRetrainModel?: () => void;
+  isRetraining?: boolean;
 }
 
 export const StrategyBoard: React.FC<StrategyBoardProps> = ({
@@ -41,6 +56,10 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
   constraints,
   onOpenEvidence,
   isCalculating = false,
+  modelInfo = null,
+  persistence = null,
+  onRetrainModel,
+  isRetraining = false,
 }) => {
   // Caution slider: 0 = Pure Mean, 1 = Pure CVaR (Worst Case)
   const [cautionLevel, setCautionLevel] = useState<number>(DEFAULT_CAUTION);
@@ -134,6 +153,70 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* AI Model Telemetry & Supabase Persistence Status Bar */}
+      {(modelInfo || persistence) && (
+        <div className="rounded-2xl border border-[#237F8E]/25 bg-[#E3F1F3]/40 p-4 shadow-2xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#14232B]">
+              <Cpu className="h-4 w-4 text-[#237F8E]" />
+              <span>AI Multi-Approach Engine:</span>
+              <span className="rounded-full bg-white px-2.5 py-0.5 font-mono text-[11px] text-[#237F8E] border border-[#237F8E]/25">
+                {modelInfo ? `${modelInfo.modelId}@${modelInfo.version}` : 'stress_baseline_v1@0.1.0'}
+              </span>
+            </div>
+
+            {modelInfo && (
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-[#1B6572]">
+                <span className="rounded-lg bg-white/80 px-2 py-0.5 border border-[#E6EBF0]">
+                  R²={modelInfo.r2Score.toFixed(3)}
+                </span>
+                <span className="rounded-lg bg-white/80 px-2 py-0.5 border border-[#E6EBF0]">
+                  RMSE={modelInfo.rmseMm.toFixed(1)} mm
+                </span>
+                <span className="rounded-lg bg-white/80 px-2 py-0.5 border border-[#E6EBF0]">
+                  Acc={(modelInfo.stressAccuracy * 100).toFixed(1)}%
+                </span>
+                <span className="rounded-lg bg-white/80 px-2 py-0.5 border border-[#E6EBF0]">
+                  N={modelInfo.nSamples} musim
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {persistence && (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold border ${
+                  persistence.pushed
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-white text-[#5F6B74] border-[#E6EBF0]'
+                }`}
+                title={persistence.detail ?? undefined}
+              >
+                <Database className="h-3.5 w-3.5 text-[#237F8E]" />
+                <span>
+                  {persistence.pushed
+                    ? `Supabase Sync (${persistence.recordsSynced} rows)`
+                    : 'DB Snapshot Mode'}
+                </span>
+              </span>
+            )}
+
+            {onRetrainModel && (
+              <button
+                type="button"
+                onClick={onRetrainModel}
+                disabled={isRetraining}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#237F8E] hover:bg-[#1B6572] disabled:opacity-60 text-white px-3.5 py-1 text-[11px] font-bold transition cursor-pointer shadow-2xs"
+              >
+                <RefreshCw className={`h-3 w-3 ${isRetraining ? 'animate-spin' : ''}`} />
+                <span>{isRetraining ? 'Melatih AI...' : 'Train ulang AI NASA'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Risk Horizon Controller */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -426,6 +509,38 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                       &middot; indeks erosi <strong className="font-mono text-gray-800">{Math.round(strat.metrics.erosionIndex)}</strong>
                       {' '}&middot; {strat.metrics.analogYears.length} tahun analog ({strat.metrics.analogGrouping})
                     </p>
+                  )}
+
+                  {/* 3-Approach AI Comparison Summary */}
+                  {strat.approaches && strat.approaches.length > 0 && (
+                    <div className="pt-2.5 mt-2 border-t border-gray-100 space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#237F8E] flex items-center gap-1">
+                        <Cpu className="h-3 w-3" /> Evaluasi 3-Pendekatan AI (Defisit Air):
+                      </span>
+                      <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                        {strat.approaches.map((ap) => (
+                          <div
+                            key={ap.approach}
+                            className="rounded-lg border border-gray-100 bg-gray-50/80 p-1.5 text-center"
+                            title={ap.confidenceNote}
+                          >
+                            <span className="block font-semibold text-gray-600 truncate">
+                              {ap.approach === 'water_balance'
+                                ? 'FAO-56'
+                                : ap.approach === 'ml_stress_baseline'
+                                ? 'Ridge ML'
+                                : 'Obs CDL'}
+                            </span>
+                            <span className="font-mono font-bold text-gray-900 tabular-nums">
+                              {Math.round(ap.irrigationMm)} mm
+                            </span>
+                            <span className="block text-[9px] text-[#237F8E] font-mono">
+                              P(stres) {Math.round(ap.stressProbability * 100)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

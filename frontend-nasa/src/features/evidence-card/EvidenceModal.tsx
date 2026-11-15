@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CheckCircle2, AlertTriangle, Database, FileText, CheckSquare, Square, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle2, AlertTriangle, Database, FileText, CheckSquare, Square, ShieldCheck, Cpu } from 'lucide-react';
 import type { Strategy } from '../../types/domain';
 
 interface EvidenceModalProps {
@@ -72,6 +72,59 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
               </ul>
             )}
           </div>
+
+          {/* Section: 3-Approach AI Water-Stress Evaluation */}
+          {strategy.approaches && strategy.approaches.length > 0 && (
+            <div className="rounded-2xl border border-[#237F8E]/30 bg-white p-5">
+              <div className="flex items-center gap-2 text-[#237F8E]">
+                <Cpu className="h-4 w-4" />
+                <h3 className="font-bold text-sm text-[#14232B]">
+                  Komparasi 3-Pendekatan Pemodelan AI & Fisika (NASA Space Apps)
+                </h3>
+              </div>
+              <p className="mt-1 text-xs text-[#5F6B74]">
+                Perbandingan lintasan defisit air antara model neraca air FAO-56, baseline regresi Ridge ML terlatih, dan pencocokan observasi satelit historis.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                {strategy.approaches.map((ap) => {
+                  const titleLabel =
+                    ap.approach === 'water_balance'
+                      ? 'FAO-56 Water Balance'
+                      : ap.approach === 'ml_stress_baseline'
+                      ? 'Ridge ML Stress Baseline'
+                      : 'Observational Matching';
+                  return (
+                    <div
+                      key={ap.approach}
+                      className="rounded-xl border border-[#E6EBF0] bg-[#F7F9FB] p-3.5 text-xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#14232B]">{titleLabel}</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-mono font-bold text-[#237F8E] border border-[#E6EBF0]">
+                          {ap.approach}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 pt-1 text-center font-mono">
+                        <div className="rounded-lg bg-white p-1.5 border border-[#E6EBF0]">
+                          <span className="block text-[9px] text-[#5F6B74]">Defisit</span>
+                          <strong className="text-[#14232B]">{Math.round(ap.irrigationMm)} mm</strong>
+                        </div>
+                        <div className="rounded-lg bg-white p-1.5 border border-[#E6EBF0]">
+                          <span className="block text-[9px] text-[#5F6B74]">P(Stres)</span>
+                          <strong className="text-[#237F8E]">{Math.round(ap.stressProbability * 100)}%</strong>
+                        </div>
+                        <div className="rounded-lg bg-white p-1.5 border border-[#E6EBF0]">
+                          <span className="block text-[9px] text-[#5F6B74]">Hari Stres</span>
+                          <strong className="text-amber-700">{Math.round(ap.waterStressDays)} hr</strong>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-[#5F6B74] leading-relaxed pt-1">{ap.confidenceNote}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Section: NASA Sensor Inputs */}
           <div className="rounded-2xl border border-[#E6EBF0] bg-white p-5">

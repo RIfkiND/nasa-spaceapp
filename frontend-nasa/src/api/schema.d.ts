@@ -41,6 +41,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rotations/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List active AI/ML water-stress models and cross-validation metrics
+         * @description Returns the active trained AI water-stress baseline model (`stress_baseline_v1`) along with 5-fold cross-validation metrics (`r2_score`, `rmse_mm`, `mae_mm`, `stress_accuracy`) and learned Ridge regression feature weights.
+         */
+        get: operations["list_models_api_v1_rotations_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rotations/train": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Train or retrain the AI water-stress baseline model (`stress_baseline_v1`)
+         * @description Trains the Ridge-regularized ML water-stress baseline model (`stress_baseline_v1`) on harmonized NASA POWER, GPM IMERG, NOAA ONI/DMI, and SoilGrids/SSURGO seasonal water-deficit samples across all study sites. Writes the trained artifact to `models/stress_baseline_v1.json`, updates `models/registry.yaml` and `configs/stress_baseline_v1.yaml`, and upserts the `ModelVersion` into PostGIS.
+         */
+        post: operations["train_model_api_v1_rotations_train_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/rotations/compare": {
         parameters: {
             query?: never;
@@ -51,8 +91,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Compare crop rotation strategies and persist AI results to PostGIS
-         * @description Evaluates at least three crop rotation strategies (including the baseline rotation) against historical climate analog years matching the requested ENSO/IOD phase. Computes mean and worst-20% (CVaR20) irrigation demand, soil health heuristics, RUSLE slope-adjusted erosion exposure, Pareto dominance, and normalized 0-100 scores. Whenever a PostgreSQL/PostGIS database session is configured, the AI comparison output (strategies, sequence items, scenario outcomes, evidence cards, and data gaps) is automatically upserted into the database.
+         * Compare crop rotation strategies (3 AI approaches) and persist to PostGIS
+         * @description Evaluates at least three crop rotation strategies (including the baseline rotation) against historical climate analog years matching the requested ENSO/IOD phase. Computes mean and worst-20% (CVaR20) irrigation demand, soil health heuristics, RUSLE slope-adjusted erosion exposure, Pareto dominance, normalized 0-100 scores, and a 3-approach comparison (`water_balance`, `ml_stress_baseline`, `observational_matching`). Whenever a PostgreSQL/PostGIS database session is configured, the AI comparison output is automatically upserted into the database.
          */
         post: operations["compare_rotations_api_v1_rotations_compare_post"];
         delete?: never;
@@ -234,6 +274,14 @@ export interface components {
             error?: components["schemas"]["ErrorInfo"] | null;
             meta?: components["schemas"]["PageMeta"] | null;
         };
+        /** ApiResponse[TrainModelResponseOut] */
+        ApiResponse_TrainModelResponseOut_: {
+            /** Success */
+            success: boolean;
+            data?: components["schemas"]["TrainModelResponseOut"] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
         /** ApiResponse[list[FieldProfileOut]] */
         ApiResponse_list_FieldProfileOut__: {
             /** Success */
@@ -251,6 +299,47 @@ export interface components {
             data?: components["schemas"]["SiteInfo"][] | null;
             error?: components["schemas"]["ErrorInfo"] | null;
             meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[list[TrainedModelInfoOut]] */
+        ApiResponse_list_TrainedModelInfoOut__: {
+            /** Success */
+            success: boolean;
+            /** Data */
+            data?: components["schemas"]["TrainedModelInfoOut"][] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /**
+         * ApproachEstimateOut
+         * @description Per-strategy outcome under one of the three modeling approaches.
+         */
+        ApproachEstimateOut: {
+            /**
+             * Approach
+             * @description Modeling approach (`water_balance`, `ml_stress_baseline`, `observational_matching`)
+             * @enum {string}
+             */
+            approach: "water_balance" | "ml_stress_baseline" | "observational_matching";
+            /**
+             * Irrigation Mm
+             * @description Estimated annual irrigation water demand under this approach (mm/yr)
+             */
+            irrigation_mm: number;
+            /**
+             * Water Stress Days
+             * @description Estimated water stress exposure days per rotation year
+             */
+            water_stress_days: number;
+            /**
+             * Stress Probability
+             * @description Predicted probability of severe seasonal water deficit (0-1)
+             */
+            stress_probability: number;
+            /**
+             * Confidence Note
+             * @description Provenance and epistemic confidence note for this approach
+             */
+            confidence_note: string;
         };
         /** ClimateMonth */
         ClimateMonth: {
@@ -393,6 +482,7 @@ export interface components {
             field_ctx?: components["schemas"]["FieldContextOut"] | null;
             scenario: components["schemas"]["ScenarioOut"];
             summary?: components["schemas"]["ComparisonSummaryOut"] | null;
+            model_info?: components["schemas"]["TrainedModelInfoOut"] | null;
             /**
              * Shared Site Gaps
              * @description Common site-level data gaps shared across all strategies
@@ -616,6 +706,11 @@ export interface components {
              * @enum {string}
              */
             erosionRisk: "Low" | "Moderate" | "High";
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
         };
         /** HealthData */
         HealthData: {
@@ -1081,6 +1176,11 @@ export interface components {
             pareto_status: "Optimal" | "Tradeoff" | "Dominated";
             /** @description Pre-normalized 0-100 scores for mean and worst-case (CVaR20) conditions */
             scores_100?: components["schemas"]["StrategyScores100Out"] | null;
+            /**
+             * Approaches
+             * @description Comparison of outcomes across water_balance, ml_stress_baseline, and observational_matching
+             */
+            approaches?: components["schemas"]["ApproachEstimateOut"][];
             card: components["schemas"]["EvidenceCardOut"];
         };
         /**
@@ -1090,6 +1190,113 @@ export interface components {
         StrategyScores100Out: {
             mean: components["schemas"]["ScoreBreakdown100Out"];
             worst_case: components["schemas"]["ScoreBreakdown100Out"];
+        };
+        /**
+         * TrainModelRequest
+         * @description Request payload for training/retraining the ML water-stress baseline model.
+         */
+        TrainModelRequest: {
+            /**
+             * Ridge Alpha
+             * @description L2 regularization penalty (alpha) for Ridge regression
+             * @default 0.08
+             */
+            ridge_alpha: number;
+            /**
+             * Stress Threshold Mm
+             * @description Seasonal irrigation deficit threshold (mm) defining severe water stress
+             * @default 220
+             */
+            stress_threshold_mm: number;
+        };
+        /**
+         * TrainModelResponseOut
+         * @description Response returned after training and registering the ML stress baseline model.
+         */
+        TrainModelResponseOut: {
+            model: components["schemas"]["TrainedModelInfoOut"];
+            /**
+             * Artifact Path
+             * @description Relative path to the saved model artifact
+             */
+            artifact_path: string;
+            /**
+             * Registry Updated
+             * @description True if models/registry.yaml was updated
+             */
+            registry_updated: boolean;
+            persistence: components["schemas"]["PersistenceOut"];
+        };
+        /**
+         * TrainedModelInfoOut
+         * @description Metadata and 5-fold cross-validation metrics for a trained AI model.
+         */
+        TrainedModelInfoOut: {
+            /**
+             * Model Id
+             * @description Model registry identifier (e.g., `stress_baseline_v1`)
+             */
+            model_id: string;
+            /**
+             * Version
+             * @description Semantic version of the trained artifact
+             */
+            version: string;
+            /**
+             * Approach
+             * @description Modeling approach (`ml_stress_baseline`)
+             */
+            approach: string;
+            /**
+             * Trained At
+             * @description ISO-8601 UTC timestamp when training completed
+             */
+            trained_at: string;
+            /**
+             * N Samples
+             * @description Number of seasonal climate-crop training samples
+             */
+            n_samples: number;
+            /**
+             * R2 Score
+             * @description 5-fold cross-validated coefficient of determination (R2)
+             */
+            r2_score: number;
+            /**
+             * Rmse Mm
+             * @description Root Mean Squared Error in seasonal deficit (mm)
+             */
+            rmse_mm: number;
+            /**
+             * Mae Mm
+             * @description Mean Absolute Error in seasonal deficit (mm)
+             */
+            mae_mm: number;
+            /**
+             * Stress Accuracy
+             * @description Classification accuracy on severe seasonal water stress events
+             */
+            stress_accuracy: number;
+            /**
+             * Feature Weights
+             * @description Learned Ridge regression weights per normalized predictor feature
+             */
+            feature_weights: {
+                [key: string]: number;
+            };
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -1136,6 +1343,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_list_SiteInfo__"];
+                };
+            };
+        };
+    };
+    list_models_api_v1_rotations_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active trained AI models and evaluation metrics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_TrainedModelInfoOut__"];
+                };
+            };
+        };
+    };
+    train_model_api_v1_rotations_train_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["TrainModelRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Trained AI model metrics, artifact path, and PostGIS persistence status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_TrainModelResponseOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

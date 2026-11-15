@@ -8,6 +8,7 @@ import logging
 import math
 from dataclasses import asdict, replace
 from decimal import Decimal
+from pathlib import Path
 from typing import Any, cast
 
 from geoalchemy2.elements import WKBElement, WKTElement
@@ -17,7 +18,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.rotation.catalog import CROPS, SITES, TEMPLATES, build_years
 from app.ai.rotation.engine import compare
-from app.ai.rotation.models import Comparison, FieldContext, Scenario, SiteData, StrategyResult
+from app.ai.rotation.models import (
+    Comparison,
+    FieldContext,
+    Scenario,
+    SiteData,
+    StrategyResult,
+    StrategyTemplate,
+)
+from app.ai.rotation.stress_model import (
+    TrainedStressModel,
+    evaluate_strategy_approaches,
+    load_or_train_model,
+    save_trained_model,
+    train_stress_model,
+)
 from app.core.errors import DomainError, NotFoundError
 from app.data.processed import ProcessedRepository
 from app.db.models import (
@@ -47,6 +62,9 @@ from app.features.rotations.schemas import (
     ScoreBreakdown100Out,
     SiteInfo,
     StrategyScores100Out,
+    TrainedModelInfoOut,
+    TrainModelRequest,
+    TrainModelResponseOut,
 )
 
 logger = logging.getLogger(__name__)
@@ -139,14 +157,33 @@ def _pareto_status(s: StrategyResult) -> ParetoStatus:
     return "Optimal" if s.rank == 1 else "Tradeoff"
 
 
+def _to_model_info_out(model: TrainedStressModel) -> TrainedModelInfoOut:
+    return TrainedModelInfoOut(
+        model_id=model.model_id,
+        version=model.version,
+        approach=model.approach,
+        trained_at=model.trained_at,
+        n_samples=model.n_samples,
+        r2_score=model.r2_score,
+        rmse_mm=model.rmse_mm,
+        mae_mm=model.mae_mm,
+        stress_accuracy=model.stress_accuracy,
+        feature_weights=dict(model.feature_weights),
+    )
+
+
 def _build_comparison_out(
     result: Comparison,
+    site_data: SiteData,
+    templates: list[StrategyTemplate],
+    trained_model: TrainedStressModel,
     *,
     compact: bool = False,
     persistence: PersistenceOut | None = None,
 ) -> ComparisonOut:
     raw = asdict(result)
     scores_map = _compute_scores_100(result)
+    tpl_by_key = {t.key: t for t in templates}
 
     gap_sets = [set(s.card.gaps) for s in result.strategies]
     shared_gaps = sorted(set.intersection(*gap_sets)) if gap_sets else []
@@ -154,6 +191,20 @@ def _build_comparison_out(
     for strat_dict, strat_obj in zip(raw["strategies"], result.strategies, strict=True):
         strat_dict["pareto_status"] = _pareto_status(strat_obj)
         strat_dict["scores_100"] = scores_map[strat_obj.key].model_dump()
+        tpl = tpl_by_key.get(strat_obj.key)
+        if tpl is not None:
+            approaches = evaluate_strategy_approaches(
+                tpl,
+                site_data,
+                result.analogs,
+                result.field_ctx,
+                result.scenario,
+                strat_obj.metrics,
+                trained_model,
+            )
+            strat_dict["approaches"] = [asdict(a) for a in approaches]
+        else:
+            strat_dict["approaches"] = []
         if compact and shared_gaps:
             strat_dict["card"]["gaps"] = [
                 g for g in strat_dict["card"]["gaps"] if g not in shared_gaps
@@ -178,6 +229,7 @@ def _build_comparison_out(
         overall_confidence=conf_val,
     )
     raw["summary"] = summary.model_dump()
+    raw["model_info"] = _to_model_info_out(trained_model).model_dump()
     raw["shared_site_gaps"] = shared_gaps
     raw["persistence"] = (
         persistence.model_dump()
@@ -194,8 +246,16 @@ def _build_comparison_out(
 
 
 def _evaluate_request(
-    req: CompareRequest, repo: ProcessedRepository
-) -> tuple[Comparison, SiteData, dict[str, Any] | None]:
+    req: CompareRequest,
+    repo: ProcessedRepository,
+    models_dir: Path | None = None,
+) -> tuple[
+    Comparison,
+    SiteData,
+    list[StrategyTemplate],
+    TrainedStressModel,
+    dict[str, Any] | None,
+]:
     site = repo.load(req.site)
     templates = list(TEMPLATES[req.site])
     if req.baseline is not None:
@@ -229,23 +289,153 @@ def _evaluate_request(
         )
     except ValueError as exc:
         raise DomainError(str(exc)) from exc
-    return result, site, field_profile
+
+    all_sites = [repo.load(k) for k in repo.available_sites()] or [site]
+    trained_model = load_or_train_model(all_sites, models_dir=models_dir)
+    return result, site, templates, trained_model, field_profile
 
 
-def run_comparison(req: CompareRequest, repo: ProcessedRepository) -> ComparisonOut:
-    result, _, _ = _evaluate_request(req, repo)
-    return _build_comparison_out(result, compact=req.compact)
+def run_comparison(
+    req: CompareRequest,
+    repo: ProcessedRepository,
+    models_dir: Path | None = None,
+) -> ComparisonOut:
+    result, site_data, templates, trained_model, _ = _evaluate_request(req, repo, models_dir)
+    return _build_comparison_out(result, site_data, templates, trained_model, compact=req.compact)
 
 
 async def run_comparison_and_persist(
     req: CompareRequest,
     repo: ProcessedRepository,
     session: AsyncSession | None = None,
+    models_dir: Path | None = None,
 ) -> ComparisonOut:
-    """Evaluate AI rotation strategies and push the results to PostgreSQL/PostGIS."""
-    result, site_data, field_profile = _evaluate_request(req, repo)
-    persistence = await push_comparison_to_db(session, result, site_data, field_profile)
-    return _build_comparison_out(result, compact=req.compact, persistence=persistence)
+    """Evaluate AI rotation strategies (3 approaches) and push results to PostgreSQL/PostGIS."""
+    result, site_data, templates, trained_model, field_profile = _evaluate_request(
+        req, repo, models_dir
+    )
+    persistence = await push_comparison_to_db(
+        session, result, site_data, field_profile, trained_model=trained_model
+    )
+    return _build_comparison_out(
+        result,
+        site_data,
+        templates,
+        trained_model,
+        compact=req.compact,
+        persistence=persistence,
+    )
+
+
+def list_registered_models(
+    repo: ProcessedRepository,
+    models_dir: Path | None = None,
+) -> list[TrainedModelInfoOut]:
+    """Return active AI/ML models and their cross-validated evaluation metrics."""
+    sites_data = [repo.load(k) for k in repo.available_sites()]
+    if not sites_data:
+        return []
+    stress_model = load_or_train_model(sites_data, models_dir=models_dir)
+    return [_to_model_info_out(stress_model)]
+
+
+async def train_and_persist_model(
+    req: TrainModelRequest,
+    repo: ProcessedRepository,
+    models_dir: Path,
+    configs_dir: Path | None = None,
+    session: AsyncSession | None = None,
+) -> TrainModelResponseOut:
+    """Train `stress_baseline_v1` on harmonized NASA data, save artifact, and sync to PostGIS."""
+    sites_data = [repo.load(k) for k in repo.available_sites()]
+    if not sites_data:
+        raise DomainError("No harmonized sites available to train AI model.")
+
+    model = train_stress_model(
+        sites_data,
+        ridge_alpha=req.ridge_alpha,
+        stress_threshold_mm=req.stress_threshold_mm,
+    )
+    artifact_path = save_trained_model(model, models_dir, configs_dir)
+    persistence = await _push_model_version_to_db(session, model)
+
+    try:
+        rel_path = str(artifact_path.relative_to(models_dir.parent))
+    except ValueError:
+        rel_path = str(artifact_path)
+
+    return TrainModelResponseOut(
+        model=_to_model_info_out(model),
+        artifact_path=rel_path.replace("\\", "/"),
+        registry_updated=True,
+        persistence=persistence,
+    )
+
+
+async def _push_model_version_to_db(
+    session: AsyncSession | None,
+    model: TrainedStressModel,
+) -> PersistenceOut:
+    if session is None:
+        return PersistenceOut(
+            pushed=False,
+            status="skipped_no_db",
+            records_synced=0,
+            persisted_at=None,
+            detail="DATABASE_URL not active; trained AI model saved to local models/ directory.",
+        )
+
+    try:
+        mv = (
+            await session.execute(
+                select(ModelVersion).where(
+                    ModelVersion.name == model.model_id,
+                    ModelVersion.version == model.version,
+                )
+            )
+        ).scalar_one_or_none()
+        metrics_payload: dict[str, Any] = {
+            "r2_score": model.r2_score,
+            "rmse_mm": model.rmse_mm,
+            "mae_mm": model.mae_mm,
+            "stress_accuracy": model.stress_accuracy,
+            "n_samples": model.n_samples,
+            "ridge_alpha": model.ridge_alpha,
+            "feature_weights": model.feature_weights,
+        }
+        if mv is None:
+            mv = ModelVersion(
+                name=model.model_id,
+                version=model.version,
+                approach=ApproachType.ML_STRESS_BASELINE,
+                artifact_path=f"models/{model.model_id}.json",
+                metrics=metrics_payload,
+                is_active=True,
+            )
+            session.add(mv)
+        else:
+            mv.metrics = metrics_payload
+            mv.is_active = True
+
+        await session.commit()
+        return PersistenceOut(
+            pushed=True,
+            status="persisted",
+            records_synced=1,
+            persisted_at=dt.datetime.now(dt.UTC).isoformat(),
+            detail=f"Synced trained AI model '{model.model_id}' v{model.version} to PostGIS.",
+        )
+    except (SQLAlchemyError, OSError, TimeoutError, ValueError) as exc:
+        logger.warning("Failed to push trained model to database: %s", exc)
+        with contextlib.suppress(Exception):
+            await session.rollback()
+        return PersistenceOut(
+            pushed=False,
+            status="db_error_fallback",
+            records_synced=0,
+            persisted_at=None,
+            detail="Database unreachable; trained AI artifact saved to disk.",
+        )
 
 
 def _field_context(repo: ProcessedRepository, site: str, field_id: str) -> FieldContext:
@@ -296,6 +486,8 @@ async def push_comparison_to_db(
     comparison: Comparison,
     site_data: SiteData,
     field_profile: dict[str, Any] | None = None,
+    *,
+    trained_model: TrainedStressModel | None = None,
 ) -> PersistenceOut:
     """Persist AI rotation comparison output into PostgreSQL/PostGIS tables."""
     if session is None:
@@ -419,7 +611,7 @@ async def push_comparison_to_db(
             crops_by_code["fallow"] = fallow_row
         await session.flush()
 
-        # Ensure ModelVersion exists
+        # Ensure Water Balance & ML Stress Baseline ModelVersions exist
         mv = (
             await session.execute(
                 select(ModelVersion).where(
@@ -438,6 +630,32 @@ async def push_comparison_to_db(
             )
             session.add(mv)
             await session.flush()
+
+        ml_mv: ModelVersion | None = None
+        if trained_model is not None:
+            ml_mv = (
+                await session.execute(
+                    select(ModelVersion).where(
+                        ModelVersion.name == trained_model.model_id,
+                        ModelVersion.version == trained_model.version,
+                    )
+                )
+            ).scalar_one_or_none()
+            if ml_mv is None:
+                ml_mv = ModelVersion(
+                    name=trained_model.model_id,
+                    version=trained_model.version,
+                    approach=ApproachType.ML_STRESS_BASELINE,
+                    artifact_path=f"models/{trained_model.model_id}.json",
+                    metrics={
+                        "r2_score": trained_model.r2_score,
+                        "rmse_mm": trained_model.rmse_mm,
+                        "stress_accuracy": trained_model.stress_accuracy,
+                    },
+                    is_active=True,
+                )
+                session.add(ml_mv)
+                await session.flush()
 
         records_synced = 0
         by_year = {r.planning_year: r for r in site_data.records}
@@ -552,8 +770,10 @@ async def push_comparison_to_db(
                 card_row.provenance = provenance_payload
             records_synced += 1
 
+            wb_stress_days = round(min(180.0, strat.metrics.irrigation_mean_mm / 14.5), 1)
             for obj_type, val in (
                 (ObjectiveType.IRRIGATION_WATER_DEMAND, strat.metrics.irrigation_mean_mm),
+                (ObjectiveType.WATER_STRESS_DAYS, wb_stress_days),
                 (ObjectiveType.SOIL_HEALTH_ESTIMATE, strat.metrics.soil_health),
                 (ObjectiveType.BARE_SOIL_DAYS, round((1.0 - strat.metrics.cover_share) * 365.0, 1)),
             ):
@@ -563,6 +783,7 @@ async def push_comparison_to_db(
                             ScenarioOutcome.strategy_id == strategy.id,
                             ScenarioOutcome.year == target_year,
                             ScenarioOutcome.objective == obj_type,
+                            ScenarioOutcome.approach == ApproachType.WATER_BALANCE,
                         )
                     )
                 ).scalar_one_or_none()

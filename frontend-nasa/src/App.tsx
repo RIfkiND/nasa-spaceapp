@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { applyWeights } from './lib/scoring';
 import { MOCK_FIELDS } from './api/mock/mockData';
-import { baselineFromRotation, siteOf } from './api/fieldshift';
+import { baselineFromRotation, siteOf, trainAiStressModel } from './api/fieldshift';
 import { useFieldsQuery, useSiteInfoQuery, useStrategiesQuery } from './features/rotations/useRotationsQuery';
 import { FieldMap } from './features/map/FieldMap';
 import { PlotAnalysisWorkspace } from './features/analysis/PlotAnalysisWorkspace';
@@ -12,7 +12,15 @@ import { GeolocationBanner } from './components/common/GeolocationBanner';
 import { LandingPage } from './pages/LandingPage';
 import { useGeolocation } from './hooks/useGeolocation';
 import { parseHash, buildWorkspaceHash } from './lib/deepLink';
-import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
+import type {
+  FieldProfile,
+  Strategy,
+  PriorityWeights,
+  ClimatePhase,
+  FarmerConstraints,
+  ClimateScenario,
+  TrainedModelInfo,
+} from './types/domain';
 import type { Language } from './types/landing';
 
 function isFieldProfile(obj: unknown): obj is FieldProfile {
@@ -115,7 +123,10 @@ export function App() {
   const {
     strategies: rawStrategies,
     dataMode: strategiesDataMode,
+    modelInfo: queryModelInfo,
+    persistence: queryPersistence,
     isPlaceholderData: isCalculatingStrategies,
+    refetch: refetchStrategies,
   } = useStrategiesQuery({
     site: siteOf(activePlot),
     phase: climatePhase,
@@ -123,6 +134,27 @@ export function App() {
     scenario,
     baseline: currentBaseline,
   });
+
+  const [trainedModelOverride, setTrainedModelOverride] = useState<TrainedModelInfo | null>(null);
+  const [isRetraining, setIsRetraining] = useState(false);
+
+  const handleRetrainModel = async () => {
+    setIsRetraining(true);
+    try {
+      const res = await trainAiStressModel();
+      if (res) {
+        setTrainedModelOverride(res);
+        refetchStrategies();
+      }
+    } catch {
+      // Ignore if backend is offline
+    } finally {
+      setIsRetraining(false);
+    }
+  };
+
+  const activeModelInfo = trainedModelOverride ?? queryModelInfo ?? null;
+  const activePersistence = queryPersistence ?? null;
 
   const dataMode = (fieldsDataMode === 'live' || strategiesDataMode === 'live') ? 'live' : 'snapshot';
 
@@ -300,6 +332,10 @@ export function App() {
           initialBaseline={initialBaseline}
           cropLabels={cropLabels}
           onBaselineChange={(b) => setBaselines((prev) => ({ ...prev, [activePlot.id]: b }))}
+          modelInfo={activeModelInfo}
+          persistence={activePersistence}
+          onRetrainModel={handleRetrainModel}
+          isRetraining={isRetraining}
         />
 
         {/* Global Modals accessible across modes */}

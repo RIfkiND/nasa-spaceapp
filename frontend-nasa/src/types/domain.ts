@@ -53,6 +53,44 @@ export interface StrategyMetrics {
   erosionIndex: number;       // rain on bare soil x RUSLE slope factor, per rotation year
   analogYears: number[];
   analogGrouping: string;     // e.g. "enso = el_nino"
+  waterStressDays?: number;
+  mlStressProbability?: number;
+}
+
+export interface ApproachEstimate {
+  approach: 'water_balance' | 'ml_stress_baseline' | 'observational_matching';
+  irrigationMm: number;
+  waterStressDays: number;
+  stressProbability: number;
+  confidenceNote: string;
+}
+
+export interface TrainedModelInfo {
+  modelId: string;
+  version: string;
+  approach: string;
+  trainedAt: string;
+  nSamples: number;
+  r2Score: number;
+  rmseMm: number;
+  maeMm: number;
+  stressAccuracy: number;
+}
+
+export interface PersistenceStatus {
+  pushed: boolean;
+  status: string;
+  recordsSynced: number;
+  persistedAt?: string | null;
+  detail?: string | null;
+}
+
+export interface ClimatePhaseSummary {
+  ensoPhase: string;
+  sampleYears: number;
+  meanPrecipMm: number;
+  meanEt0Mm: number;
+  meanTempC?: number | null;
 }
 
 export interface DataSource {
@@ -90,6 +128,7 @@ export interface Strategy {
   constraintRequirements?: StrategyConstraintRequirements;
   evidence: EvidenceCardData;
   metrics?: StrategyMetrics;
+  approaches?: ApproachEstimate[];
 }
 
 export interface ClimateMonthData {

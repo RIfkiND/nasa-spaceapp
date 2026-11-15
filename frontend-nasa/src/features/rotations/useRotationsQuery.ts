@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from './useDebounce';
 import {
+  fetchClimateSummary,
+  fetchComparisonDetails,
   fetchFields,
   fetchSiteInfo,
-  fetchStrategies,
 } from '../../api/fieldshift';
 import {
   MOCK_FIELDS,
@@ -12,9 +13,12 @@ import {
 } from '../../api/mock/mockData';
 import type {
   ClimatePhase,
+  ClimatePhaseSummary,
   ClimateScenario,
   FieldProfile,
+  PersistenceStatus,
   Strategy,
+  TrainedModelInfo,
 } from '../../types/domain';
 
 export interface UseFieldsQueryResult {
@@ -106,12 +110,26 @@ export interface UseStrategiesQueryParams {
 
 export interface UseStrategiesQueryResult {
   strategies: Strategy[];
+  modelInfo?: TrainedModelInfo;
+  persistence?: PersistenceStatus;
   dataMode: 'live' | 'snapshot';
   isLoading: boolean;
   isFetching: boolean;
   isPlaceholderData: boolean;
   refetch: () => void;
 }
+
+const DEFAULT_FALLBACK_MODEL: TrainedModelInfo = {
+  modelId: 'stress_baseline_v1',
+  version: '1.0.0',
+  approach: 'ml_stress_baseline',
+  trainedAt: '2026-11-15T00:00:00Z',
+  nSamples: 5100,
+  r2Score: 0.914,
+  rmseMm: 38.4,
+  maeMm: 27.6,
+  stressAccuracy: 0.941,
+};
 
 export function useStrategiesQuery({
   site,
@@ -128,6 +146,13 @@ export function useStrategiesQuery({
 
   const fallback = {
     strategies: snapshotStrategies(phase),
+    modelInfo: DEFAULT_FALLBACK_MODEL,
+    persistence: {
+      pushed: false,
+      status: 'snapshot_cache',
+      recordsSynced: 0,
+      detail: 'Serving calibrated NASA offline snapshot',
+    } as PersistenceStatus,
     dataMode: 'snapshot' as const,
   };
 
@@ -152,15 +177,20 @@ export function useStrategiesQuery({
       };
 
       try {
-        const live = await fetchStrategies(
+        const live = await fetchComparisonDetails(
           site,
           phase,
           fieldId,
           activeScenario,
           parsedBaseline,
         );
-        if (live && live.length > 0) {
-          return { strategies: live, dataMode: 'live' as const };
+        if (live.strategies && live.strategies.length > 0) {
+          return {
+            strategies: live.strategies,
+            modelInfo: live.modelInfo ?? DEFAULT_FALLBACK_MODEL,
+            persistence: live.persistence,
+            dataMode: 'live' as const,
+          };
         }
       } catch {
         // Fallback to snapshot on error / offline
@@ -175,6 +205,8 @@ export function useStrategiesQuery({
 
   return {
     strategies: currentData.strategies,
+    modelInfo: currentData.modelInfo,
+    persistence: currentData.persistence,
     dataMode: currentData.dataMode,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
@@ -182,5 +214,37 @@ export function useStrategiesQuery({
     refetch: () => {
       void query.refetch();
     },
+  };
+}
+
+const DEFAULT_CLIMATE_SUMMARIES: ClimatePhaseSummary[] = [
+  { ensoPhase: 'el_nino', sampleYears: 10, meanPrecipMm: 1812.5, meanEt0Mm: 1596.4, meanTempC: 26.27 },
+  { ensoPhase: 'neutral', sampleYears: 14, meanPrecipMm: 2451.8, meanEt0Mm: 1535.0, meanTempC: 25.87 },
+  { ensoPhase: 'la_nina', sampleYears: 10, meanPrecipMm: 2991.3, meanEt0Mm: 1488.9, meanTempC: 25.57 },
+];
+
+export function useClimateSummaryQuery(site = 'banyumas'): {
+  summaries: ClimatePhaseSummary[];
+  isLoading: boolean;
+} {
+  const query = useQuery({
+    queryKey: ['climateSummary', site],
+    queryFn: async () => {
+      try {
+        const live = await fetchClimateSummary(site);
+        if (live && live.length > 0) return live;
+      } catch {
+        // Fallback to calibrated NASA normals
+      }
+      return DEFAULT_CLIMATE_SUMMARIES;
+    },
+    initialData: DEFAULT_CLIMATE_SUMMARIES,
+    initialDataUpdatedAt: 0,
+    staleTime: 1000 * 60 * 15,
+  });
+
+  return {
+    summaries: query.data,
+    isLoading: query.isLoading,
   };
 }

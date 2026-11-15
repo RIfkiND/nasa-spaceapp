@@ -5,17 +5,23 @@
  */
 import type { components } from './schema';
 import type {
+  ApproachEstimate,
   ClimatePhase,
+  ClimatePhaseSummary,
   ClimateScenario,
   DataSource,
   FieldProfile,
+  PersistenceStatus,
   ScoreSet,
   Strategy,
+  TrainedModelInfo,
 } from '../types/domain';
 
 type ComparisonOut = components['schemas']['ComparisonOut'];
 type StrategyOut = components['schemas']['StrategyOut'];
 type FieldProfileOut = components['schemas']['FieldProfileOut'];
+type ClimateSiteSummaryOut = components['schemas']['ClimateSiteSummaryOut'];
+type TrainModelResponseOut = components['schemas']['TrainModelResponseOut'];
 
 const BASE = ((import.meta.env?.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8000').replace(/\/$/, '');
 const TIMEOUT_MS = 8000;
@@ -42,7 +48,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const toEnsoPhase = (phase: ClimatePhase): 'el_nino' | 'la_nina' | 'neutral' =>
   phase === 'normal' ? 'neutral' : phase;
 
-/** Backend site key for a field (only Banyumas fields exist in the UI today). */
+/** Backend site key for a field. */
 export const siteOf = (field: FieldProfile): string =>
   field.regency.toLowerCase().includes('banyumas') ? 'banyumas' : 'nevada_mason_valley';
 
@@ -109,32 +115,65 @@ export function toStrategies(c: ComparisonOut, sources: string[]): Strategy[] {
   const worst = c.strategies.map((s) => s.metrics.irrigation_cvar_mm);
   const w = c.weights;
   const wSum = Object.values(w).reduce((a, b) => a + b, 0) || 1;
+  const sharedSiteGaps = c.shared_site_gaps ?? [];
 
   return c.strategies.map((s) => {
-    const u = s.utilities;
-    // Bounded indicators are shown as absolute values; erosion (unbounded index) is relative.
-    const shared = {
-      soilHealth: Math.round(s.metrics.soil_health * 100),
-      coverDays: Math.round(s.metrics.cover_share * 100),
-      erosionControl: Math.round(u.erosion * 100),
-      pestBreak: Math.round(s.metrics.pest_break_share * 100),
-    };
-    const overall = (water: number) =>
-      Math.round(
-        (w.water * water + w.soil_health * shared.soilHealth + w.erosion * shared.erosionControl + w.pest_break * shared.pestBreak) / wSum,
-      );
-    const meanWater = relative(s.metrics.irrigation_mean_mm, means);
-    const worstWater = relative(s.metrics.irrigation_cvar_mm, worst);
-    const mean: ScoreSet = { waterEfficiency: meanWater, ...shared, overall: overall(meanWater) };
-    const worstCase: ScoreSet = { waterEfficiency: worstWater, ...shared, overall: overall(worstWater) };
+    let mean: ScoreSet;
+    let worstCase: ScoreSet;
+
+    if (s.scores_100) {
+      mean = {
+        waterEfficiency: s.scores_100.mean.water_efficiency,
+        soilHealth: s.scores_100.mean.soil_health,
+        coverDays: s.scores_100.mean.cover_days,
+        erosionControl: s.scores_100.mean.erosion_control,
+        pestBreak: s.scores_100.mean.pest_break,
+        overall: s.scores_100.mean.overall,
+      };
+      worstCase = {
+        waterEfficiency: s.scores_100.worst_case.water_efficiency,
+        soilHealth: s.scores_100.worst_case.soil_health,
+        coverDays: s.scores_100.worst_case.cover_days,
+        erosionControl: s.scores_100.worst_case.erosion_control,
+        pestBreak: s.scores_100.worst_case.pest_break,
+        overall: s.scores_100.worst_case.overall,
+      };
+    } else {
+      const u = s.utilities;
+      const shared = {
+        soilHealth: Math.round(s.metrics.soil_health * 100),
+        coverDays: Math.round(s.metrics.cover_share * 100),
+        erosionControl: Math.round(u.erosion * 100),
+        pestBreak: Math.round(s.metrics.pest_break_share * 100),
+      };
+      const overall = (water: number) =>
+        Math.round(
+          (w.water * water + w.soil_health * shared.soilHealth + w.erosion * shared.erosionControl + w.pest_break * shared.pestBreak) / wSum,
+        );
+      const meanWater = relative(s.metrics.irrigation_mean_mm, means);
+      const worstWater = relative(s.metrics.irrigation_cvar_mm, worst);
+      mean = { waterEfficiency: meanWater, ...shared, overall: overall(meanWater) };
+      worstCase = { waterEfficiency: worstWater, ...shared, overall: overall(worstWater) };
+    }
+
     const dryCrop = s.sequence.some((y) => (y.MT3_dry ?? 'fallow') !== 'fallow');
+    const approaches: ApproachEstimate[] | undefined = s.approaches?.map((a) => ({
+      approach: a.approach,
+      irrigationMm: a.irrigation_mm,
+      waterStressDays: a.water_stress_days,
+      stressProbability: a.stress_probability,
+      confidenceNote: a.confidence_note,
+    }));
+    const mlEst = approaches?.find((a) => a.approach === 'ml_stress_baseline');
+    const wbEst = approaches?.find((a) => a.approach === 'water_balance');
+    const mergedGaps = Array.from(new Set([...s.card.gaps, ...sharedSiteGaps]));
 
     return {
       id: s.key,
       name: s.name,
       cropSequence: cropSequence(s),
       isBaseline: s.kind === 'baseline',
-      paretoStatus: !s.pareto_optimal ? 'Dominated' : s.rank === 1 ? 'Optimal' : 'Tradeoff',
+      paretoStatus: s.pareto_status ?? (!s.pareto_optimal ? 'Dominated' : s.rank === 1 ? 'Optimal' : 'Tradeoff'),
       confidence: s.card.confidence === 'high' ? 'HIGH' : s.card.confidence === 'medium' ? 'MODERATE' : 'LOW',
       confidenceReason: s.card.confidence_reasons.join(' '),
       scores: { mean, worstCase },
@@ -148,7 +187,7 @@ export function toStrategies(c: ComparisonOut, sources: string[]): Strategy[] {
         evidence: s.card.evidence,
         dataSources: dataSources(sources),
         benefits: s.card.benefits,
-        dataGaps: s.card.gaps,
+        dataGaps: mergedGaps,
         localChecks: s.card.risks_for_local_review,
       },
       metrics: {
@@ -159,7 +198,10 @@ export function toStrategies(c: ComparisonOut, sources: string[]): Strategy[] {
         erosionIndex: s.metrics.erosion_index,
         analogYears: c.analogs.years,
         analogGrouping: `${c.analogs.grouping} = ${c.analogs.phase}`,
+        waterStressDays: wbEst?.waterStressDays,
+        mlStressProbability: mlEst?.stressProbability,
       },
+      approaches,
     };
   });
 }
@@ -209,13 +251,19 @@ async function siteSources(site: string): Promise<string[]> {
   return (await fetchSiteInfo(site))?.sources ?? [];
 }
 
-export async function fetchStrategies(
+export interface ComparisonDetailsResult {
+  strategies: Strategy[];
+  modelInfo?: TrainedModelInfo;
+  persistence?: PersistenceStatus;
+}
+
+export async function fetchComparisonDetails(
   site: string,
   phase: ClimatePhase,
   fieldId?: string,
   scenario?: ClimateScenario,
   baseline?: Record<string, string>,
-): Promise<Strategy[]> {
+): Promise<ComparisonDetailsResult> {
   const body = {
     site,
     enso_phase: toEnsoPhase(phase),
@@ -230,5 +278,71 @@ export async function fetchStrategies(
     call<ComparisonOut>('/api/v1/rotations/compare', { method: 'POST', body: JSON.stringify(body) }),
     siteSources(site),
   ]);
-  return toStrategies(comparison, sources);
+  const modelInfo: TrainedModelInfo | undefined = comparison.model_info
+    ? {
+        modelId: comparison.model_info.model_id,
+        version: comparison.model_info.version,
+        approach: comparison.model_info.approach,
+        trainedAt: comparison.model_info.trained_at,
+        nSamples: comparison.model_info.n_samples,
+        r2Score: comparison.model_info.r2_score,
+        rmseMm: comparison.model_info.rmse_mm,
+        maeMm: comparison.model_info.mae_mm,
+        stressAccuracy: comparison.model_info.stress_accuracy,
+      }
+    : undefined;
+  const persistence: PersistenceStatus | undefined = comparison.persistence
+    ? {
+        pushed: comparison.persistence.pushed,
+        status: comparison.persistence.status,
+        recordsSynced: comparison.persistence.records_synced,
+        persistedAt: comparison.persistence.persisted_at,
+        detail: comparison.persistence.detail,
+      }
+    : undefined;
+  return {
+    strategies: toStrategies(comparison, sources),
+    modelInfo,
+    persistence,
+  };
+}
+
+export async function fetchStrategies(
+  site: string,
+  phase: ClimatePhase,
+  fieldId?: string,
+  scenario?: ClimateScenario,
+  baseline?: Record<string, string>,
+): Promise<Strategy[]> {
+  const res = await fetchComparisonDetails(site, phase, fieldId, scenario, baseline);
+  return res.strategies;
+}
+
+export async function fetchClimateSummary(site = 'banyumas'): Promise<ClimatePhaseSummary[]> {
+  const data = await call<ClimateSiteSummaryOut>(`/api/v1/climate/${encodeURIComponent(site)}?compact=true`);
+  return data.phase_summaries.map((p) => ({
+    ensoPhase: p.enso_phase,
+    sampleYears: p.sample_years,
+    meanPrecipMm: p.mean_precip_mm,
+    meanEt0Mm: p.mean_et0_mm,
+    meanTempC: p.mean_temp_c,
+  }));
+}
+
+export async function trainAiStressModel(): Promise<TrainedModelInfo> {
+  const res = await call<TrainModelResponseOut>('/api/v1/rotations/train', {
+    method: 'POST',
+    body: JSON.stringify({ ridge_alpha: 0.08, stress_threshold_mm: 220 }),
+  });
+  return {
+    modelId: res.model.model_id,
+    version: res.model.version,
+    approach: res.model.approach,
+    trainedAt: res.model.trained_at,
+    nSamples: res.model.n_samples,
+    r2Score: res.model.r2_score,
+    rmseMm: res.model.rmse_mm,
+    maeMm: res.model.mae_mm,
+    stressAccuracy: res.model.stress_accuracy,
+  };
 }

@@ -7,7 +7,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.data.processed import ProcessedRepository, clear_cache
-from app.features.rotations.router import get_repository
+from app.features.rotations.router import get_configs_dir, get_models_dir, get_repository
 from app.main import create_app
 from tests.rotation_fixtures import write_all
 
@@ -19,7 +19,11 @@ async def api(tmp_path: Path) -> AsyncIterator[AsyncClient]:
     clear_cache()
     app = create_app()
     repo = ProcessedRepository(write_all(tmp_path))
+    models_dir = tmp_path / "models"
+    configs_dir = tmp_path / "configs"
     app.dependency_overrides[get_repository] = lambda: repo
+    app.dependency_overrides[get_models_dir] = lambda: models_dir
+    app.dependency_overrides[get_configs_dir] = lambda: configs_dir
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
@@ -35,7 +39,9 @@ async def test_sites_lists_processed_sites(api: AsyncClient) -> None:
     assert body["data"][0]["crop_labels"]["chili"] == "Chili pepper"
 
 
-async def test_compare_returns_ranked_strategies_with_cards(api: AsyncClient) -> None:
+async def test_compare_returns_ranked_strategies_with_cards_and_approaches(
+    api: AsyncClient,
+) -> None:
     r = await api.post("/api/v1/rotations/compare", json={"site": "nevada_mason_valley"})
     data = r.json()["data"]
     assert r.status_code == 200
@@ -43,7 +49,36 @@ async def test_compare_returns_ranked_strategies_with_cards(api: AsyncClient) ->
     assert [s["rank"] for s in data["strategies"]] == [1, 2, 3]
     card = data["strategies"][0]["card"]
     assert {"why", "evidence", "benefits", "gaps", "risks_for_local_review"} <= set(card)
+    approaches = data["strategies"][0]["approaches"]
+    assert [a["approach"] for a in approaches] == [
+        "water_balance",
+        "ml_stress_baseline",
+        "observational_matching",
+    ]
+    assert data["model_info"]["model_id"] == "stress_baseline_v1"
+    assert data["model_info"]["r2_score"] > 0.5
     assert data["disclaimer"]
+
+
+async def test_train_and_list_models_endpoints(api: AsyncClient, tmp_path: Path) -> None:
+    r_train = await api.post(
+        "/api/v1/rotations/train",
+        json={"ridge_alpha": 0.1, "stress_threshold_mm": 210.0},
+    )
+    assert r_train.status_code == 200
+    train_data = r_train.json()["data"]
+    assert train_data["registry_updated"] is True
+    assert train_data["model"]["model_id"] == "stress_baseline_v1"
+    assert train_data["model"]["n_samples"] > 0
+    assert (tmp_path / "models" / "stress_baseline_v1.json").is_file()
+    assert (tmp_path / "models" / "registry.yaml").is_file()
+    assert (tmp_path / "configs" / "stress_baseline_v1.yaml").is_file()
+
+    r_models = await api.get("/api/v1/rotations/models")
+    assert r_models.status_code == 200
+    models_list = r_models.json()["data"]
+    assert len(models_list) == 1
+    assert models_list[0]["model_id"] == "stress_baseline_v1"
 
 
 async def test_compare_with_farmer_baseline(api: AsyncClient) -> None:

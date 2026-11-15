@@ -15,8 +15,10 @@ import {
 } from 'recharts';
 import type { FieldProfile } from '../../types/domain';
 import type { Language } from '../../types/landing';
-import { ShieldAlert, Thermometer, Activity, Droplets, Mountain, Sprout, Info } from 'lucide-react';
+import { ShieldAlert, Thermometer, Activity, Droplets, Mountain, Sprout, Info, CloudRain } from 'lucide-react';
 import { MiniParcelMap } from '../map/MiniParcelMap';
+import { siteOf } from '../../api/fieldshift';
+import { useClimateSummaryQuery } from '../rotations/useRotationsQuery';
 
 interface FieldProfileViewProps {
   field: FieldProfile;
@@ -30,6 +32,7 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({
   currentLang = 'id',
 }) => {
   const isId = currentLang === 'id';
+  const { summaries: climateSummaries } = useClimateSummaryQuery(siteOf(field));
 
   return (
     <div className="space-y-6">
@@ -252,6 +255,70 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* ============================================================== */}
+      {/* 2B. HARMONIZED NASA ENSO PHASE SEASONAL SUMMARY (API /climate) */}
+      {/* ============================================================== */}
+      {climateSummaries && climateSummaries.length > 0 && (
+        <div className="rounded-2xl border border-[#E6EBF0] bg-white p-6 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6EBF0] pb-4">
+            <div>
+              <h3 className="font-bold text-[#14232B] text-base flex items-center gap-2">
+                <CloudRain className="h-4.5 w-4.5 text-[#237F8E]" />
+                {isId
+                  ? 'Harmonisasi Musiman per Fase ENSO (NASA POWER · GPM IMERG · NOAA ONI)'
+                  : 'Seasonal Harmonization by ENSO Phase (NASA POWER · GPM IMERG · NOAA ONI)'}
+              </h3>
+              <p className="text-xs text-[#5F6B74] mt-0.5">
+                {isId
+                  ? 'Rata-rata presipitasi tahunan, evapotranspirasi acuan (ET0), dan tahun analog historis yang digunakan engine AI'
+                  : 'Mean annual precipitation, reference evapotranspiration (ET0), and historical analog years used by the AI engine'}
+              </p>
+            </div>
+            <span className="rounded-full bg-[#E3F1F3] px-3 py-1 text-[11px] font-mono font-bold text-[#1B6572] border border-[#237F8E]/25">
+              GET /api/v1/climate/{siteOf(field)}
+            </span>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {climateSummaries.map((cs) => {
+              const phaseTitle =
+                cs.ensoPhase === 'el_nino'
+                  ? 'El Niño (Kemarau Panjang)'
+                  : cs.ensoPhase === 'la_nina'
+                  ? 'La Niña (Curah Hujan Tinggi)'
+                  : 'Netral (Normal Historis)';
+              return (
+                <div
+                  key={cs.ensoPhase}
+                  className="rounded-xl border border-[#E6EBF0] bg-[#F7F9FB] p-4 space-y-2 text-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#14232B]">{phaseTitle}</span>
+                    <span className="rounded-full bg-white px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#237F8E] border border-[#E6EBF0]">
+                      {cs.sampleYears} thn analog
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 pt-1 text-center font-mono">
+                    <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
+                      <span className="block text-[9px] text-[#5F6B74]">Hujan/Thn</span>
+                      <strong className="text-[#237F8E]">{Math.round(cs.meanPrecipMm)} mm</strong>
+                    </div>
+                    <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
+                      <span className="block text-[9px] text-[#5F6B74]">ET0/Thn</span>
+                      <strong className="text-[#14232B]">{Math.round(cs.meanEt0Mm)} mm</strong>
+                    </div>
+                    <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
+                      <span className="block text-[9px] text-[#5F6B74]">Suhu Rata</span>
+                      <strong className="text-[#B7791F]">{(cs.meanTempC ?? 25.8).toFixed(1)}°C</strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* 3. NDVI FENOLOGI VEGETASI DENGAN 4 ZONA WARNA FASE TANAM      */}

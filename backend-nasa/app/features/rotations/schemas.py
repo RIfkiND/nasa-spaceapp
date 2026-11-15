@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 EnsoPhase = Literal["el_nino", "la_nina", "neutral"]
 IodPhase = Literal["positive", "negative", "neutral"]
 ParetoStatus = Literal["Optimal", "Tradeoff", "Dominated"]
+ApproachKey = Literal["water_balance", "ml_stress_baseline", "observational_matching"]
 
 
 class Priorities(BaseModel):
@@ -154,6 +155,66 @@ class StrategyScores100Out(BaseModel):
     worst_case: ScoreBreakdown100Out
 
 
+class ApproachEstimateOut(BaseModel):
+    """Per-strategy outcome under one of the three modeling approaches."""
+
+    approach: ApproachKey = Field(
+        description=(
+            "Modeling approach (`water_balance`, `ml_stress_baseline`, `observational_matching`)"
+        )
+    )
+    irrigation_mm: float = Field(
+        description="Estimated annual irrigation water demand under this approach (mm/yr)"
+    )
+    water_stress_days: float = Field(
+        description="Estimated water stress exposure days per rotation year"
+    )
+    stress_probability: float = Field(
+        ge=0, le=1, description="Predicted probability of severe seasonal water deficit (0-1)"
+    )
+    confidence_note: str = Field(
+        description="Provenance and epistemic confidence note for this approach"
+    )
+
+
+class TrainedModelInfoOut(BaseModel):
+    """Metadata and 5-fold cross-validation metrics for a trained AI model."""
+
+    model_id: str = Field(description="Model registry identifier (e.g., `stress_baseline_v1`)")
+    version: str = Field(description="Semantic version of the trained artifact")
+    approach: str = Field(description="Modeling approach (`ml_stress_baseline`)")
+    trained_at: str = Field(description="ISO-8601 UTC timestamp when training completed")
+    n_samples: int = Field(ge=1, description="Number of seasonal climate-crop training samples")
+    r2_score: float = Field(description="5-fold cross-validated coefficient of determination (R2)")
+    rmse_mm: float = Field(description="Root Mean Squared Error in seasonal deficit (mm)")
+    mae_mm: float = Field(description="Mean Absolute Error in seasonal deficit (mm)")
+    stress_accuracy: float = Field(
+        description="Classification accuracy on severe seasonal water stress events"
+    )
+    feature_weights: dict[str, float] = Field(
+        description="Learned Ridge regression weights per normalized predictor feature"
+    )
+
+
+class TrainModelRequest(BaseModel):
+    """Request payload for training/retraining the ML water-stress baseline model."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ridge_alpha: float = Field(
+        default=0.08,
+        ge=0.001,
+        le=10.0,
+        description="L2 regularization penalty (alpha) for Ridge regression",
+    )
+    stress_threshold_mm: float = Field(
+        default=220.0,
+        ge=50.0,
+        le=600.0,
+        description="Seasonal irrigation deficit threshold (mm) defining severe water stress",
+    )
+
+
 class EvidenceCardOut(BaseModel):
     """Transparent decision-support evidence card with NASA provenance and data gaps."""
 
@@ -193,6 +254,13 @@ class StrategyOut(BaseModel):
     scores_100: StrategyScores100Out | None = Field(
         default=None,
         description="Pre-normalized 0-100 scores for mean and worst-case (CVaR20) conditions",
+    )
+    approaches: list[ApproachEstimateOut] = Field(
+        default_factory=list,
+        description=(
+            "Comparison of outcomes across water_balance, ml_stress_baseline, "
+            "and observational_matching"
+        ),
     )
     card: EvidenceCardOut
 
@@ -244,6 +312,15 @@ class PersistenceOut(BaseModel):
     detail: str | None = Field(default=None, description="Human-readable persistence diagnostic")
 
 
+class TrainModelResponseOut(BaseModel):
+    """Response returned after training and registering the ML stress baseline model."""
+
+    model: TrainedModelInfoOut
+    artifact_path: str = Field(description="Relative path to the saved model artifact")
+    registry_updated: bool = Field(description="True if models/registry.yaml was updated")
+    persistence: PersistenceOut
+
+
 class ComparisonOut(BaseModel):
     """Complete rotation comparison response with ranked strategies, summary, and DB sync status."""
 
@@ -255,6 +332,7 @@ class ComparisonOut(BaseModel):
     field_ctx: FieldContextOut | None = None
     scenario: ScenarioOut
     summary: ComparisonSummaryOut | None = None
+    model_info: TrainedModelInfoOut | None = None
     shared_site_gaps: list[str] = Field(
         default_factory=list,
         description="Common site-level data gaps shared across all strategies",

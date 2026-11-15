@@ -1,0 +1,9 @@
+# Experiment configuration for Field Shift ML water-stress baseline
+run_id: stress_baseline_v1
+seed: 42
+datasets:
+  - banyumas
+  - nevada_mason_valley
+params:
+  ridge_alpha: 0.08
+  stress_threshold_mm: 220.0

@@ -6,6 +6,8 @@ import type {
   ClimatePhase,
   FarmerConstraints,
   ClimateScenario,
+  TrainedModelInfo,
+  PersistenceStatus,
 } from '../../types/domain';
 import type { Language } from '../../types/landing';
 import { FieldProfileView } from '../field-profile/FieldProfileView';
@@ -57,6 +59,10 @@ interface PlotAnalysisWorkspaceProps {
   initialBaseline?: Record<string, string>;
   cropLabels?: Record<string, string>;
   onBaselineChange?: (baseline: Record<string, string>) => void;
+  modelInfo?: TrainedModelInfo | null;
+  persistence?: PersistenceStatus | null;
+  onRetrainModel?: () => void;
+  isRetraining?: boolean;
 }
 
 type SubTabKey = 'profile' | 'optimizer' | 'export';
@@ -133,6 +139,10 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
   initialBaseline,
   cropLabels,
   onBaselineChange,
+  modelInfo = null,
+  persistence = null,
+  onRetrainModel,
+  isRetraining = false,
 }) => {
   const isId = currentLang === 'id';
   const [activeSubTab, setActiveSubTab] = useState<SubTabKey>('profile');
@@ -844,6 +854,10 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
                 scenario={scenario}
                 onOpenEvidence={onOpenEvidence}
                 isCalculating={isCalculating}
+                modelInfo={modelInfo}
+                persistence={persistence}
+                onRetrainModel={onRetrainModel}
+                isRetraining={isRetraining}
               />
             </div>
           )}
