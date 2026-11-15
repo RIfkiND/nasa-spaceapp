@@ -255,7 +255,11 @@ const EXTRA_BANYUMAS_FIELDS: FieldProfile[] = [
   },
 ];
 
-export const MOCK_FIELDS: FieldProfile[] = [...SNAP.fields.map(toField), ...EXTRA_BANYUMAS_FIELDS];
+const existingSnapIds = new Set(SNAP.fields.map((f) => f.id));
+export const MOCK_FIELDS: FieldProfile[] = [
+  ...SNAP.fields.map(toField),
+  ...EXTRA_BANYUMAS_FIELDS.filter((f) => !existingSnapIds.has(f.id)),
+];
 
 export function snapshotStrategies(phase: ClimatePhase): Strategy[] {
   return toStrategies(SNAP.compare[toEnsoPhase(phase)], BANYUMAS_SOURCES);
