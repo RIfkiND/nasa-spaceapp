@@ -13,6 +13,8 @@ export interface FloatingSearchBarProps {
   onRequestLocation?: () => void;
   isLocating?: boolean;
   currentLang?: 'id' | 'en';
+  initialQuery?: string;
+  onQueryChange?: (q: string) => void;
 }
 
 const QUICK_FILTERS_ID = [
@@ -43,13 +45,27 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
   onRequestLocation,
   isLocating = false,
   currentLang = 'id',
+  initialQuery = '',
+  onQueryChange,
 }) => {
   const isId = currentLang === 'id';
   const quickFilters = isId ? QUICK_FILTERS_ID : QUICK_FILTERS_EN;
 
-  const [query, setQuery] = useState('');
+  const [internalQuery, setInternalQuery] = useState(initialQuery);
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Sync state during render when initialQuery prop changes (React recommended pattern)
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
+    setInternalQuery(initialQuery);
+  }
+
+  const query = internalQuery;
+  const setQuery = (nextQ: string) => {
+    setInternalQuery(nextQ);
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -89,7 +105,7 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
 
   const handleSelect = (field: FieldProfile) => {
     onSelectField(field);
-    setQuery('');
+    setQuery(field.name);
     setIsOpen(false);
   };
 
@@ -111,7 +127,9 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
           type="text"
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
+            const nextQ = e.target.value;
+            setQuery(nextQ);
+            onQueryChange?.(nextQ);
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
@@ -127,6 +145,7 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
           <button
             onClick={() => {
               setQuery('');
+              onQueryChange?.('');
               setIsOpen(false);
             }}
             className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"

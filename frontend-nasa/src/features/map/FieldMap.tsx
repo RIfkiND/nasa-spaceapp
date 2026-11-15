@@ -26,6 +26,8 @@ interface FieldMapProps {
   userCoords?: { latitude: number; longitude: number } | null;
   onRequestLocation?: () => void;
   isLocating?: boolean;
+  initialSearchQuery?: string;
+  onSearchQueryChange?: (q: string) => void;
 }
 
 export type ThematicLayerMode = 'status' | 'slope' | 'awc';
@@ -115,6 +117,8 @@ export function FieldMap({
   userCoords,
   onRequestLocation,
   isLocating,
+  initialSearchQuery,
+  onSearchQueryChange,
 }: FieldMapProps) {
   // Thematic Layer State (Task 3.2)
   const [thematicLayer, setThematicLayer] = useState<ThematicLayerMode>('status');
@@ -153,7 +157,7 @@ export function FieldMap({
 
   const isAnimatingRef = useRef(false);
   const animFrameRef = useRef<number | null>(null);
-  const prevFieldIdRef = useRef(selectedField.id);
+  const prevFieldIdRef = useRef<string | null>(null);
   // Cinematic 360-degree Camera Orbit Animation to any field
   const animateToField = useCallback((field: FieldProfile) => {
     setIsSideCardOpen(true);
@@ -408,6 +412,8 @@ export function FieldMap({
           onRequestLocation={onRequestLocation}
           isLocating={isLocating}
           currentLang={currentLang}
+          initialQuery={initialSearchQuery}
+          onQueryChange={onSearchQueryChange}
         />
       </div>
 

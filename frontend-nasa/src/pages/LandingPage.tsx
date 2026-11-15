@@ -13,7 +13,7 @@ import type { Language } from '../types/landing';
 import type { Strategy, FieldProfile } from '../types/domain';
 
 interface LandingPageProps {
-  onOpenWorkspace: (targetField?: FieldProfile) => void;
+  onOpenWorkspace: (targetField?: FieldProfile, query?: string) => void;
   currentLang?: Language;
   onToggleLang?: () => void;
   userCoords?: { latitude: number; longitude: number } | null;
@@ -21,6 +21,9 @@ interface LandingPageProps {
   nearestField?: FieldProfile | null;
   nearestDistanceKm?: number | null;
   isLocating?: boolean;
+  fields?: FieldProfile[];
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
 }
 
 export function LandingPage({
@@ -32,6 +35,9 @@ export function LandingPage({
   nearestField,
   nearestDistanceKm,
   isLocating,
+  fields,
+  searchQuery,
+  onSearchQueryChange,
 }: LandingPageProps) {
   const [internalLang, setInternalLang] = useState<Language>('en');
   const currentLang = externalLang || internalLang;
@@ -75,11 +81,14 @@ export function LandingPage({
           currentLang={currentLang}
           onOpenWorkspace={onOpenWorkspace}
           onScrollToDemo={handleScrollToAbout}
+          fields={fields}
           userCoords={userCoords}
           onRequestLocation={onRequestLocation}
           nearestField={nearestField}
           nearestDistanceKm={nearestDistanceKm}
           isLocating={isLocating}
+          initialSearchQuery={searchQuery}
+          onSearchQueryChange={onSearchQueryChange}
         />
 
         {/* 2. About — Brief explanation of Field Shift */}

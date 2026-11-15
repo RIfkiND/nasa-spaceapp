@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MOCK_FIELDS, MOCK_STRATEGIES } from './api/mock/mockData';
 import { FieldMap } from './features/map/FieldMap';
 import { PlotAnalysisWorkspace } from './features/analysis/PlotAnalysisWorkspace';
@@ -8,17 +8,20 @@ import { DataSourcesModal } from './components/landing/DataSourcesModal';
 import { GeolocationBanner } from './components/common/GeolocationBanner';
 import { LandingPage } from './pages/LandingPage';
 import { useGeolocation } from './hooks/useGeolocation';
+import { parseHash, buildWorkspaceHash } from './lib/deepLink';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
 import type { Language } from './types/landing';
 
 export function App() {
-  // Mode: Landing Page (default) vs Fullscreen Interactive Map vs Deep-Dive Analysis
+  const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
+
+  // Initial hash parsing for deep-linking (Issue #20)
   const [viewMode, setViewMode] = useState<'landing' | 'workspace' | 'analysis'>(() => {
     if (typeof window !== 'undefined') {
-      const hash = window.location.hash.toLowerCase();
+      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
       const path = window.location.pathname.toLowerCase();
-      if (hash.includes('analysis')) return 'analysis';
-      if (path.includes('/app') || hash.includes('app') || hash.includes('workspace')) {
+      if (parsed.viewMode === 'analysis') return 'analysis';
+      if (path.includes('/app') || parsed.viewMode === 'workspace') {
         return 'workspace';
       }
     }
@@ -26,8 +29,20 @@ export function App() {
   });
 
   const [currentLang, setCurrentLang] = useState<Language>('en');
-  const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
-  const [selectedField, setSelectedField] = useState<FieldProfile>(MOCK_FIELDS[0]);
+  const [userSelectedField, setUserSelectedField] = useState<FieldProfile | null>(() => {
+    if (typeof window !== 'undefined') {
+      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
+      if (parsed.matchedField) return parsed.matchedField;
+    }
+    return null;
+  });
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
+      return parsed.query;
+    }
+    return '';
+  });
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
@@ -70,32 +85,6 @@ export function App() {
     laborDemand: 15,
   });
 
-  // Current strategies for the selected field with safe fallback to prevent unhandled crashes
-  const currentStrategies: Strategy[] =
-    MOCK_STRATEGIES[selectedField.id] ??
-    MOCK_STRATEGIES['banyumas-karangrau-01'] ??
-    Object.values(MOCK_STRATEGIES)[0] ??
-    [];
-
-  // Handle URL hash changes
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.toLowerCase();
-      if (hash.includes('analysis')) {
-        setViewMode('analysis');
-      } else if (hash.includes('app') || hash.includes('workspace')) {
-        setViewMode('workspace');
-      } else if (hash.includes('landing') || hash === '' || hash === '#') {
-        setViewMode('landing');
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
-  const hasUserSelectedRef = useRef(false);
-
   // Browser Geolocation hook & nearest plot matching (Issue #19)
   const {
     coords: userCoords,
@@ -111,24 +100,63 @@ export function App() {
     lang: currentLang,
   });
 
-  // When location is granted and a nearest field is found, automatically set selectedField to nearestField if user hasn't chosen manually
+  // Active selected field: user explicit choice > nearest detected GPS plot > default catalog plot
+  const selectedField: FieldProfile = userSelectedField ?? nearestField ?? fields[0];
+
+  // Current strategies for the selected field with safe fallback to prevent unhandled crashes
+  const currentStrategies: Strategy[] =
+    MOCK_STRATEGIES[selectedField.id] ??
+    MOCK_STRATEGIES['banyumas-karangrau-01'] ??
+    Object.values(MOCK_STRATEGIES)[0] ??
+    [];
+
+  // Handle URL hash changes
   useEffect(() => {
-    if (nearestField && !hasUserSelectedRef.current) {
-      setSelectedField(nearestField);
-    }
-  }, [nearestField]);
+    const handleHashChange = () => {
+      const parsed = parseHash(window.location.hash, fields);
+      setViewMode(parsed.viewMode);
+      if (parsed.matchedField) {
+        setUserSelectedField(parsed.matchedField);
+      }
+      if (parsed.query) {
+        setSearchQuery(parsed.query);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [fields]);
 
   const handleSelectField = (field: FieldProfile) => {
-    hasUserSelectedRef.current = true;
-    setSelectedField(field);
+    setUserSelectedField(field);
+    setSearchQuery(field.name);
+    if (viewMode === 'workspace') {
+      const newHash = buildWorkspaceHash(field.id, field.name);
+      if (window.location.hash !== newHash) {
+        window.history.replaceState(null, '', newHash);
+      }
+    }
   };
 
-  const handleOpenWorkspace = (targetField?: FieldProfile) => {
+  const handleWorkspaceQueryChange = (q: string) => {
+    setSearchQuery(q);
+    const newHash = buildWorkspaceHash(selectedField.id, q);
+    if (window.location.hash !== newHash) {
+      window.history.replaceState(null, '', newHash);
+    }
+  };
+
+  const handleOpenWorkspace = (targetField?: FieldProfile, query?: string) => {
+    const field = targetField ?? selectedField;
     if (targetField) {
-      handleSelectField(targetField);
+      setUserSelectedField(targetField);
+    }
+    const effectiveQuery = query !== undefined ? query : (targetField ? targetField.name : searchQuery);
+    if (effectiveQuery !== undefined) {
+      setSearchQuery(effectiveQuery);
     }
     setViewMode('workspace');
-    window.location.hash = '#workspace';
+    window.location.hash = buildWorkspaceHash(field.id, effectiveQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -149,7 +177,7 @@ export function App() {
 
   const handleBackToMap = () => {
     setViewMode('workspace');
-    window.location.hash = '#workspace';
+    window.location.hash = buildWorkspaceHash(selectedField.id, searchQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -170,6 +198,9 @@ export function App() {
           nearestField={nearestField}
           nearestDistanceKm={nearestDistanceKm}
           isLocating={geoStatus === 'requesting'}
+          fields={fields}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
         />
 
         {/* Floating Polite Geolocation Pre-Prompt Toast */}
@@ -254,6 +285,8 @@ export function App() {
         userCoords={userCoords}
         onRequestLocation={requestLocation}
         isLocating={geoStatus === 'requesting'}
+        initialSearchQuery={searchQuery}
+        onSearchQueryChange={handleWorkspaceQueryChange}
       />
 
       {/* Global Modals */}
