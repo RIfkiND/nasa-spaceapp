@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            {isId ? 'Peta & Petak' : 'Map & Plots'}
+            1. {isId ? 'Peta & Petak' : 'Map & Plots'}
           </button>
           <button
             onClick={() => onTabChange('profile')}
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            {isId ? 'Profil Lahan & Iklim' : 'Soil & Climatology'}
+            2. {isId ? 'Profil Lahan & Iklim' : 'Soil & Climatology'}
           </button>
           <button
             onClick={() => onTabChange('comparison')}
@@ -98,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            {isId ? 'Optimasi Rotasi' : 'Rotation Optimizer'}
+            3. {isId ? 'Optimasi Rotasi' : 'Rotation Optimizer'}
           </button>
           <button
             onClick={() => onTabChange('export')}
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            {isId ? 'Lembar Penyuluh' : 'Consultation Brief'}
+            4. {isId ? 'Lembar Konsultasi' : 'Consultation Brief'}
           </button>
         </nav>
 

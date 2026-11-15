@@ -1,7 +1,29 @@
 import React, { useState } from 'react';
 import type { Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from '../../types/domain';
 import { DEFAULT_CAUTION } from '../../lib/scoring';
-import { ShieldCheck, FileText, Award, ArrowUpDown, Droplets, Sprout, TrendingUp, ArrowRight, AlertTriangle } from 'lucide-react';
+import {
+  ShieldCheck,
+  FileText,
+  Award,
+  ArrowUpDown,
+  Droplets,
+  Sprout,
+  TrendingUp,
+  ArrowRight,
+  AlertTriangle,
+  Radar as RadarIcon,
+  LayoutGrid,
+} from 'lucide-react';
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
+  Legend as RechartsLegend,
+  Tooltip as RechartsTooltip,
+} from 'recharts';
 
 interface StrategyBoardProps {
   strategies: Strategy[];
@@ -22,6 +44,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
 }) => {
   // Caution slider: 0 = Pure Mean, 1 = Pure CVaR (Worst Case)
   const [cautionLevel, setCautionLevel] = useState<number>(DEFAULT_CAUTION);
+  const [viewMode, setViewMode] = useState<'cards' | 'radar'>('cards');
 
   // Check which constraints a strategy violates
   const getViolations = (strat: Strategy): string[] => {
@@ -73,6 +96,42 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
     return infeasible !== 0 ? infeasible : computeCompositeScore(b) - computeCompositeScore(a);
   });
 
+  const topStrategy = sortedStrategies[0] || strategies[0];
+  const baselineStrategy = strategies.find((s) => s.isBaseline) || strategies[strategies.length - 1];
+
+  const radarData = [
+    {
+      subject: 'Efisiensi Air',
+      winner: topStrategy?.scores.mean.waterEfficiency ?? 0,
+      baseline: baselineStrategy?.scores.mean.waterEfficiency ?? 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Kesehatan Tanah',
+      winner: topStrategy?.scores.mean.soilHealth ?? 0,
+      baseline: baselineStrategy?.scores.mean.soilHealth ?? 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Tutupan Lahan',
+      winner: topStrategy?.scores.mean.coverDays ?? 0,
+      baseline: baselineStrategy?.scores.mean.coverDays ?? 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Kontrol Erosi',
+      winner: topStrategy?.scores.mean.erosionControl ?? 0,
+      baseline: baselineStrategy?.scores.mean.erosionControl ?? 0,
+      fullMark: 100,
+    },
+    {
+      subject: 'Pemutus Hama',
+      winner: topStrategy?.scores.mean.pestBreak ?? 0,
+      baseline: baselineStrategy?.scores.mean.pestBreak ?? 0,
+      fullMark: 100,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Risk Horizon Controller */}
@@ -90,19 +149,50 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 self-start sm:self-auto">
-            <span className="text-xs font-semibold text-gray-800">Tingkat Kehati-hatian:</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={Math.round(cautionLevel * 100)}
-              onChange={(e) => setCautionLevel(Number(e.target.value) / 100)}
-              className="h-2 w-32 cursor-pointer appearance-none rounded-full bg-gray-200 accent-[#1a7a6d]"
-            />
-            <span className="font-mono text-xs font-bold text-[#1a7a6d] tabular-nums">
-              {Math.round(cautionLevel * 100)}%
-            </span>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Caution Slider */}
+            <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 self-start sm:self-auto">
+              <span className="text-xs font-semibold text-gray-800">Tingkat Kehati-hatian:</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(cautionLevel * 100)}
+                onChange={(e) => setCautionLevel(Number(e.target.value) / 100)}
+                className="h-2 w-32 cursor-pointer appearance-none rounded-full bg-gray-200 accent-[#237F8E]"
+              />
+              <span className="font-mono text-xs font-bold text-[#237F8E] tabular-nums">
+                {Math.round(cautionLevel * 100)}%
+              </span>
+            </div>
+
+            {/* View Mode Switcher: Cards vs Radar */}
+            <div className="flex items-center rounded-full border border-gray-200 bg-gray-50 p-1 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1 transition cursor-pointer ${
+                  viewMode === 'cards'
+                    ? 'bg-white text-[#237F8E] shadow-2xs font-bold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span>Kartu Strategi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('radar')}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1 transition cursor-pointer ${
+                  viewMode === 'radar'
+                    ? 'bg-white text-[#237F8E] shadow-2xs font-bold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <RadarIcon className="h-3.5 w-3.5" />
+                <span>Radar Multi-Objektif</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -119,13 +209,57 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
                 <span>Menghitung Pareto...</span>
               </span>
             )}
-            <span className="text-[#1a7a6d] font-semibold bg-[#e8f5f2] px-3.5 py-0.5 rounded-full border border-[#bfe3db]">
+            <span className="text-[#237F8E] font-semibold bg-[#E3F1F3] px-3.5 py-0.5 rounded-full border border-[#237F8E]/25">
               Mode: {cautionLevel > 0.6 ? 'Perlindungan Risiko Terburuk (CVaR)' : cautionLevel < 0.3 ? 'Hasil Agresif' : 'Ketahanan Iklim Seimbang'}
             </span>
           </div>
           <span>100% = Proteksi Risiko Bencana (Worst-Case)</span>
         </div>
       </div>
+
+      {/* Radar Chart View (when viewMode === 'radar') */}
+      {viewMode === 'radar' && (
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+          <div className="border-b border-gray-100 pb-4 mb-6">
+            <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <RadarIcon className="h-5 w-5 text-[#237F8E]" />
+              Visualisasi Trade-off 5-Sumbu (Rekomendasi Terpilih vs Praktik Baseline)
+            </h4>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Membandingkan keseimbangan multi-tujuan: efisiensi air, kesehatan tanah, tutupan lahan, kontrol erosi, dan pemutus siklus hama
+            </p>
+          </div>
+
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} outerRadius="75%">
+                <PolarGrid stroke="#E6EBF0" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#14232B', fontSize: 11, fontWeight: 600 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#94A3B8" tick={{ fontSize: 10 }} />
+                <Radar
+                  name={`Rekomendasi: ${topStrategy?.name ?? 'Optimal'}`}
+                  dataKey="winner"
+                  stroke="#237F8E"
+                  fill="#237F8E"
+                  fillOpacity={0.4}
+                  strokeWidth={2}
+                />
+                <Radar
+                  name={`Baseline: ${baselineStrategy?.name ?? 'Eksisting'}`}
+                  dataKey="baseline"
+                  stroke="#8A949B"
+                  fill="#8A949B"
+                  fillOpacity={0.2}
+                  strokeWidth={1.5}
+                  strokeDasharray="4 4"
+                />
+                <RechartsLegend wrapperStyle={{ fontSize: '12px', paddingTop: '16px' }} />
+                <RechartsTooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Strategy Grid */}
       <div className={`grid grid-cols-1 gap-6 lg:grid-cols-3 transition-opacity duration-300 ${isCalculating ? 'opacity-75' : 'opacity-100'}`}>
