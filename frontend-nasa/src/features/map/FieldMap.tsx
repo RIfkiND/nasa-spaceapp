@@ -38,6 +38,7 @@ interface FieldMapProps {
   isLocating?: boolean;
   initialSearchQuery?: string;
   onSearchQueryChange?: (q: string) => void;
+  dataMode?: 'live' | 'snapshot';
 }
 
 
@@ -57,6 +58,7 @@ export function FieldMap({
   isLocating,
   initialSearchQuery,
   onSearchQueryChange,
+  dataMode = 'snapshot',
 }: FieldMapProps) {
   // Thematic Layer State (Task 3.2)
   const [thematicLayer, setThematicLayer] = useState<ThematicLayerMode>('status');
@@ -362,6 +364,7 @@ export function FieldMap({
             selectedField?.village ??
             (currentLang === 'id' ? 'Semua Wilayah Banyumas' : 'All Banyumas Basin')
           }
+          dataMode={dataMode}
         />
       )}
 
