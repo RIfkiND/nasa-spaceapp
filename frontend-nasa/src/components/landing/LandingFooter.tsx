@@ -60,7 +60,7 @@ interface LandingFooterProps {
                 </button>
               </li>
               <li>
-                <button onClick={onOpenWorkspace} className="hover:text-[#237F8E] transition font-semibold text-[#237F8E]">
+                <button onClick={() => onOpenWorkspace()} className="hover:text-[#237F8E] transition font-semibold text-[#237F8E]">
                   {isId ? 'Workspace Peta & Plot' : 'Interactive Workspace'}
                 </button>
               </li>

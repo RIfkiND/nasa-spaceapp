@@ -12,6 +12,16 @@ import { parseHash, buildWorkspaceHash } from './lib/deepLink';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
 import type { Language } from './types/landing';
 
+function isFieldProfile(obj: unknown): obj is FieldProfile {
+  return Boolean(
+    obj &&
+    typeof obj === 'object' &&
+    'id' in obj &&
+    'coordinates' in obj &&
+    Array.isArray((obj as FieldProfile).coordinates)
+  );
+}
+
 export function App() {
   const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
 
@@ -100,15 +110,8 @@ export function App() {
     lang: currentLang,
   });
 
-  // Active selected field: user explicit choice > nearest detected GPS plot > default catalog plot
-  const selectedField: FieldProfile = userSelectedField ?? nearestField ?? fields[0];
-
-  // Current strategies for the selected field with safe fallback to prevent unhandled crashes
-  const currentStrategies: Strategy[] =
-    MOCK_STRATEGIES[selectedField.id] ??
-    MOCK_STRATEGIES['banyumas-karangrau-01'] ??
-    Object.values(MOCK_STRATEGIES)[0] ??
-    [];
+  // Active selected field: user explicit choice, or null when viewing regional overview initially
+  const selectedField: FieldProfile | null = isFieldProfile(userSelectedField) ? userSelectedField : null;
 
   // Handle URL hash changes
   useEffect(() => {
@@ -128,6 +131,7 @@ export function App() {
   }, [fields]);
 
   const handleSelectField = (field: FieldProfile) => {
+    if (!isFieldProfile(field)) return;
     setUserSelectedField(field);
     setSearchQuery(field.name);
     if (viewMode === 'workspace') {
@@ -140,23 +144,25 @@ export function App() {
 
   const handleWorkspaceQueryChange = (q: string) => {
     setSearchQuery(q);
-    const newHash = buildWorkspaceHash(selectedField.id, q);
+    const newHash = buildWorkspaceHash(selectedField ? selectedField.id : undefined, q);
     if (window.location.hash !== newHash) {
       window.history.replaceState(null, '', newHash);
     }
   };
 
   const handleOpenWorkspace = (targetField?: FieldProfile, query?: string) => {
-    const field = targetField ?? selectedField;
-    if (targetField) {
-      setUserSelectedField(targetField);
-    }
-    const effectiveQuery = query !== undefined ? query : (targetField ? targetField.name : searchQuery);
-    if (effectiveQuery !== undefined) {
+    const validTarget = isFieldProfile(targetField) ? targetField : undefined;
+    setUserSelectedField(validTarget ?? null);
+
+    const effectiveQuery = typeof query === 'string'
+      ? query
+      : (validTarget ? validTarget.name : searchQuery);
+
+    if (typeof effectiveQuery === 'string') {
       setSearchQuery(effectiveQuery);
     }
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(field.id, effectiveQuery);
+    window.location.hash = buildWorkspaceHash(validTarget ? validTarget.id : undefined, effectiveQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -167,8 +173,10 @@ export function App() {
   };
 
   const handleOpenAnalysis = (field?: FieldProfile) => {
-    if (field) {
+    if (isFieldProfile(field)) {
       handleSelectField(field);
+    } else if (!selectedField && fields.length > 0) {
+      handleSelectField(fields[0]);
     }
     setViewMode('analysis');
     window.location.hash = '#analysis';
@@ -177,7 +185,7 @@ export function App() {
 
   const handleBackToMap = () => {
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(selectedField.id, searchQuery);
+    window.location.hash = buildWorkspaceHash(selectedField?.id, searchQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -217,10 +225,17 @@ export function App() {
 
   // 2. If in Deep-Dive Analysis Mode, render Dedicated Full-Page Workspace
   if (viewMode === 'analysis') {
+    const activeAnalysisField = selectedField ?? fields[0];
+    const currentStrategies: Strategy[] =
+      MOCK_STRATEGIES[activeAnalysisField.id] ??
+      MOCK_STRATEGIES['banyumas-karangrau-01'] ??
+      Object.values(MOCK_STRATEGIES)[0] ??
+      [];
+
     return (
       <div className="min-h-screen bg-[#F4F7FA] text-[#14232B]">
         <PlotAnalysisWorkspace
-          field={selectedField}
+          field={activeAnalysisField}
           strategies={currentStrategies}
           weights={weights}
           onWeightsChange={setWeights}

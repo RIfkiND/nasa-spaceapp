@@ -198,7 +198,7 @@ export function HowItWorksSection({ onOpenWorkspace }: HowItWorksSectionProps) {
 
                       <button
                         type="button"
-                        onClick={onOpenWorkspace}
+                        onClick={() => onOpenWorkspace()}
                         className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white transition active:scale-95 shadow-xs hover:shadow cursor-pointer"
                         title="Open in Workspace"
                       >
@@ -221,7 +221,7 @@ export function HowItWorksSection({ onOpenWorkspace }: HowItWorksSectionProps) {
                       <span className="text-[#5F6B74]">Ready to test this step?</span>
                       <button
                         type="button"
-                        onClick={onOpenWorkspace}
+                        onClick={() => onOpenWorkspace()}
                         className="inline-flex items-center gap-1.5 text-[#237F8E] hover:text-[#1B6572] font-bold transition cursor-pointer"
                       >
                         <span>Launch Simulator</span>
@@ -288,7 +288,7 @@ export function HowItWorksSection({ onOpenWorkspace }: HowItWorksSectionProps) {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onOpenWorkspace}
+              onClick={() => onOpenWorkspace()}
               aria-label="Launch Field Shift Workspace"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white hover:bg-[#237F8E] transition"
             >
