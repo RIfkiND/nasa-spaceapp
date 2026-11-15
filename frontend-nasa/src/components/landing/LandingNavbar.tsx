@@ -1,25 +1,49 @@
 import { useState, useEffect } from 'react';
-import { Sprout, ArrowRight, Menu, X } from 'lucide-react';
+import { Sprout, ArrowRight, Menu, X, Globe } from 'lucide-react';
+import type { Language } from '../../types/landing';
 
 interface LandingNavbarProps {
   onOpenWorkspace: () => void;
+  currentLang?: Language;
+  onToggleLang?: () => void;
 }
 
-export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
+export function LandingNavbar({
+  onOpenWorkspace,
+  currentLang = 'en',
+  onToggleLang,
+}: LandingNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState('hero');
+  const isId = currentLang === 'id';
 
   // Dynamic Scroll Spy: automatically update active nav pill as the user scrolls
   useEffect(() => {
     const handleScroll = () => {
+      // Bottom of page check
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 80
+      ) {
+        setActiveNav('why-field-shift');
+        return;
+      }
+
+      // Top of page check
+      if (window.scrollY < 140) {
+        setActiveNav('hero');
+        return;
+      }
+
       // Offset from top accounting for floating island navbar
-      const scrollPosition = window.scrollY + 180;
+      const scrollPosition = window.scrollY + 200;
       const sectionIds = ['why-field-shift', 'how-it-works', 'about', 'hero'];
 
       for (const id of sectionIds) {
         const el = document.getElementById(id);
         if (el) {
-          const top = el.offsetTop;
+          const rect = el.getBoundingClientRect();
+          const top = rect.top + window.scrollY;
           if (scrollPosition >= top) {
             setActiveNav(id);
             break;
@@ -51,10 +75,10 @@ export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
   };
 
   const NAV_ITEMS = [
-    { id: 'hero', label: 'Home' },
-    { id: 'about', label: 'About Us' },
-    { id: 'how-it-works', label: 'How It Works' },
-    { id: 'why-field-shift', label: 'Why Us' },
+    { id: 'hero', label: isId ? 'Beranda' : 'Home' },
+    { id: 'about', label: isId ? 'Tentang Kami' : 'About Us' },
+    { id: 'how-it-works', label: isId ? 'Cara Kerja' : 'How It Works' },
+    { id: 'why-field-shift', label: isId ? 'Keunggulan' : 'Why Us' },
   ];
 
   return (
@@ -98,14 +122,29 @@ export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
           })}
         </nav>
 
-        {/* Right: Signature Teal CTA Button & Mobile Toggle */}
+        {/* Right: Language Switch + Signature Teal CTA Button & Mobile Toggle */}
         <div className="flex items-center gap-2">
+          {onToggleLang && (
+            <button
+              type="button"
+              onClick={onToggleLang}
+              className="flex items-center gap-1 rounded-full border border-slate-200/90 bg-slate-100/90 hover:bg-white text-xs font-bold text-[#14232B] px-3 py-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
+              aria-label={isId ? 'Ganti ke Bahasa Inggris' : 'Switch to Indonesian'}
+              title={isId ? 'Ganti ke Bahasa Inggris' : 'Switch to Indonesian'}
+            >
+              <Globe className="h-3.5 w-3.5 text-[#237F8E]" />
+              <span className={isId ? 'text-[#237F8E] font-extrabold' : 'text-[#5F6B74]'}>ID</span>
+              <span className="text-slate-300">/</span>
+              <span className={!isId ? 'text-[#237F8E] font-extrabold' : 'text-[#5F6B74]'}>EN</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => onOpenWorkspace()}
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white font-bold px-5 py-2 text-xs shadow-xs hover:shadow transition active:scale-[0.98] cursor-pointer"
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white font-bold px-4 sm:px-5 py-2 text-xs shadow-xs hover:shadow transition active:scale-[0.98] cursor-pointer"
           >
-            <span>Launch App</span>
+            <span>{isId ? 'Buka Aplikasi' : 'Launch App'}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
 
@@ -145,6 +184,24 @@ export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
               );
             })}
           </div>
+
+          {onToggleLang && (
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-medium">
+                {isId ? 'Bahasa:' : 'Language:'}
+              </span>
+              <button
+                type="button"
+                onClick={onToggleLang}
+                className="flex items-center gap-1 rounded-full border border-slate-200/90 bg-slate-100 px-3 py-1 font-bold text-xs"
+              >
+                <Globe className="h-3.5 w-3.5 text-[#237F8E]" />
+                <span className={isId ? 'text-[#237F8E] font-extrabold' : 'text-[#5F6B74]'}>ID</span>
+                <span className="text-slate-300">/</span>
+                <span className={!isId ? 'text-[#237F8E] font-extrabold' : 'text-[#5F6B74]'}>EN</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>

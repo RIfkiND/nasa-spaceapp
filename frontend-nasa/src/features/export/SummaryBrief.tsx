@@ -147,7 +147,7 @@ export const SummaryBrief: React.FC<SummaryBriefProps> = ({
                 NASA Space Apps Challenge 2026 &middot; Agro-Ecological Decision Support
               </span>
               <h2 className="text-2xl font-black text-[#14232B] print:text-black mt-1">
-                Field Shift Recommendation Summary
+                FIELD SHIFT Recommendation Summary
               </h2>
               <p className="text-xs text-[#5F6B74] mt-0.5">
                 Rekomendasi Adaptasi Pola Rotasi Tanam Berbasis Data NASA & Indikator Agronomi (perlu verifikasi PPL)

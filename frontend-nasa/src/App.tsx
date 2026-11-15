@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { applyWeights } from './lib/scoring';
-import { MOCK_FIELDS, SNAPSHOT_CROP_LABELS, snapshotStrategies } from './api/mock/mockData';
-import { baselineFromRotation, fetchFields, fetchSiteInfo, fetchStrategies, siteOf } from './api/fieldshift';
+import { MOCK_FIELDS } from './api/mock/mockData';
+import { baselineFromRotation, siteOf } from './api/fieldshift';
+import { useFieldsQuery, useSiteInfoQuery, useStrategiesQuery } from './features/rotations/useRotationsQuery';
 import { FieldMap } from './features/map/FieldMap';
 import { PlotAnalysisWorkspace } from './features/analysis/PlotAnalysisWorkspace';
 import { EvidenceModal } from './features/evidence-card/EvidenceModal';
@@ -38,8 +39,9 @@ export function App() {
   });
 
   const [currentLang, setCurrentLang] = useState<Language>('id');
-  // Real data from the backend; the offline snapshot (also real output) is shown until it loads
-  const [fields, setFields] = useState<FieldProfile[]>(MOCK_FIELDS);
+
+  // React Query: Fetch fields catalog (live with snapshot fallback)
+  const { fields, dataMode: fieldsDataMode } = useFieldsQuery('banyumas');
 
   // Active selected field: starts as null for regional basin overview unless explicitly deep-linked
   const [userSelectedField, setUserSelectedField] = useState<FieldProfile | null>(() => {
@@ -61,7 +63,6 @@ export function App() {
   const selectedField: FieldProfile | null = isFieldProfile(userSelectedField) ? userSelectedField : null;
   const activePlot = selectedField ?? fields[0];
 
-  const [dataMode, setDataMode] = useState<'live' | 'snapshot'>('snapshot');
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
@@ -104,64 +105,46 @@ export function App() {
 
   // Farmer-entered current rotation per field (defaults to the field's recorded rotation)
   const [baselines, setBaselines] = useState<Record<string, Record<string, string>>>({});
-  const [cropLabels, setCropLabels] = useState<Record<string, string>>(SNAPSHOT_CROP_LABELS);
   const initialBaseline = baselineFromRotation(activePlot);
   const currentBaseline = baselines[activePlot.id] ?? initialBaseline;
-  const baselineKey = JSON.stringify(currentBaseline);
 
-  useEffect(() => {
-    let alive = true;
-    fetchSiteInfo('banyumas')
-      .then((info) => alive && info?.crop_labels && setCropLabels(info.crop_labels))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // React Query: Fetch site info & metadata (crop labels, data sources)
+  const { cropLabels } = useSiteInfoQuery('banyumas');
 
-  // Strategies from the backend rotation engine for the selected field's site and ENSO phase
-  const [currentStrategies, setCurrentStrategies] = useState<Strategy[]>(() => snapshotStrategies('normal'));
+  // React Query: Reactive Pareto strategies with 300ms debounced scenario & keepPreviousData
+  const {
+    strategies: rawStrategies,
+    dataMode: strategiesDataMode,
+    isPlaceholderData: isCalculatingStrategies,
+  } = useStrategiesQuery({
+    site: siteOf(activePlot),
+    phase: climatePhase,
+    fieldId: activePlot.id,
+    scenario,
+    baseline: currentBaseline,
+  });
 
-  useEffect(() => {
-    let alive = true;
-    fetchFields()
-      .then((live) => {
-        if (!alive || live.length === 0) return;
-        setFields(live);
-        setUserSelectedField((prev) => {
-          if (prev) return live.find((f) => f.id === prev.id) ?? prev;
-          if (typeof window !== 'undefined') {
-            const parsed = parseHash(window.location.hash, live);
-            return parsed.matchedField;
-          }
-          return null;
-        });
-        setDataMode('live');
-      })
-      .catch(() => alive && setDataMode('snapshot'));
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const dataMode = (fieldsDataMode === 'live' || strategiesDataMode === 'live') ? 'live' : 'snapshot';
 
-  // Debounced so dragging the scenario sliders sends one request, not dozens
-  useEffect(() => {
-    let alive = true;
-    const timer = window.setTimeout(() => {
-      const fieldId = dataMode === 'live' ? activePlot.id : undefined;
-      const baseline = dataMode === 'live' ? (JSON.parse(baselineKey) as Record<string, string>) : undefined;
-      fetchStrategies(siteOf(activePlot), climatePhase, fieldId, scenario, baseline)
-        .then((s) => alive && setCurrentStrategies(s))
-        .catch(() => alive && setCurrentStrategies(snapshotStrategies(climatePhase)));
-    }, 350);
-    return () => {
-      alive = false;
-      window.clearTimeout(timer);
-    };
-  }, [activePlot, climatePhase, scenario, dataMode, baselineKey]);
+  // Sync userSelectedField if fields array updates
+  const [prevFields, setPrevFields] = useState<FieldProfile[]>(fields);
+  if (fields !== prevFields) {
+    setPrevFields(fields);
+    if (userSelectedField) {
+      const match = fields.find((f) => f.id === userSelectedField.id);
+      if (match && match !== userSelectedField) {
+        setUserSelectedField(match);
+      }
+    } else if (typeof window !== 'undefined') {
+      const parsed = parseHash(window.location.hash, fields);
+      if (parsed.matchedField) {
+        setUserSelectedField(parsed.matchedField);
+      }
+    }
+  }
 
   // Every score shown (cards, consultation brief) uses the farmer's current weights
-  const weightedStrategies = useMemo(() => applyWeights(currentStrategies, weights), [currentStrategies, weights]);
+  const weightedStrategies = useMemo(() => applyWeights(rawStrategies, weights), [rawStrategies, weights]);
 
   // Handle URL hash changes
   useEffect(() => {
@@ -310,7 +293,9 @@ export function App() {
           onOpenGlossary={() => setIsGlossaryOpen(true)}
           onOpenDataSources={() => setIsDataSourcesOpen(true)}
           currentLang={currentLang}
+          onToggleLang={handleToggleLang}
           dataMode={dataMode}
+          isCalculating={isCalculatingStrategies}
           baseline={currentBaseline}
           initialBaseline={initialBaseline}
           cropLabels={cropLabels}
@@ -366,6 +351,7 @@ export function App() {
         isLocating={geoStatus === 'requesting'}
         initialSearchQuery={searchQuery}
         onSearchQueryChange={handleWorkspaceQueryChange}
+        dataMode={dataMode}
       />
 
       {/* Global Modals */}
