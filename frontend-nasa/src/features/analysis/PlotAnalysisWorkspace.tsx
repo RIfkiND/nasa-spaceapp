@@ -45,6 +45,7 @@ interface PlotAnalysisWorkspaceProps {
   onOpenGlossary?: () => void;
   onOpenDataSources?: () => void;
   currentLang?: Language;
+  onToggleLang?: () => void;
   dataMode?: 'live' | 'snapshot';
   isCalculating?: boolean;
   baseline?: Record<string, string>;
@@ -112,6 +113,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
   onOpenGlossary,
   onOpenDataSources,
   currentLang = 'id',
+  onToggleLang,
   dataMode = 'snapshot',
   isCalculating = false,
   baseline,
@@ -141,12 +143,24 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               title={isId ? 'Kembali ke Peta Satelit 3D' : 'Back to 3D Satellite Map'}
             >
               <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5 text-[#237F8E]" />
-              <span>{isId ? 'Peta 3D Banyumas' : '3D Banyumas Map'}</span>
+              <span>{isId ? 'Peta 3D Banyumas' : '3D Map'}</span>
             </button>
 
-            <span className="rounded-full bg-[#E3F1F3] px-2.5 py-0.5 text-[10px] font-extrabold text-[#1B6572] font-mono border border-[#237F8E]/20">
-              WORKSPACE
-            </span>
+            <div className="flex items-center gap-1.5">
+              {onToggleLang && (
+                <button
+                  type="button"
+                  onClick={onToggleLang}
+                  className="flex items-center gap-1 rounded-full border border-[#E6EBF0] bg-[#F7F9FB] hover:bg-[#E3F1F3] px-2.5 py-1 text-[11px] font-bold text-[#14232B] transition active:scale-95 cursor-pointer shadow-2xs"
+                  title={isId ? 'Ganti Bahasa (English / Indonesia)' : 'Switch Language (English / Indonesia)'}
+                >
+                  <span className="font-mono text-[#237F8E] font-extrabold">{isId ? 'EN' : 'ID'}</span>
+                </button>
+              )}
+              <span className="rounded-full bg-[#E3F1F3] px-2.5 py-0.5 text-[10px] font-extrabold text-[#1B6572] font-mono border border-[#237F8E]/20">
+                WORKSPACE
+              </span>
+            </div>
           </div>
 
           {/* Plot Identity Summary Box */}
@@ -160,7 +174,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
                   {field.name}
                 </h2>
                 <p className="text-[11px] text-[#5F6B74] mt-0.5 truncate">
-                  Desa {field.village}, Kec. {field.district}
+                  {isId ? `Desa ${field.village}, Kec. ${field.district}` : `${field.village} Village, ${field.district} District`}
                 </p>
               </div>
             </div>
@@ -168,19 +182,25 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
             {/* Quick Metrics Grid */}
             <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] grid grid-cols-3 gap-2 text-center">
               <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
-                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">Luas</span>
+                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">
+                  {isId ? 'Luas' : 'Area'}
+                </span>
                 <span className="text-xs font-extrabold text-[#237F8E] font-mono tabular-nums">
                   {field.areaHectares} ha
                 </span>
               </div>
               <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
-                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">Elevasi</span>
+                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">
+                  {isId ? 'Elevasi' : 'Elevation'}
+                </span>
                 <span className="text-xs font-extrabold text-[#14232B] font-mono tabular-nums">
                   {field.elevationMeters} m
                 </span>
               </div>
               <div className="rounded-lg bg-white p-2 border border-[#E6EBF0]">
-                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">Lereng</span>
+                <span className="text-[10px] font-bold text-[#5F6B74] uppercase block">
+                  {isId ? 'Lereng' : 'Slope'}
+                </span>
                 <span className="text-xs font-extrabold text-[#B7791F] font-mono tabular-nums">
                   {field.soil.slope}%
                 </span>
@@ -245,40 +265,15 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
                         )}
                       </div>
 
-                      {/* Step Description */}
+                      {/* Step Description without unwanted status badges */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <h3
-                            className={`text-xs font-bold leading-snug truncate ${
-                              isActive ? 'text-[#1B6572]' : 'text-[#14232B]'
-                            }`}
-                          >
-                            {isId ? step.titleId : step.titleEn}
-                          </h3>
-
-                          {/* Status Badge */}
-                          <span
-                            className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-bold font-mono ${
-                              isActive
-                                ? 'bg-[#237F8E] text-white'
-                                : isCompleted
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-slate-100 text-[#5F6B74]'
-                            }`}
-                          >
-                            {isActive
-                              ? isId
-                                ? 'Aktif'
-                                : 'Active'
-                              : isCompleted
-                              ? isId
-                                ? 'Selesai'
-                                : 'Done'
-                              : isId
-                              ? 'Antrean'
-                              : 'Pending'}
-                          </span>
-                        </div>
+                        <h3
+                          className={`text-xs font-bold leading-snug truncate ${
+                            isActive ? 'text-[#1B6572]' : 'text-[#14232B]'
+                          }`}
+                        >
+                          {isId ? step.titleId : step.titleEn}
+                        </h3>
 
                         <p className="text-[11px] text-[#5F6B74] mt-0.5 line-clamp-2 leading-relaxed">
                           {isId ? step.descId : step.descEn}
@@ -298,7 +293,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
           <div className="flex items-center justify-between text-xs px-1">
             <span className="text-[#5F6B74] flex items-center gap-1.5 text-[11px]">
               <Database className="h-3.5 w-3.5 text-[#237F8E]" />
-              Sumber Data:
+              {isId ? 'Sumber Data:' : 'Data Source:'}
             </span>
             <span
               className={`rounded-full px-2 py-0.5 text-[10px] font-bold font-mono ${
@@ -320,7 +315,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
                 className="flex items-center justify-center gap-1.5 rounded-xl border border-[#E6EBF0] bg-[#F7F9FB] hover:bg-[#E3F1F3] hover:border-[#237F8E] p-2 font-semibold text-[#14232B] text-[11px] transition cursor-pointer"
               >
                 <Database className="h-3.5 w-3.5 text-[#237F8E]" />
-                <span>Katalog Data</span>
+                <span>{isId ? 'Katalog Data' : 'Data Catalog'}</span>
               </button>
             )}
             {onOpenGlossary && (
@@ -330,7 +325,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
                 className="flex items-center justify-center gap-1.5 rounded-xl border border-[#E6EBF0] bg-[#F7F9FB] hover:bg-[#E3F1F3] hover:border-[#237F8E] p-2 font-semibold text-[#14232B] text-[11px] transition cursor-pointer"
               >
                 <BookOpen className="h-3.5 w-3.5 text-[#237F8E]" />
-                <span>Glosarium</span>
+                <span>{isId ? 'Glosarium' : 'Glossary'}</span>
               </button>
             )}
           </div>
@@ -357,8 +352,24 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
             </span>
           </div>
 
-          {/* Step Action Advance Button */}
+          {/* Step Action Advance Button & Language Switcher */}
           <div className="flex items-center gap-2.5">
+            {onToggleLang && (
+              <button
+                type="button"
+                onClick={onToggleLang}
+                className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white hover:bg-[#F7F9FB] px-3 py-1.5 text-xs font-bold text-[#14232B] shadow-2xs transition active:scale-95 cursor-pointer"
+                title={isId ? 'Ganti ke Bahasa Inggris' : 'Switch to Indonesian'}
+              >
+                <span className="text-[11px] font-mono font-extrabold text-[#237F8E]">
+                  {isId ? 'EN' : 'ID'}
+                </span>
+                <span className="text-[10px] text-[#5F6B74]">
+                  {isId ? 'English' : 'Indonesia'}
+                </span>
+              </button>
+            )}
+
             {activeSubTab === 'profile' && (
               <button
                 type="button"
@@ -402,13 +413,23 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
                 <div>
                   <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
-                    / STEP 01 · PEDOLOGY & HYDROMETEOROLOGY
+                    {isId ? '/ LANGKAH 01 · PEDOLOGI & AGROKLIMAT' : '/ STEP 01 · PEDOLOGY & HYDROMETEOROLOGY'}
                   </span>
                   <h2 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14232B]">
-                    Profil Tanah & NASA <span className="text-[#237F8E]">Climatology</span>
+                    {isId ? (
+                      <>
+                        Profil Tanah & NASA <span className="text-[#237F8E]">Agroklimat</span>
+                      </>
+                    ) : (
+                      <>
+                        Soil Profile & NASA <span className="text-[#237F8E]">Climatology</span>
+                      </>
+                    )}
                   </h2>
                   <p className="mt-1 max-w-2xl text-xs sm:text-sm text-[#5F6B74] leading-relaxed">
-                    Observasi satelit NASA POWER (normal 1991–2020), model elevasi SRTM 30 m dan estimasi tekstur tanah SoilGrids untuk petak {field.name}.
+                    {isId
+                      ? `Observasi satelit NASA POWER (normal 1991–2020), model elevasi SRTM 30 m dan estimasi tekstur tanah SoilGrids untuk petak ${field.name}.`
+                      : `NASA POWER satellite observations (1991–2020 normals), SRTM 30m elevation model, and SoilGrids texture estimates for plot ${field.name}.`}
                   </p>
                 </div>
               </div>
@@ -428,13 +449,23 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
                 <div>
                   <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
-                    / STEP 02 · DECISION ENGINE & STRESS-TEST
+                    {isId ? '/ LANGKAH 02 · MESIN KEPUTUSAN & UJI STRES' : '/ STEP 02 · DECISION ENGINE & STRESS-TEST'}
                   </span>
                   <h2 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14232B]">
-                    Crop Rotation Multi-Objective <span className="text-[#237F8E]">Optimizer</span>
+                    {isId ? (
+                      <>
+                        Optimasi Multi-Objektif <span className="text-[#237F8E]">Pola Tanam</span>
+                      </>
+                    ) : (
+                      <>
+                        Crop Rotation Multi-Objective <span className="text-[#237F8E]">Optimizer</span>
+                      </>
+                    )}
                   </h2>
                   <p className="mt-1 max-w-2xl text-xs sm:text-sm text-[#5F6B74] leading-relaxed">
-                    Simulasi trade-off multi-objektif Pareto dan estimasi Conditional Value at Risk (CVaR) berdasarkan skenario iklim ekstrem.
+                    {isId
+                      ? 'Simulasi trade-off multi-objektif Pareto dan estimasi Conditional Value at Risk (CVaR) berdasarkan skenario iklim ekstrem.'
+                      : 'Pareto multi-objective trade-off simulation and Conditional Value at Risk (CVaR) estimation under extreme climate scenarios.'}
                   </p>
                 </div>
               </div>
@@ -452,7 +483,9 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               )}
               {dataMode !== 'live' && (
                 <p className="-mt-4 text-xs text-amber-700 font-medium">
-                  Backend offline: rotasi baseline yang diubah baru dihitung saat API tersambung.
+                  {isId
+                    ? 'Backend offline: rotasi baseline yang diubah baru dihitung saat API tersambung.'
+                    : 'Backend offline: modified baseline rotation will be recalculated once the live API is connected.'}
                 </p>
               )}
 
@@ -487,13 +520,23 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
                 <div>
                   <span className="text-[11px] font-bold tracking-wider text-[#237F8E] uppercase">
-                    / STEP 03 · PPL EXTENSION BRIEF & RISK AUDIT
+                    {isId ? '/ LANGKAH 03 · LEMBAR KONSULTASI PPL & AUDIT RISIKO' : '/ STEP 03 · PPL EXTENSION BRIEF & RISK AUDIT'}
                   </span>
                   <h2 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14232B]">
-                    Lembar Rekomendasi & <span className="text-[#237F8E]">Konsultasi PPL</span>
+                    {isId ? (
+                      <>
+                        Lembar Rekomendasi & <span className="text-[#237F8E]">Konsultasi PPL</span>
+                      </>
+                    ) : (
+                      <>
+                        Recommendation Brief & <span className="text-[#237F8E]">PPL Consultation</span>
+                      </>
+                    )}
                   </h2>
                   <p className="mt-1 max-w-2xl text-xs sm:text-sm text-[#5F6B74] leading-relaxed">
-                    Dokumen cetak resmi untuk penyuluh pertanian lapangan (PPL) dan petani guna memverifikasi kondisi lapangan dan risiko lokal sebelum masa tanam.
+                    {isId
+                      ? 'Dokumen cetak resmi untuk penyuluh pertanian lapangan (PPL) dan petani guna memverifikasi kondisi lapangan dan risiko lokal sebelum masa tanam.'
+                      : 'Official printable brief for agricultural extension officers (PPL) and farmers to verify field conditions and local risks before planting.'}
                   </p>
                 </div>
               </div>

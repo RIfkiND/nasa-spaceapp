@@ -293,6 +293,7 @@ export function App() {
           onOpenGlossary={() => setIsGlossaryOpen(true)}
           onOpenDataSources={() => setIsDataSourcesOpen(true)}
           currentLang={currentLang}
+          onToggleLang={handleToggleLang}
           dataMode={dataMode}
           isCalculating={isCalculatingStrategies}
           baseline={currentBaseline}
