@@ -110,18 +110,8 @@ export function App() {
     lang: currentLang,
   });
 
-  // Active selected field: user explicit choice > nearest detected GPS plot > default catalog plot
-  const selectedField: FieldProfile =
-    (isFieldProfile(userSelectedField) ? userSelectedField : null) ??
-    nearestField ??
-    fields[0];
-
-  // Current strategies for the selected field with safe fallback to prevent unhandled crashes
-  const currentStrategies: Strategy[] =
-    MOCK_STRATEGIES[selectedField.id] ??
-    MOCK_STRATEGIES['banyumas-karangrau-01'] ??
-    Object.values(MOCK_STRATEGIES)[0] ??
-    [];
+  // Active selected field: user explicit choice, or null when viewing regional overview initially
+  const selectedField: FieldProfile | null = isFieldProfile(userSelectedField) ? userSelectedField : null;
 
   // Handle URL hash changes
   useEffect(() => {
@@ -154,7 +144,7 @@ export function App() {
 
   const handleWorkspaceQueryChange = (q: string) => {
     setSearchQuery(q);
-    const newHash = buildWorkspaceHash(selectedField.id, q);
+    const newHash = buildWorkspaceHash(selectedField ? selectedField.id : undefined, q);
     if (window.location.hash !== newHash) {
       window.history.replaceState(null, '', newHash);
     }
@@ -162,10 +152,8 @@ export function App() {
 
   const handleOpenWorkspace = (targetField?: FieldProfile, query?: string) => {
     const validTarget = isFieldProfile(targetField) ? targetField : undefined;
-    const field = validTarget ?? selectedField;
-    if (validTarget) {
-      setUserSelectedField(validTarget);
-    }
+    setUserSelectedField(validTarget ?? null);
+
     const effectiveQuery = typeof query === 'string'
       ? query
       : (validTarget ? validTarget.name : searchQuery);
@@ -174,7 +162,7 @@ export function App() {
       setSearchQuery(effectiveQuery);
     }
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(field.id, effectiveQuery);
+    window.location.hash = buildWorkspaceHash(validTarget ? validTarget.id : undefined, effectiveQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -187,6 +175,8 @@ export function App() {
   const handleOpenAnalysis = (field?: FieldProfile) => {
     if (isFieldProfile(field)) {
       handleSelectField(field);
+    } else if (!selectedField && fields.length > 0) {
+      handleSelectField(fields[0]);
     }
     setViewMode('analysis');
     window.location.hash = '#analysis';
@@ -195,7 +185,7 @@ export function App() {
 
   const handleBackToMap = () => {
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(selectedField.id, searchQuery);
+    window.location.hash = buildWorkspaceHash(selectedField?.id, searchQuery);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -235,10 +225,17 @@ export function App() {
 
   // 2. If in Deep-Dive Analysis Mode, render Dedicated Full-Page Workspace
   if (viewMode === 'analysis') {
+    const activeAnalysisField = selectedField ?? fields[0];
+    const currentStrategies: Strategy[] =
+      MOCK_STRATEGIES[activeAnalysisField.id] ??
+      MOCK_STRATEGIES['banyumas-karangrau-01'] ??
+      Object.values(MOCK_STRATEGIES)[0] ??
+      [];
+
     return (
       <div className="min-h-screen bg-[#F4F7FA] text-[#14232B]">
         <PlotAnalysisWorkspace
-          field={selectedField}
+          field={activeAnalysisField}
           strategies={currentStrategies}
           weights={weights}
           onWeightsChange={setWeights}

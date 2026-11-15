@@ -4,7 +4,7 @@ import type { Language } from '../../types/landing';
 import { X, ArrowRight, Layers, CheckCircle2, Sprout, Satellite } from 'lucide-react';
 
 interface PlotDetailSideCardProps {
-  field: FieldProfile;
+  field: FieldProfile | null;
   isOpen: boolean;
   onClose: () => void;
   onOpenAnalysis: (field: FieldProfile) => void;
@@ -20,7 +20,7 @@ export const PlotDetailSideCard: React.FC<PlotDetailSideCardProps> = ({
 }) => {
   const isId = currentLang === 'id';
 
-  if (!isOpen) return null;
+  if (!isOpen || !field) return null;
 
   return (
     <aside

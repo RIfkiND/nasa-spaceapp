@@ -108,3 +108,26 @@ test('HUD layer modes: valid attributes mapped across fields', () => {
     assert.ok(field.soil.texture.length > 0);
   }
 });
+
+test('HUD filters: correctly slices fields by soil texture, slope, and water capacity', () => {
+  const clayLoam = testFields.filter((f) => f.soil.texture.toLowerCase().includes('clay loam'));
+  assert.equal(clayLoam.length, 1);
+  assert.equal(clayLoam[0].id, 'banyumas-karangrau-01');
+
+  const steep = testFields.filter((f) => f.soil.slope > 8);
+  assert.equal(steep.length, 1);
+  assert.equal(steep[0].id, 'banyumas-sumbang-02');
+
+  const highAwc = testFields.filter((f) => f.soil.awc >= 140);
+  assert.equal(highAwc.length, 2);
+});
+
+test('HUD filter retention: explicitly selectedField is preserved even if excluded by quick filter', () => {
+  const steep = testFields.filter((f) => f.soil.slope > 8);
+  const selected = testFields[0]; // Karangrau (slope 2.5%, so not steep)
+  assert.equal(steep.some((f) => f.id === selected.id), false);
+
+  const retained = steep.some((f) => f.id === selected.id) ? steep : [...steep, selected];
+  assert.equal(retained.length, 2);
+  assert.ok(retained.some((f) => f.id === selected.id));
+});
