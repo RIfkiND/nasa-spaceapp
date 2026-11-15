@@ -109,7 +109,7 @@ interface StrategyInteractivePreviewProps {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={onOpenWorkspace}
+              onClick={() => onOpenWorkspace()}
               className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] px-6 py-2.5 text-xs font-bold text-white shadow-xs transition hover:from-[#1B6572] hover:to-[#17463c]"
             >
               <span>{isId ? 'Uji dengan Data Petakmu di Workspace' : 'Test on Your Plot in Workspace'}</span>

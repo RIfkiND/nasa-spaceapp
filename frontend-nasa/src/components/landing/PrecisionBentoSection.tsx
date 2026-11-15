@@ -298,7 +298,7 @@ export function PrecisionBentoSection({
             <div className="pt-6 mt-4 border-t border-slate-100">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full py-2.5 px-4 rounded-xl border border-emerald-600/30 bg-emerald-50/60 hover:bg-emerald-100/60 text-emerald-800 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <span>{isId ? 'Buka Analisis Spasial Lahan' : 'Open Field Spatial Analysis'}</span>
@@ -403,7 +403,7 @@ export function PrecisionBentoSection({
 
                 <button
                   type="button"
-                  onClick={onOpenWorkspace}
+                  onClick={() => onOpenWorkspace()}
                   className="mt-3.5 w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer"
                 >
                   <span>{isId ? 'Simulasi Lahan Anda' : 'Simulate Your Farm'}</span>
@@ -469,7 +469,7 @@ export function PrecisionBentoSection({
             <div className="pt-5 mt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full py-3 px-5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold shadow-sm hover:shadow transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{isId ? 'Buka Field Shift Workspace' : 'Launch Field Shift Workspace'}</span>

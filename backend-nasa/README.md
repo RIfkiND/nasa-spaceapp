@@ -44,7 +44,7 @@ Docker (dari root repo): salin `../.env.example` ke `../.env`, isi `POSTGRES_PAS
 | Extra | Isi | Untuk |
 | --- | --- | --- |
 | `dev` | pytest, ruff, black, mypy, bandit, pip-audit | semua anggota |
-| `db` | SQLAlchemy async, asyncpg, GeoAlchemy2, Alembic | modul yang memakai PostGIS |
+| `db` | SQLAlchemy async, GeoAlchemy2, Alembic | modul yang memakai PostGIS |
 | `cache` | redis | cache / antrean |
 | `worker` | arq | job komputasi panjang |
 | `ml` | numpy, pandas, scikit-learn, xarray | modul AI |

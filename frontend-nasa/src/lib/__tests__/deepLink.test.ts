@@ -96,6 +96,17 @@ test('buildWorkspaceHash: constructs deep link URL cleanly', () => {
     buildWorkspaceHash('banyumas-sumbang-02', 'Kotayasa'),
     '#workspace?field=banyumas-sumbang-02&q=Kotayasa'
   );
+  // Robust against accidental undefined or empty strings
+  assert.equal(buildWorkspaceHash(undefined, undefined), '#workspace');
+  assert.equal(buildWorkspaceHash('banyumas-karangrau-01', ''), '#workspace?field=banyumas-karangrau-01');
+});
+
+test('parseHash: handles bare #workspace gracefully with fallback', () => {
+  const result = parseHash('#workspace', mockFields);
+  assert.equal(result.viewMode, 'workspace');
+  assert.equal(result.fieldId, null);
+  assert.equal(result.matchedField, null);
+  assert.equal(result.query, '');
 });
 
 test('searchCatalogPlots: finds plots by village, soil, and rotation', () => {

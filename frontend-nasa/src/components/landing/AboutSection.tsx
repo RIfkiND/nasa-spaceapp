@@ -72,7 +72,7 @@ export function AboutSection({ onOpenWorkspace }: AboutSectionProps) {
             <div className="shrink-0">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="rounded-xl border border-slate-300 hover:border-[#237F8E] bg-white hover:bg-[#E3F1F3]/50 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-800 hover:text-[#1B6572] transition active:scale-[0.98] shadow-2xs cursor-pointer"
               >
                 Explore Solutions

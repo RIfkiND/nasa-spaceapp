@@ -73,7 +73,7 @@ export function LandingPage({
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* 1. Navbar */}
-      <LandingNavbar onOpenWorkspace={onOpenWorkspace} />
+      <LandingNavbar onOpenWorkspace={() => onOpenWorkspace()} />
 
       <main>
         {/* 1. Hero — Headline, description, farming photo, CTA */}
@@ -92,17 +92,17 @@ export function LandingPage({
         />
 
         {/* 2. About — Brief explanation of Field Shift */}
-        <AboutSection onOpenWorkspace={onOpenWorkspace} />
+        <AboutSection onOpenWorkspace={() => onOpenWorkspace()} />
 
         {/* 3. How It Works — Select Land → Analyze → Compare */}
-        <HowItWorksSection onOpenWorkspace={onOpenWorkspace} />
+        <HowItWorksSection onOpenWorkspace={() => onOpenWorkspace()} />
 
         {/* 4. Why Field Shift — NASA Data, Climate-Aware, Evidence-Based */}
-        <WhyFieldShiftSection onOpenWorkspace={onOpenWorkspace} />
+        <WhyFieldShiftSection onOpenWorkspace={() => onOpenWorkspace()} />
       </main>
 
       {/* 5. CTA + Footer — Explore Field Shift */}
-      <CtaFooterSection onOpenWorkspace={onOpenWorkspace} />
+      <CtaFooterSection onOpenWorkspace={() => onOpenWorkspace()} />
 
       {/* Utility Modals (kept for deep-link compatibility) */}
       <DataSourcesModal

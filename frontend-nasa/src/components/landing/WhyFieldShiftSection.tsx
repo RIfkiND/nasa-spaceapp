@@ -210,7 +210,7 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
                         </p>
                         <button
                           type="button"
-                          onClick={onOpenWorkspace}
+                          onClick={() => onOpenWorkspace()}
                           className="mt-3.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#237F8E] hover:text-[#1B6572] transition cursor-pointer"
                         >
                           <span>Explore Architecture</span>
