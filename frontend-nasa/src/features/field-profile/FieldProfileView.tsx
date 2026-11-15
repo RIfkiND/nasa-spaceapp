@@ -14,15 +14,32 @@ import {
   ReferenceArea,
 } from 'recharts';
 import type { FieldProfile } from '../../types/domain';
+import type { Language } from '../../types/landing';
 import { ShieldAlert, Thermometer, Activity, Droplets, Mountain, Sprout, Info } from 'lucide-react';
+import { MiniParcelMap } from '../map/MiniParcelMap';
 
 interface FieldProfileViewProps {
   field: FieldProfile;
+  onOpenFullMap?: () => void;
+  currentLang?: Language;
 }
 
-export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => {
+export const FieldProfileView: React.FC<FieldProfileViewProps> = ({
+  field,
+  onOpenFullMap,
+  currentLang = 'id',
+}) => {
   return (
     <div className="space-y-6">
+      {/* ============================================================== */}
+      {/* 0. MINI SATELLITE MAP PREVIEW PETAK (INSET SPATIAL CARD)       */}
+      {/* ============================================================== */}
+      <MiniParcelMap
+        field={field}
+        onOpenFullMap={onOpenFullMap}
+        currentLang={currentLang}
+      />
+
       {/* ============================================================== */}
       {/* 1. AGRI-PLUSE 4-COLUMN STAT GRID                               */}
       {/* ============================================================== */}
