@@ -65,19 +65,13 @@ def test_database_enums_preserve_sql_values() -> None:
 
 def test_schema_preserves_foreign_keys_and_named_indexes() -> None:
     foreign_keys = [
-        foreign_key
-        for table in Base.metadata.tables.values()
-        for foreign_key in table.foreign_keys
+        foreign_key for table in Base.metadata.tables.values() for foreign_key in table.foreign_keys
     ]
     assert len(foreign_keys) == 20
     assert all(foreign_key.deferrable is True for foreign_key in foreign_keys)
     assert all(foreign_key.initially == "IMMEDIATE" for foreign_key in foreign_keys)
 
-    index_names = {
-        index.name
-        for table in Base.metadata.tables.values()
-        for index in table.indexes
-    }
+    index_names = {index.name for table in Base.metadata.tables.values() for index in table.indexes}
     assert {
         "idx_calendar_parcel_season",
         "idx_obs_parcel_var_time",

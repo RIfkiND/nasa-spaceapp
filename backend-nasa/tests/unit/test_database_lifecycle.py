@@ -40,9 +40,7 @@ async def test_app_lifespan_initializes_and_disposes_database(
 async def test_app_lifespan_continues_when_database_is_unhealthy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    config = DatabaseConfig(
-        url=SecretStr("postgresql://user:password@invalid.test:5432/postgres")
-    )
+    config = DatabaseConfig(url=SecretStr("postgresql://user:password@invalid.test:5432/postgres"))
     engine = MagicMock(spec=AsyncEngine)
     engine.dispose = AsyncMock()
     monkeypatch.setattr("app.main.get_database_config", MagicMock(return_value=config))

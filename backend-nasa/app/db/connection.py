@@ -49,9 +49,7 @@ def create_database_engine(config: DatabaseConfig | SecretStr) -> AsyncEngine:
     application code should pass ``DatabaseConfig`` so all engine behavior is
     sourced from the canonical database configuration.
     """
-    database_config = (
-        config if isinstance(config, DatabaseConfig) else DatabaseConfig(url=config)
-    )
+    database_config = config if isinstance(config, DatabaseConfig) else DatabaseConfig(url=config)
     url = build_async_database_url(database_config.url)
     engine_url, ssl_connect_args = _prepare_asyncpg_ssl(url)
     connect_args = {
