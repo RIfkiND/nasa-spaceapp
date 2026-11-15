@@ -9,6 +9,7 @@ interface FloatingMapHeaderProps {
   onOpenDataSources: () => void;
   onBackToLanding: () => void;
   selectedVillage: string;
+  dataMode?: 'live' | 'snapshot';
 }
 
 export const FloatingMapHeader: React.FC<FloatingMapHeaderProps> = ({
@@ -18,6 +19,7 @@ export const FloatingMapHeader: React.FC<FloatingMapHeaderProps> = ({
   onOpenDataSources,
   onBackToLanding,
   selectedVillage,
+  dataMode = 'snapshot',
 }) => {
   const isId = currentLang === 'id';
 
@@ -51,6 +53,35 @@ export const FloatingMapHeader: React.FC<FloatingMapHeaderProps> = ({
 
       {/* Floating Utilities */}
       <div className="pointer-events-auto flex items-center gap-2">
+        {/* Real-time backend & NASA Satellite Sync status indicator */}
+        <button
+          onClick={onOpenDataSources}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-float backdrop-blur-md transition-all duration-150 active:scale-95 cursor-pointer ${
+            dataMode === 'live'
+              ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800 hover:bg-emerald-100'
+              : 'border-sky-200 bg-sky-50/95 text-sky-800 hover:bg-sky-100'
+          }`}
+          title={
+            dataMode === 'live'
+              ? (isId ? 'Terhubung live ke backend & satelit NASA' : 'Connected live to backend & NASA satellites')
+              : (isId ? 'Menggunakan data snapshot NASA POWER & SoilGrids terarsip' : 'Using cached NASA POWER & SoilGrids snapshot')
+          }
+        >
+          <span className="relative flex h-2 w-2">
+            {dataMode === 'live' && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />
+            )}
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                dataMode === 'live' ? 'bg-emerald-500' : 'bg-sky-500'
+              }`}
+            />
+          </span>
+          <span className="text-[11px] font-bold">
+            {dataMode === 'live' ? 'NASA Live' : 'NASA Cache'}
+          </span>
+        </button>
+
         <button
           onClick={onOpenDataSources}
           className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-3.5 py-2 text-xs font-semibold text-[#14232B] shadow-float backdrop-blur-md transition-all duration-150 active:scale-95 hover:border-[#237F8E] hover:text-[#237F8E] cursor-pointer motion-reduce:transition-none"

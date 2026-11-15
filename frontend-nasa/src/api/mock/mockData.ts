@@ -4,8 +4,8 @@
  */
 import type { ClimatePhase, FieldProfile, Strategy } from '../../types/domain';
 import type { components } from '../schema';
-import { toEnsoPhase, toField, toStrategies } from '../fieldshift';
-import snapshot from './snapshot.json';
+import { toEnsoPhase, toField, toStrategies } from '../fieldshift.ts';
+import snapshot from './snapshot.json' with { type: 'json' };
 
 interface Snapshot {
   generatedAt: string;

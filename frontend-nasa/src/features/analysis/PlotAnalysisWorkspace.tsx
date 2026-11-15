@@ -35,6 +35,7 @@ interface PlotAnalysisWorkspaceProps {
   onOpenDataSources?: () => void;
   currentLang?: Language;
   dataMode?: 'live' | 'snapshot';
+  isCalculating?: boolean;
   baseline?: Record<string, string>;
   initialBaseline?: Record<string, string>;
   cropLabels?: Record<string, string>;
@@ -59,6 +60,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
   onOpenDataSources,
   currentLang = 'id',
   dataMode = 'snapshot',
+  isCalculating = false,
   baseline,
   initialBaseline,
   cropLabels,
@@ -273,6 +275,7 @@ export const PlotAnalysisWorkspace: React.FC<PlotAnalysisWorkspaceProps> = ({
               constraints={constraints}
               scenario={scenario}
               onOpenEvidence={onOpenEvidence}
+              isCalculating={isCalculating}
             />
           </div>
         )}

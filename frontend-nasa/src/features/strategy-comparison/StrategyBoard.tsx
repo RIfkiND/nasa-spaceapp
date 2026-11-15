@@ -10,6 +10,7 @@ interface StrategyBoardProps {
   constraints: FarmerConstraints;
   scenario: ClimateScenario;
   onOpenEvidence: (strategy: Strategy) => void;
+  isCalculating?: boolean;
 }
 
 export const StrategyBoard: React.FC<StrategyBoardProps> = ({
@@ -17,6 +18,7 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
   weights,
   constraints,
   onOpenEvidence,
+  isCalculating = false,
 }) => {
   // Caution slider: 0 = Pure Mean, 1 = Pure CVaR (Worst Case)
   const [cautionLevel, setCautionLevel] = useState<number>(DEFAULT_CAUTION);
@@ -110,15 +112,23 @@ export const StrategyBoard: React.FC<StrategyBoardProps> = ({
 
         <div className="mt-4 flex flex-wrap items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-3 gap-2">
           <span>0% = Rata-Rata Hasil Murni</span>
-          <span className="text-[#1a7a6d] font-semibold bg-[#e8f5f2] px-3.5 py-0.5 rounded-full border border-[#bfe3db]">
-            Mode: {cautionLevel > 0.6 ? 'Perlindungan Risiko Terburuk (CVaR)' : cautionLevel < 0.3 ? 'Hasil Agresif' : 'Ketahanan Iklim Seimbang'}
-          </span>
+          <div className="flex items-center gap-2">
+            {isCalculating && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#E3F1F3] text-[#1B6572] border border-[#237F8E]/30 animate-pulse motion-reduce:animate-none">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#237F8E] animate-ping motion-reduce:animate-none" />
+                <span>Menghitung Pareto...</span>
+              </span>
+            )}
+            <span className="text-[#1a7a6d] font-semibold bg-[#e8f5f2] px-3.5 py-0.5 rounded-full border border-[#bfe3db]">
+              Mode: {cautionLevel > 0.6 ? 'Perlindungan Risiko Terburuk (CVaR)' : cautionLevel < 0.3 ? 'Hasil Agresif' : 'Ketahanan Iklim Seimbang'}
+            </span>
+          </div>
           <span>100% = Proteksi Risiko Bencana (Worst-Case)</span>
         </div>
       </div>
 
       {/* Strategy Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className={`grid grid-cols-1 gap-6 lg:grid-cols-3 transition-opacity duration-300 ${isCalculating ? 'opacity-75' : 'opacity-100'}`}>
         {sortedStrategies.map((strat, rankIndex) => {
           const score = computeCompositeScore(strat);
           const isWinner = rankIndex === 0;
