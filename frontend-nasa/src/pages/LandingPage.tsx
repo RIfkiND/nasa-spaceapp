@@ -26,13 +26,13 @@ export function LandingPage({
   const [internalLang, setInternalLang] = useState<Language>('en');
   const currentLang = externalLang || internalLang;
 
-  // Keep lang toggle available for future use
-  if (externalToggleLang) {
-    // external toggle provided
-  } else {
-    // internal toggle fallback (no-op unless wired)
-    void setInternalLang;
-  }
+  const handleToggleLang = () => {
+    if (externalToggleLang) {
+      externalToggleLang();
+    } else {
+      setInternalLang((prev) => (prev === 'id' ? 'en' : 'id'));
+    }
+  };
 
   // Modals state
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
@@ -56,8 +56,12 @@ export function LandingPage({
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      {/* 1. Navbar */}
-      <LandingNavbar onOpenWorkspace={onOpenWorkspace} />
+      {/* 1. Navbar with Language Switcher */}
+      <LandingNavbar
+        onOpenWorkspace={onOpenWorkspace}
+        currentLang={currentLang}
+        onToggleLang={handleToggleLang}
+      />
 
       <main>
         {/* 1. Hero — Headline, description, farming photo, CTA */}
@@ -68,17 +72,29 @@ export function LandingPage({
         />
 
         {/* 2. About — Brief explanation of Field Shift */}
-        <AboutSection onOpenWorkspace={onOpenWorkspace} />
+        <AboutSection
+          onOpenWorkspace={onOpenWorkspace}
+          currentLang={currentLang}
+        />
 
         {/* 3. How It Works — Select Land → Analyze → Compare */}
-        <HowItWorksSection onOpenWorkspace={onOpenWorkspace} />
+        <HowItWorksSection
+          onOpenWorkspace={onOpenWorkspace}
+          currentLang={currentLang}
+        />
 
         {/* 4. Why Field Shift — NASA Data, Climate-Aware, Evidence-Based */}
-        <WhyFieldShiftSection onOpenWorkspace={onOpenWorkspace} />
+        <WhyFieldShiftSection
+          onOpenWorkspace={onOpenWorkspace}
+          currentLang={currentLang}
+        />
       </main>
 
       {/* 5. CTA + Footer — Explore Field Shift */}
-      <CtaFooterSection onOpenWorkspace={onOpenWorkspace} />
+      <CtaFooterSection
+        onOpenWorkspace={onOpenWorkspace}
+        currentLang={currentLang}
+      />
 
       {/* Utility Modals (kept for deep-link compatibility) */}
       <DataSourcesModal

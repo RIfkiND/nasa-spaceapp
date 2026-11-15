@@ -9,64 +9,87 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { ScrollReveal } from '../common/ScrollReveal';
+import type { Language } from '../../types/landing';
 
 interface WhyFieldShiftSectionProps {
   onOpenWorkspace: () => void;
+  currentLang?: Language;
 }
 
 interface ValueCard {
   id: string;
-  title: string;
-  subtitle: string;
+  titleEn: string;
+  titleId: string;
+  subtitleEn: string;
+  subtitleId: string;
   icon: typeof Satellite;
-  tags: string[];
-  desc: string;
+  tagsEn: string[];
+  tagsId: string[];
+  descEn: string;
+  descId: string;
   isDark?: boolean;
 }
 
 const CARDS: ValueCard[] = [
   {
     id: 'nasa-data',
-    title: 'NASA Earth Data',
-    subtitle: 'Spaceborne Ingestion',
+    titleEn: 'NASA Earth Data',
+    titleId: 'Data Satelit NASA',
+    subtitleEn: 'Spaceborne Ingestion',
+    subtitleId: 'Ingesti Antariksa',
     icon: Satellite,
-    tags: ['NASA POWER', 'SMAP Radar', 'ECOSTRESS LST', 'MODIS NDVI', 'CHIRPS Rain'],
-    desc: 'We assimilate 26 audited NASA satellite layers into a 30m gridded daily feed — capturing sunlight, soil moisture, and evapotranspiration without ground sensors.',
+    tagsEn: ['NASA POWER', 'SMAP Radar', 'ECOSTRESS LST', 'MODIS NDVI', 'CHIRPS Rain'],
+    tagsId: ['NASA POWER', 'Radar SMAP', 'ECOSTRESS LST', 'MODIS NDVI', 'Hujan CHIRPS'],
+    descEn: 'We assimilate 26 audited NASA satellite layers into a 30m gridded daily feed — capturing sunlight, soil moisture, and evapotranspiration without ground sensors.',
+    descId: 'Kami mengasimilasi 26 lapisan satelit NASA teruji ke dalam data harian grid 30m — memantau sinar matahari, kelembapan tanah, dan evapotranspirasi tanpa sensor fisik di tanah.',
     isDark: false,
   },
   {
     id: 'climate-aware',
-    title: 'Climate-Aware Modeling',
-    subtitle: 'Worst-Year Stress Testing',
+    titleEn: 'Climate-Aware Modeling',
+    titleId: 'Model Waspada Iklim',
+    subtitleEn: 'Worst-Year Stress Testing',
+    subtitleId: 'Uji Stres Tahun Terburuk',
     icon: CloudSun,
-    tags: ['El Niño Stress', 'La Niña Phases', 'IOD Index', 'Drought Baseline', 'Pareto Matrix'],
-    desc: 'Every rotation strategy is stress-tested against historical ENSO climate shocks. We weight worst-year drought scenarios so your farm plan survives the seasons that break monocultures.',
+    tagsEn: ['El Niño Stress', 'La Niña Phases', 'IOD Index', 'Drought Baseline', 'Pareto Matrix'],
+    tagsId: ['Stres El Niño', 'Fase La Niña', 'Indeks IOD', 'Kekeringan Ekstrem', 'Matriks Pareto'],
+    descEn: 'Every rotation strategy is stress-tested against historical ENSO climate shocks. We weight worst-year drought scenarios so your farm plan survives the seasons that break monocultures.',
+    descId: 'Setiap skenario rotasi diuji ketahanan terhadap goncangan iklim ENSO historis. Kami memperhitungkan skenario kekeringan terburuk agar rencana tanam bertahan saat monokultur gagal.',
     isDark: false,
   },
   {
     id: 'evidence-based',
-    title: 'Evidence-Based & Open',
-    subtitle: 'Auditable Science',
+    titleEn: 'Evidence-Based & Open',
+    titleId: 'Berbasis Bukti & Terbuka',
+    subtitleEn: 'Auditable Science',
+    subtitleId: 'Sains yang Dapat Diaudit',
     icon: FlaskConical,
-    tags: ['Pareto Optimal', 'Auditable Weights', 'Uncertainty Bounds', '100% Open Data', 'Peer-Reviewed'],
-    desc: 'No black-box AI scores. Every weight and confidence interval is transparent, backed by agronomic field trials, and fully verifiable by agricultural researchers.',
+    tagsEn: ['Pareto Optimal', 'Auditable Weights', 'Uncertainty Bounds', '100% Open Data', 'Peer-Reviewed'],
+    tagsId: ['Pareto Optimal', 'Bobot Terbuka', 'Rentang Ketidakpastian', '100% Sains Terbuka', 'Peer-Reviewed'],
+    descEn: 'No black-box AI scores. Every weight and confidence interval is transparent, backed by agronomic field trials, and fully verifiable by agricultural researchers.',
+    descId: 'Bukan skor AI black-box. Setiap bobot dan interval keyakinan transparan, didukung uji coba agronomi lapangan, dan dapat diverifikasi sepenuhnya oleh peneliti pertanian.',
     isDark: false,
   },
   {
     id: 'farmer-impact',
-    title: 'Direct Farmer Impact',
-    subtitle: 'Field-Ready Delivery',
+    titleEn: 'Direct Farmer Impact',
+    titleId: 'Dampak Langsung Petani',
+    subtitleEn: 'Field-Ready Delivery',
+    subtitleId: 'Penyampaian Siap Lapangan',
     icon: Sprout,
-    tags: ['3,150+ Plots', '14,250 Ha', '+32% Yield', 'Banyumas Basin', 'Extension Ready'],
-    desc: 'Translated into actionable planting calendars and water efficiency guidelines ready for field extension workers and farmer cooperatives on the ground.',
+    tagsEn: ['3,150+ Plots', '14,250 Ha', '+32% Yield', 'Banyumas Basin', 'Extension Ready'],
+    tagsId: ['3.150+ Petak', '14.250 Ha', '+32% Panen', 'Basin Banyumas', 'Siap Penyuluh'],
+    descEn: 'Translated into actionable planting calendars and water efficiency guidelines ready for field extension workers and farmer cooperatives on the ground.',
+    descId: 'Diterjemahkan menjadi kalender tanam siap aksi dan panduan efisiensi air yang siap diterapkan oleh penyuluh lapangan serta koperasi tani daerah.',
     isDark: false,
   },
 ];
 
-export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionProps) {
+export function WhyFieldShiftSection({ onOpenWorkspace, currentLang = 'en' }: WhyFieldShiftSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const isId = currentLang === 'id';
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -103,7 +126,7 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
   };
 
   return (
-    <section id="why-field-shift" className="py-16 sm:py-24 bg-white border-b border-slate-200">
+    <section id="why-field-shift" className="pt-4 sm:pt-6 pb-16 sm:pb-24 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Outer Curved Container in Unified Field Shift Surface Palette */}
         <ScrollReveal direction="up">
@@ -116,18 +139,31 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
             <div className="lg:col-span-4 flex flex-col justify-between h-full space-y-8">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#237F8E] mb-2">
-                  Core Foundations
+                  {isId ? 'Fondasi Utama' : 'Core Foundations'}
                 </p>
 
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#14232B] leading-[1.18]">
-                  Built on science, which we{' '}
-                  <span className="text-[#237F8E] font-medium">
-                    adhere to:
-                  </span>
+                  {isId ? (
+                    <>
+                      Berlandaskan sains yang kami{' '}
+                      <span className="text-[#237F8E] font-medium">
+                        pegang teguh:
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Built on science, which we{' '}
+                      <span className="text-[#237F8E] font-medium">
+                        adhere to:
+                      </span>
+                    </>
+                  )}
                 </h2>
 
                 <p className="mt-4 text-xs sm:text-sm text-[#5F6B74] leading-relaxed max-w-sm">
-                  Transparent algorithms, open NASA satellite observations, and climate-weighted agronomy designed to protect every harvest.
+                  {isId
+                    ? 'Algoritma transparan, observasi satelit NASA terbuka, dan agronomi berbobot iklim dirancang untuk melindungi setiap musim panen.'
+                    : 'Transparent algorithms, open NASA satellite observations, and climate-weighted agronomy designed to protect every harvest.'}
                 </p>
               </div>
 
@@ -139,10 +175,10 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
                   disabled={!canScrollLeft}
                   className={`flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95 shadow-2xs ${
                     canScrollLeft
-                      ? 'border-slate-300 bg-white hover:border-[#237F8E] text-[#14232B] hover:text-[#237F8E] hover:bg-[#E3F1F3]/50 cursor-pointer'
-                      : 'border-slate-200 bg-slate-100/70 text-slate-300 cursor-not-allowed opacity-40'
+                      ? 'border-transparent bg-[#1E5B4F] text-white hover:bg-[#17463c] shadow-xs cursor-pointer'
+                      : 'border-slate-200 bg-white text-slate-300 cursor-not-allowed opacity-50'
                   }`}
-                  aria-label="Scroll left"
+                  aria-label={isId ? 'Gulir ke kiri' : 'Scroll left'}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
@@ -152,10 +188,10 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
                   disabled={!canScrollRight}
                   className={`flex h-11 w-11 items-center justify-center rounded-full border transition active:scale-95 shadow-2xs ${
                     canScrollRight
-                      ? 'border-slate-300 bg-white hover:border-[#237F8E] text-[#14232B] hover:text-[#237F8E] hover:bg-[#E3F1F3]/50 cursor-pointer'
-                      : 'border-slate-200 bg-slate-100/70 text-slate-300 cursor-not-allowed opacity-40'
+                      ? 'border-transparent bg-[#1E5B4F] text-white hover:bg-[#17463c] shadow-xs cursor-pointer'
+                      : 'border-slate-200 bg-white text-slate-300 cursor-not-allowed opacity-50'
                   }`}
-                  aria-label="Scroll right"
+                  aria-label={isId ? 'Gulir ke kanan' : 'Scroll right'}
                 >
                   <ArrowRight className="h-4 w-4" />
                 </button>
@@ -186,13 +222,13 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
                             <Icon className="h-4 w-4" />
                           </span>
                           <h3 className="font-bold text-base sm:text-lg text-[#14232B]">
-                            {card.title}
+                            {isId ? card.titleId : card.titleEn}
                           </h3>
                         </div>
 
-                        {/* Chips Cluster (Light Mode) */}
+                        {/* Chips Cluster */}
                         <div className="flex flex-wrap gap-2 mb-6">
-                          {card.tags.map((tag, i) => (
+                          {(isId ? card.tagsId : card.tagsEn).map((tag, i) => (
                             <span
                               key={i}
                               className="rounded-lg bg-slate-50 hover:bg-[#E3F1F3] border border-slate-200 hover:border-[#237F8E]/30 px-2.5 py-1 text-[11px] font-medium text-[#14232B] hover:text-[#1B6572] transition"
@@ -206,14 +242,14 @@ export function WhyFieldShiftSection({ onOpenWorkspace }: WhyFieldShiftSectionPr
                       {/* Bottom Description */}
                       <div className="pt-4 border-t border-slate-100">
                         <p className="text-xs text-[#5F6B74] leading-relaxed">
-                          {card.desc}
+                          {isId ? card.descId : card.descEn}
                         </p>
                         <button
                           type="button"
                           onClick={onOpenWorkspace}
                           className="mt-3.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#237F8E] hover:text-[#1B6572] transition cursor-pointer"
                         >
-                          <span>Explore Architecture</span>
+                          <span>{isId ? 'Pelajari Arsitektur' : 'Explore Architecture'}</span>
                           <ArrowUpRight className="h-3.5 w-3.5" />
                         </button>
                       </div>

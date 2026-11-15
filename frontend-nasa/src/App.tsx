@@ -49,7 +49,8 @@ export function App() {
   });
 
   // Current strategies for the selected field
-  const currentStrategies: Strategy[] = MOCK_STRATEGIES[selectedField.id] || MOCK_STRATEGIES['field-kotayasa-01'];
+  const currentStrategies: Strategy[] =
+    MOCK_STRATEGIES[selectedField.id] || Object.values(MOCK_STRATEGIES)[0];
 
   // Handle URL hash changes
   useEffect(() => {

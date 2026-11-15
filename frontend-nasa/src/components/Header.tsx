@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Peta & Petak
+            1. Peta & Petak
           </button>
           <button
             onClick={() => onTabChange('profile')}
@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Profil Lahan & Iklim
+            2. Profil Lahan & Iklim
           </button>
           <button
             onClick={() => onTabChange('comparison')}
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Optimasi Rotasi
+            3. Optimasi Rotasi
           </button>
           <button
             onClick={() => onTabChange('export')}
@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#5F6B74] hover:text-[#14232B]'
             }`}
           >
-            Lembar Penyuluh
+            4. Lembar Konsultasi
           </button>
         </nav>
 

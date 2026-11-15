@@ -38,115 +38,122 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
   return (
     <div className="space-y-6">
       {/* Climate Forcing Selector */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-gray-100 pb-4 gap-2">
+      <div className="rounded-2xl border border-[#E6EBF0] bg-white p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-[#E6EBF0] pb-4 gap-2">
           <div>
-            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
-              <Sun className="h-4 w-4 text-[#d97706]" />
-              Projected Monsoon Phase (Pacific ENSO / Indian Ocean Dipole)
+            <h3 className="font-bold text-[#14232B] flex items-center gap-2 text-base">
+              <Sun className="h-4.5 w-4.5 text-[#B7791F]" />
+              Fase Proyeksi Muson (Pacific ENSO &middot; Indian Ocean Dipole)
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Simulate downside yield risk and irrigation scarcity against historical climate analogues
+            <p className="text-xs text-[#5F6B74] mt-0.5">
+              Simulasikan risiko penurunan hasil dan kelangkaan irigasi berdasarkan analog iklim historis NASA
             </p>
           </div>
-          <span className="text-xs text-[#1a7a6d] font-semibold bg-[#e8f5f2] px-3.5 py-1 rounded-full border border-[#bfe3db]">
-            Analogue Model Active
+          <span className="text-xs text-[#1B6572] font-semibold bg-[#E3F1F3] px-3.5 py-1 rounded-full border border-[#237F8E]/25">
+            Model Analog Aktif
           </span>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('el_nino')}
-            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
+            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-200 cursor-pointer ${
               climatePhase === 'el_nino'
-                ? 'border-[#dc2626] bg-red-50/40 ring-1 ring-[#dc2626] shadow-xs'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+                ? 'border-[#B4443A] bg-[#FDF4F3] ring-2 ring-[#B4443A]/30 shadow-xs'
+                : 'border-[#E6EBF0] bg-white hover:border-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-[#dc2626] text-sm">
+            <div className="flex items-center gap-2 font-bold text-[#B4443A] text-sm">
               <Sun className="h-4 w-4 shrink-0" />
-              <span>El Niño (Severe Drought)</span>
+              <span>El Niño (Kekeringan Parah)</span>
             </div>
-            <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Delayed monsoon onset, early dry season, low reservoir storage. Worst-case CVaR heavily weighted.
+            <p className="mt-1.5 text-xs text-[#5F6B74] leading-relaxed">
+              Awal muson mundur, kemarau lebih panjang, debit waduk menyusut. Penalti CVaR skenario terburuk diperberat.
             </p>
           </button>
 
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('normal')}
-            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
+            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-200 cursor-pointer ${
               climatePhase === 'normal'
-                ? 'border-[#0891b2] bg-cyan-50/40 ring-1 ring-[#0891b2] shadow-xs'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+                ? 'border-[#237F8E] bg-[#E3F1F3]/50 ring-2 ring-[#237F8E]/30 shadow-xs'
+                : 'border-[#E6EBF0] bg-white hover:border-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-[#0891b2] text-sm">
+            <div className="flex items-center gap-2 font-bold text-[#237F8E] text-sm">
               <Wind className="h-4 w-4 shrink-0" />
-              <span>Neutral Climatology</span>
+              <span>Klimatologi Netral</span>
             </div>
-            <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Standard climatological distribution. Normal rainfall onset in late October.
+            <p className="mt-1.5 text-xs text-[#5F6B74] leading-relaxed">
+              Distribusi curah hujan normal. Awal musim hujan reguler pada akhir Oktober hingga awal November.
             </p>
           </button>
 
           <button
+            type="button"
             onClick={() => onClimatePhaseChange('la_nina')}
-            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-150 ${
+            className={`flex flex-col items-start rounded-2xl border p-4 text-left transition duration-200 cursor-pointer ${
               climatePhase === 'la_nina'
-                ? 'border-[#1a7a6d] bg-[#e8f5f2]/40 ring-1 ring-[#1a7a6d] shadow-xs'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+                ? 'border-[#2E7D4F] bg-[#F0F7F2] ring-2 ring-[#2E7D4F]/30 shadow-xs'
+                : 'border-[#E6EBF0] bg-white hover:border-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2 font-bold text-[#1a7a6d] text-sm">
+            <div className="flex items-center gap-2 font-bold text-[#2E7D4F] text-sm">
               <CloudRain className="h-4 w-4 shrink-0" />
-              <span>La Niña (Wet Anomaly)</span>
+              <span>La Niña (Anomali Basah)</span>
             </div>
-            <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">
-              Excessive rainfall throughout dry season. Low drought risk, higher fungal pest & flooding risk.
+            <p className="mt-1.5 text-xs text-[#5F6B74] leading-relaxed">
+              Curah hujan tinggi meluas ke musim kemarau. Risiko kekeringan rendah, namun waspada busuk akar dan jamur.
             </p>
           </button>
         </div>
       </div>
 
       {/* Priority Sliders */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      <div className="rounded-2xl border border-[#E6EBF0] bg-white p-6 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6EBF0] pb-4">
           <div>
-            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base">
-              <Sliders className="h-4 w-4 text-[#1a7a6d]" />
-              Multi-Objective Trade-Off Weights
+            <h3 className="font-bold text-[#14232B] flex items-center gap-2 text-base">
+              <Sliders className="h-4.5 w-4.5 text-[#237F8E]" />
+              Bobot Preferensi Multi-Objektif
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Calibrate decision optimization based on farmer priorities, market demand, and input constraints
+            <p className="text-xs text-[#5F6B74] mt-0.5">
+              Kalibrasikan optimasi keputusan berdasarkan prioritas petani, kebutuhan pasar, dan ketersediaan input
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-gray-500 mr-1 flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-[#d97706]" /> Presets:
+            <span className="text-xs text-[#5F6B74] mr-1 flex items-center gap-1 font-medium">
+              <Sparkles className="h-3.5 w-3.5 text-[#B7791F]" /> Preset Rekomendasi:
             </span>
             <button
+              type="button"
               onClick={() => applyPreset('balanced')}
-              className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
+              className="rounded-full bg-[#F4F7FA] border border-[#E6EBF0] px-3.5 py-1 text-xs font-semibold text-[#14232B] hover:bg-[#E3F1F3] hover:text-[#237F8E] transition cursor-pointer active:scale-95"
             >
-              Balanced
+              Seimbang
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('drought')}
-              className="rounded-full bg-red-50 border border-red-200 px-3 py-1 text-xs font-semibold text-[#dc2626] hover:bg-red-100 transition"
+              className="rounded-full bg-red-50 border border-red-200/80 px-3.5 py-1 text-xs font-semibold text-[#B4443A] hover:bg-red-100 transition cursor-pointer active:scale-95"
             >
-              Drought Shield
+              Perisai Kekeringan
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('soil')}
-              className="rounded-full bg-[#e8f5f2] border border-[#bfe3db] px-3 py-1 text-xs font-semibold text-[#1a7a6d] hover:bg-teal-100 transition"
+              className="rounded-full bg-[#E3F1F3] border border-[#237F8E]/25 px-3.5 py-1 text-xs font-semibold text-[#1B6572] hover:bg-[#237F8E] hover:text-white transition cursor-pointer active:scale-95"
             >
-              Soil Booster
+              Pemulih Tanah
             </button>
             <button
+              type="button"
               onClick={() => applyPreset('labor')}
-              className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
+              className="rounded-full bg-[#F4F7FA] border border-[#E6EBF0] px-3.5 py-1 text-xs font-semibold text-[#5F6B74] hover:bg-slate-200 transition cursor-pointer active:scale-95"
             >
-              Low Labor
+              Hemat Tenaga
             </button>
           </div>
         </div>
@@ -155,8 +162,8 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
           {/* Yield */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Harvest Yield & Gross Margin</span>
-              <span className="font-mono text-[#1a7a6d] font-bold tabular-nums">{weights.yield}%</span>
+              <span className="font-semibold text-[#14232B]">Hasil Panen & Margin Kotor</span>
+              <span className="font-mono text-[#237F8E] font-bold tabular-nums text-sm">{weights.yield}%</span>
             </div>
             <input
               type="range"
@@ -164,15 +171,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.yield}
               onChange={(e) => handleSliderChange('yield', Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-100 accent-[#1a7a6d]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#F1F5F9] accent-[#237F8E]"
             />
           </div>
 
           {/* Water */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Water Conservation & Drought Safety</span>
-              <span className="font-mono text-[#0891b2] font-bold tabular-nums">{weights.waterEfficiency}%</span>
+              <span className="font-semibold text-[#14232B]">Efisiensi Air & Keamanan Kekeringan</span>
+              <span className="font-mono text-[#1E5B4F] font-bold tabular-nums text-sm">{weights.waterEfficiency}%</span>
             </div>
             <input
               type="range"
@@ -180,15 +187,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.waterEfficiency}
               onChange={(e) => handleSliderChange('waterEfficiency', Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-100 accent-[#0891b2]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#F1F5F9] accent-[#1E5B4F]"
             />
           </div>
 
           {/* Soil */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Soil Organic Health & Nitrogen Fixing</span>
-              <span className="font-mono text-[#d97706] font-bold tabular-nums">{weights.soilHealth}%</span>
+              <span className="font-semibold text-[#14232B]">Kesehatan Tanah Organik & Fiksasi Nitrogen</span>
+              <span className="font-mono text-[#B7791F] font-bold tabular-nums text-sm">{weights.soilHealth}%</span>
             </div>
             <input
               type="range"
@@ -196,15 +203,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.soilHealth}
               onChange={(e) => handleSliderChange('soilHealth', Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-100 accent-[#d97706]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#F1F5F9] accent-[#B7791F]"
             />
           </div>
 
           {/* Cover Days */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Continuous Ground Cover (Minimize Bare Fallow)</span>
-              <span className="font-mono text-[#16a34a] font-bold tabular-nums">{weights.coverDays}%</span>
+              <span className="font-semibold text-[#14232B]">Hari Tutupan Kanopi Terus-Menerus (Cegah Bera Terbuka)</span>
+              <span className="font-mono text-[#2E7D4F] font-bold tabular-nums text-sm">{weights.coverDays}%</span>
             </div>
             <input
               type="range"
@@ -212,15 +219,15 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.coverDays}
               onChange={(e) => handleSliderChange('coverDays', Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-100 accent-[#16a34a]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#F1F5F9] accent-[#2E7D4F]"
             />
           </div>
 
           {/* Labor */}
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-gray-800">Labor Feasibility & Low Input Complexity</span>
-              <span className="font-mono text-slate-600 font-bold tabular-nums">{weights.laborDemand}%</span>
+              <span className="font-semibold text-[#14232B]">Kemudahan Tenaga Kerja & Kompleksitas Input Rendah</span>
+              <span className="font-mono text-[#5F6B74] font-bold tabular-nums text-sm">{weights.laborDemand}%</span>
             </div>
             <input
               type="range"
@@ -228,7 +235,7 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
               max={50}
               value={weights.laborDemand}
               onChange={(e) => handleSliderChange('laborDemand', Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-100 accent-[#475569]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#F1F5F9] accent-[#5F6B74]"
             />
           </div>
         </div>
@@ -236,3 +243,5 @@ export const PriorityControls: React.FC<PriorityControlsProps> = ({
     </div>
   );
 };
+
+export default PriorityControls;

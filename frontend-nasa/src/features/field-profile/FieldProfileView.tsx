@@ -11,9 +11,10 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  ReferenceArea,
 } from 'recharts';
 import type { FieldProfile } from '../../types/domain';
-import { ShieldAlert, Thermometer, Activity, Droplets, Mountain, Sprout } from 'lucide-react';
+import { ShieldAlert, Thermometer, Activity, Droplets, Mountain, Sprout, Info } from 'lucide-react';
 
 interface FieldProfileViewProps {
   field: FieldProfile;
@@ -22,195 +23,304 @@ interface FieldProfileViewProps {
 export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => {
   return (
     <div className="space-y-6">
-      {/* AgriPluse Stat Grid (Replacing old ledger with clean AgriPluse metric cards) */}
+      {/* ============================================================== */}
+      {/* 1. AGRI-PLUSE 4-COLUMN STAT GRID                               */}
+      {/* ============================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1: Soil Texture & Type */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+        {/* Metric 1: Pedology & Soil Texture */}
+        <div className="rounded-2xl border border-[#E6EBF0] bg-white p-5 shadow-xs hover:border-[#237F8E]/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pedological Matrix</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f5f2] text-[#1a7a6d]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#5F6B74]">
+              Pedological Matrix
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#E3F1F3] text-[#237F8E] border border-[#237F8E]/20">
               <Sprout className="h-4 w-4" />
             </div>
           </div>
-          <h3 className="mt-3 text-2xl font-bold tracking-tight text-gray-900">{field.soil.texture}</h3>
-          <p className="mt-1 text-xs text-gray-500">{field.soil.type}</p>
-          <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600">
-            <span>Organic Matter:</span>
-            <strong className="text-gray-900 font-semibold">{field.soil.organicMatter}</strong>
+          <h3 className="mt-2.5 text-xl font-bold tracking-tight text-[#14232B] truncate">
+            {field.soil.texture}
+          </h3>
+          <p className="mt-0.5 text-xs text-[#5F6B74] truncate">{field.soil.type}</p>
+          <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] flex items-center justify-between text-xs">
+            <span className="text-[#5F6B74]">Bahan Organik (SOM):</span>
+            <strong className="text-[#14232B] font-mono tabular-nums font-semibold">
+              {field.soil.organicMatter}
+            </strong>
           </div>
         </div>
 
-        {/* Metric 2: Available Water Capacity */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+        {/* Metric 2: Available Water Capacity (AWC) */}
+        <div className="rounded-2xl border border-[#E6EBF0] bg-white p-5 shadow-xs hover:border-[#237F8E]/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Water Capacity (AWC)</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-50 text-[#0891b2]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#5F6B74]">
+              Kapasitas Lengas (AWC)
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#E3F1F3] text-[#237F8E] border border-[#237F8E]/20">
               <Droplets className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-1.5">
-            <span className="text-3xl font-extrabold tracking-tight text-[#0891b2] font-mono tabular-nums">{field.soil.awc}</span>
-            <span className="text-xs font-semibold text-gray-500">mm/m</span>
+          <div className="mt-2.5 flex items-baseline gap-1.5">
+            <span className="text-3xl font-extrabold tracking-tight text-[#237F8E] font-mono tabular-nums">
+              {field.soil.awc}
+            </span>
+            <span className="text-xs font-semibold text-[#5F6B74]">mm/m</span>
           </div>
-          <p className="mt-1 text-xs text-gray-500">ISRIC SoilGrids & SMAP Assimilated</p>
-          <div className="mt-4 pt-3 border-t border-gray-100 text-xs font-medium text-[#0891b2]">
-            Sufficient for deep-root legumes
+          <p className="mt-0.5 text-xs text-[#5F6B74]">Asimilasi SoilGrids & SMAP L4</p>
+          <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] text-xs font-medium text-[#1E5B4F] flex items-center gap-1">
+            <span>Cadangan lengas perakaran optimal</span>
           </div>
         </div>
 
         {/* Metric 3: Topographic Slope & Elevation */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+        <div className="rounded-2xl border border-[#E6EBF0] bg-white p-5 shadow-xs hover:border-[#237F8E]/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Topographic Hazard</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-[#d97706]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#5F6B74]">
+              Topografi & Elevasi
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-[#B7791F] border border-amber-200/50">
               <Mountain className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-1.5">
-            <span className="text-3xl font-extrabold tracking-tight text-gray-900 font-mono tabular-nums">{field.soil.slope}%</span>
-            <span className="text-xs font-semibold text-gray-500">slope gradient</span>
+          <div className="mt-2.5 flex items-baseline gap-1.5">
+            <span className="text-3xl font-extrabold tracking-tight text-[#14232B] font-mono tabular-nums">
+              {field.soil.slope}%
+            </span>
+            <span className="text-xs font-semibold text-[#5F6B74]">lereng</span>
           </div>
-          <p className="mt-1 text-xs text-gray-500">{field.elevationMeters}m MSL &middot; {field.soil.erosionRisk}</p>
-          <div className="mt-4 pt-3 border-t border-gray-100 text-xs font-medium text-[#dc2626]">
-            Requires continuous ground cover
+          <p className="mt-0.5 text-xs text-[#5F6B74]">
+            <strong className="font-mono tabular-nums text-[#14232B]">{field.elevationMeters} mdpl</strong> &middot; Risiko Erosi {field.soil.erosionRisk}
+          </p>
+          <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] text-xs font-medium text-[#B7791F]">
+            {field.soil.slope > 10 ? 'Wajib terasering & penutup tanah' : 'Dataran aman limpasan erosi'}
           </div>
         </div>
 
-        {/* Metric 4: Observed Current Practice */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+        {/* Metric 4: Existing Monoculture Sequence */}
+        <div className="rounded-2xl border border-[#E6EBF0] bg-white p-5 shadow-xs hover:border-[#237F8E]/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Current Monoculture</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-[#dc2626]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#5F6B74]">
+              Pola Eksisting Petani
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-[#B4443A] border border-red-200/50">
               <Activity className="h-4 w-4" />
             </div>
           </div>
-          <h3 className="mt-3 text-xl font-bold tracking-tight text-gray-900">{field.currentRotation[0]}</h3>
-          <p className="mt-1 text-xs text-gray-500">Dry Season Fallow Gap: 90+ days</p>
-          <div className="mt-4 pt-3 border-t border-gray-100 text-xs font-medium text-[#dc2626]">
-            Vulnerable to El Niño flash drought
+          <h3 className="mt-2.5 text-base font-bold tracking-tight text-[#14232B] line-clamp-1">
+            {field.currentRotation[0]}
+          </h3>
+          <p className="mt-0.5 text-xs text-[#5F6B74] truncate">
+            {field.currentRotation[1]} &middot; {field.currentRotation[2]}
+          </p>
+          <div className="mt-3.5 pt-3 border-t border-[#E6EBF0] text-xs font-medium text-[#B4443A] flex items-center justify-between">
+            <span>Rentan cekaman El Niño</span>
+            <span className="font-mono tabular-nums font-bold">{field.areaHectares} ha</span>
           </div>
         </div>
       </div>
 
-      {/* Climate chart */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      {/* ============================================================== */}
+      {/* 2. NASA POWER CLIMATE & TEMPERATURE HISTORY                   */}
+      {/* ============================================================== */}
+      <div className="rounded-2xl border border-[#E6EBF0] bg-white p-6 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6EBF0] pb-4">
           <div>
-            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
-              <Thermometer className="h-4 w-4 text-[#d97706]" />
-              Decadal Climatology Cycle (NASA POWER + GPM IMERG V07)
+            <h3 className="font-bold text-[#14232B] text-base flex items-center gap-2">
+              <Thermometer className="h-4.5 w-4.5 text-[#B7791F]" />
+              Siklus Klimatologi Dekadal (NASA POWER &middot; GPM IMERG V07 &middot; SMAP)
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              25-year monthly precipitation totals and diurnal temperature extremes in Serayu Valley
+            <p className="text-xs text-[#5F6B74] mt-0.5">
+              Presipitasi bulanan, batas suhu ekstrem, dan estimasi lengas tanah 0–100cm di Lembah Serayu
             </p>
           </div>
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 font-mono tabular-nums">
-            2000–2025 Calibrated
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[#E3F1F3] px-3.5 py-1 text-xs text-[#1B6572] font-mono tabular-nums font-bold border border-[#237F8E]/25">
+              2000–2025 Terkalibrasi
+            </span>
+          </div>
         </div>
 
-        <div className="mt-5 h-64 w-full">
+        <div className="mt-6 h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={field.climateHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" stroke="#94a3b8" tick={{ fontSize: 11, fill: '#64748b' }} />
+            <ComposedChart data={field.climateHistory} margin={{ top: 12, right: 10, left: -15, bottom: 0 }}>
+              <defs>
+                <linearGradient id="rainGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#237F8E" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#1E5B4F" stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+              <XAxis dataKey="month" stroke="#94A3B8" tick={{ fontSize: 11, fill: '#5F6B74' }} tickLine={false} />
               <YAxis
                 yAxisId="left"
-                stroke="#1a7a6d"
-                tick={{ fontSize: 11, fill: '#1a7a6d' }}
-                label={{ value: 'Rainfall (mm)', angle: -90, position: 'insideLeft', fill: '#1a7a6d', fontSize: 10 }}
+                stroke="#237F8E"
+                tick={{ fontSize: 11, fill: '#237F8E' }}
+                tickLine={false}
+                axisLine={false}
+                label={{ value: 'Curah Hujan (mm)', angle: -90, position: 'insideLeft', fill: '#237F8E', fontSize: 10 }}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                domain={[15, 36]}
-                stroke="#d97706"
-                tick={{ fontSize: 11, fill: '#d97706' }}
-                label={{ value: 'Temp (°C)', angle: 90, position: 'insideRight', fill: '#d97706', fontSize: 10 }}
+                domain={[14, 36]}
+                stroke="#B7791F"
+                tick={{ fontSize: 11, fill: '#B7791F' }}
+                tickLine={false}
+                axisLine={false}
+                label={{ value: 'Suhu (°C)', angle: 90, position: 'insideRight', fill: '#B7791F', fontSize: 10 }}
               />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  borderColor: '#e5e7eb',
-                  borderRadius: '16px',
-                  fontSize: '12px',
-                  color: '#111827',
-                  boxShadow: '0 4px 16px rgba(17, 24, 39, 0.08)',
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-              <Bar yAxisId="left" dataKey="rainfall" name="Precipitation (mm)" fill="#1a7a6d" radius={[6, 6, 0, 0]} opacity={0.85} />
-              <Line yAxisId="right" type="monotone" dataKey="tempMax" name="Max Temp (°C)" stroke="#d97706" strokeWidth={2.5} dot={{ r: 3 }} />
-              <Line yAxisId="right" type="monotone" dataKey="tempMin" name="Min Temp (°C)" stroke="#64748b" strokeWidth={1.5} strokeDasharray="3 3" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* NDVI & Fallow detection chart */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
-          <div>
-            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
-              <Activity className="h-4 w-4 text-[#1a7a6d]" />
-              Canopy Phenology & Bare Fallow Detection (NASA HLS 30m)
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Harmonized Landsat-Sentinel vegetation index tracking crop vigor vs bare fallow soil exposure
-            </p>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5 text-[#1a7a6d] font-semibold">
-              <span className="h-2 w-2 rounded-full bg-[#1a7a6d]" /> &gt;0.6 Dense Canopy
-            </span>
-            <span className="flex items-center gap-1.5 text-[#dc2626] font-semibold">
-              <span className="h-2 w-2 rounded-full bg-[#dc2626]" /> &lt;0.2 Bare Fallow
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-5 h-48 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={field.ndviTimeSeries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="ndviGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1a7a6d" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#1a7a6d" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" stroke="#94a3b8" tick={{ fontSize: 11, fill: '#64748b' }} />
-              <YAxis domain={[0, 1]} stroke="#94a3b8" tick={{ fontSize: 11, fill: '#64748b' }} />
-              <Tooltip
-                content={({ active, payload }) => {
+                content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-2xl border border-gray-200 bg-white p-3 text-xs shadow-card text-gray-900">
-                        <p className="font-bold text-gray-900">{data.month}</p>
-                        <p className="text-[#1a7a6d] font-mono font-semibold mt-0.5">NDVI: {data.ndvi}</p>
-                        <p className="text-gray-500 mt-0.5">
-                          Phase: <strong className={data.ndvi < 0.25 ? 'text-[#dc2626]' : 'text-[#1a7a6d]'}>{data.phase}</strong>
+                      <div className="rounded-2xl border border-[#E6EBF0] bg-white/95 backdrop-blur-md p-4 text-xs shadow-[0_8px_30px_rgba(15,23,42,0.08)] text-[#14232B] space-y-1.5 min-w-[200px]">
+                        <p className="font-extrabold text-[#14232B] text-sm border-b border-[#E6EBF0] pb-1">
+                          Bulan {label}
                         </p>
+                        <div className="flex items-center justify-between text-[#237F8E]">
+                          <span>Curah Hujan:</span>
+                          <strong className="font-mono tabular-nums">{data.rainfall} mm</strong>
+                        </div>
+                        <div className="flex items-center justify-between text-[#B7791F]">
+                          <span>Suhu Maksimum:</span>
+                          <strong className="font-mono tabular-nums">{data.tempMax}°C</strong>
+                        </div>
+                        <div className="flex items-center justify-between text-[#5F6B74]">
+                          <span>Suhu Minimum:</span>
+                          <strong className="font-mono tabular-nums">{data.tempMin}°C</strong>
+                        </div>
+                        <div className="flex items-center justify-between text-[#1E5B4F] pt-1 border-t border-[#E6EBF0]">
+                          <span>Lengas Tanah (SMAP):</span>
+                          <strong className="font-mono tabular-nums">{data.soilMoisture} m³/m³</strong>
+                        </div>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Area type="monotone" dataKey="ndvi" stroke="#1a7a6d" strokeWidth={2.5} fillOpacity={1} fill="url(#ndviGradient)" />
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />
+              <Bar yAxisId="left" dataKey="rainfall" name="Curah Hujan (mm)" fill="url(#rainGradient)" radius={[6, 6, 0, 0]} barSize={26} />
+              <Line yAxisId="right" type="monotone" dataKey="tempMax" name="Suhu Maksimal (°C)" stroke="#B7791F" strokeWidth={2.5} dot={{ r: 3, fill: '#FFFFFF', stroke: '#B7791F', strokeWidth: 2 }} />
+              <Line yAxisId="right" type="monotone" dataKey="tempMin" name="Suhu Minimal (°C)" stroke="#8A949B" strokeWidth={1.5} strokeDasharray="3 3" dot={{ r: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 3. NDVI FENOLOGI VEGETASI DENGAN 4 ZONA WARNA FASE TANAM      */}
+      {/* ============================================================== */}
+      <div className="rounded-2xl border border-[#E6EBF0] bg-white p-6 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E6EBF0] pb-4">
+          <div>
+            <h3 className="font-bold text-[#14232B] text-base flex items-center gap-2">
+              <Activity className="h-4.5 w-4.5 text-[#237F8E]" />
+              Kurva Fenologi Kanopi & Deteksi Lahan Bera (NASA HLS 30m)
+            </h3>
+            <p className="text-xs text-[#5F6B74] mt-0.5">
+              Tren indeks vegetasi tahunan dengan pembagian 4 zona fase tanam untuk deteksi dini risiko erosi tanah
+            </p>
+          </div>
+          
+          {/* Phase Legend Indicators */}
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="flex items-center gap-1.5 text-[#1E5B4F] font-semibold bg-[#E3F1F3] px-2.5 py-0.5 rounded-full">
+              <span className="h-2 w-2 rounded-full bg-[#1E5B4F]" /> Kanopi Rapat (&gt;0.7)
+            </span>
+            <span className="flex items-center gap-1.5 text-[#237F8E] font-semibold bg-cyan-50 px-2.5 py-0.5 rounded-full">
+              <span className="h-2 w-2 rounded-full bg-[#237F8E]" /> Vegetatif (0.4–0.7)
+            </span>
+            <span className="flex items-center gap-1.5 text-[#5F6B74] font-semibold bg-slate-100 px-2.5 py-0.5 rounded-full">
+              <span className="h-2 w-2 rounded-full bg-[#8A949B]" /> Olah Lahan (0.25–0.4)
+            </span>
+            <span className="flex items-center gap-1.5 text-[#B4443A] font-semibold bg-red-50 px-2.5 py-0.5 rounded-full">
+              <span className="h-2 w-2 rounded-full bg-[#B4443A]" /> Bera/Terbuka (&lt;0.25)
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 h-56 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={field.ndviTimeSeries} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="ndviGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#237F8E" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#237F8E" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+              
+              {/* Reference Phase Color Bands across NDVI Y-scale */}
+              <ReferenceArea y1={0.7} y2={1.0} fill="#E7F2EB" fillOpacity={0.35} />
+              <ReferenceArea y1={0.4} y2={0.7} fill="#E3F1F3" fillOpacity={0.25} />
+              <ReferenceArea y1={0.25} y2={0.4} fill="#F4F7FA" fillOpacity={0.4} />
+              <ReferenceArea y1={0.0} y2={0.25} fill="#FDF4F3" fillOpacity={0.45} />
+
+              <XAxis dataKey="month" stroke="#94A3B8" tick={{ fontSize: 11, fill: '#5F6B74' }} tickLine={false} />
+              <YAxis domain={[0, 1]} stroke="#94A3B8" tick={{ fontSize: 11, fill: '#5F6B74' }} tickLine={false} axisLine={false} />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    const isFallow = data.ndvi < 0.25;
+                    return (
+                      <div className="rounded-2xl border border-[#E6EBF0] bg-white/95 backdrop-blur-md p-3.5 text-xs shadow-[0_8px_30px_rgba(15,23,42,0.08)] text-[#14232B] min-w-[190px]">
+                        <p className="font-extrabold text-[#14232B] text-sm border-b border-[#E6EBF0] pb-1">
+                          Bulan {data.month}
+                        </p>
+                        <p className="text-[#237F8E] font-mono font-bold mt-1.5 text-sm tabular-nums">
+                          NDVI: {data.ndvi}
+                        </p>
+                        <div className="mt-1 flex items-center justify-between text-xs">
+                          <span className="text-[#5F6B74]">Fase Tanam:</span>
+                          <span className={`font-semibold px-2 py-0.5 rounded-full text-[10px] ${
+                            isFallow ? 'bg-red-50 text-[#B4443A]' : 'bg-[#E3F1F3] text-[#1B6572]'
+                          }`}>
+                            {data.phase}
+                          </span>
+                        </div>
+                        {isFallow && (
+                          <p className="text-[10px] text-[#B4443A] mt-1 pt-1 border-t border-red-100 flex items-center gap-1">
+                            <Info className="h-3 w-3 shrink-0" />
+                            Tanah telanjang rentan erosi & gulma
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="ndvi"
+                name="Nilai NDVI"
+                stroke="#237F8E"
+                strokeWidth={2.8}
+                fillOpacity={1}
+                fill="url(#ndviGradient)"
+                dot={{ r: 3, fill: '#FFFFFF', stroke: '#237F8E', strokeWidth: 2 }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Honest Data Availability & Limitations Card */}
-      <div className="rounded-2xl border border-[#bfe3db] bg-[#e8f5f2]/70 p-5 text-xs text-[#0f5347]">
-        <div className="flex items-center gap-2 font-bold text-[#0f5347]">
-          <ShieldAlert className="h-4 w-4" />
-          <span>NASA Remote Sensing Epistemic Limitations</span>
+      {/* ============================================================== */}
+      {/* 4. HONEST DATA AVAILABILITY & NASA LIMITATIONS                */}
+      {/* ============================================================== */}
+      <div className="rounded-2xl border border-[#BFE3DB] bg-[#E3F1F3]/50 p-5 text-xs text-[#1E5B4F]">
+        <div className="flex items-center justify-between border-b border-[#BFE3DB]/60 pb-3">
+          <div className="flex items-center gap-2 font-bold text-[#144F59] text-sm">
+            <ShieldAlert className="h-4.5 w-4.5 text-[#237F8E]" />
+            <span>Batasan Epistemik & Provenansi Data Satelit NASA</span>
+          </div>
+          <span className="rounded-full bg-white px-3 py-0.5 font-bold text-[10px] text-[#1B6572] border border-[#237F8E]/25">
+            Tingkat Keyakinan: {field.dataAvailability.overallConfidence}
+          </span>
         </div>
-        <ul className="mt-2 space-y-1.5 text-gray-600 list-disc pl-5 leading-relaxed">
+        <ul className="mt-3 space-y-1.5 text-[#2C3E4A] list-disc pl-5 leading-relaxed">
           {field.dataAvailability.missingDataNotes.map((note, index) => (
             <li key={index}>{note}</li>
           ))}
@@ -219,3 +329,5 @@ export const FieldProfileView: React.FC<FieldProfileViewProps> = ({ field }) => 
     </div>
   );
 };
+
+export default FieldProfileView;
