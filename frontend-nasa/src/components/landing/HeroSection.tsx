@@ -17,6 +17,7 @@ import {
 import type { Language } from '../../types/landing';
 import type { FieldProfile } from '../../types/domain';
 import { formatDistance } from '../../lib/geoDistance';
+import { searchCatalogPlots } from '../../lib/deepLink';
 import {
   fetchLiveWeather,
   type LiveWeatherData,
@@ -30,24 +31,30 @@ import {
 
 interface HeroSectionProps {
   currentLang: Language;
-  onOpenWorkspace: (targetField?: FieldProfile) => void;
+  onOpenWorkspace: (targetField?: FieldProfile, query?: string) => void;
   onScrollToDemo: () => void;
+  fields?: FieldProfile[];
   userCoords?: { latitude: number; longitude: number } | null;
   onRequestLocation?: () => void;
   nearestField?: FieldProfile | null;
   nearestDistanceKm?: number | null;
   isLocating?: boolean;
+  initialSearchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
 }
 
 export function HeroSection({
   currentLang,
   onOpenWorkspace,
   onScrollToDemo,
+  fields = [],
   userCoords,
   onRequestLocation,
   nearestField,
   nearestDistanceKm,
   isLocating = false,
+  initialSearchQuery = '',
+  onSearchQueryChange,
 }: HeroSectionProps) {
   const isId = currentLang === 'id';
 
@@ -58,13 +65,31 @@ export function HeroSection({
   // State: Live Automatic Sync
   const [isLiveMode, setIsLiveMode] = useState<boolean>(true);
   const [liveData, setLiveData] = useState<LiveWeatherData | null>(null);
-  const [, setIsLoadingLive] = useState<boolean>(false);
 
-  // State: City Searchbar
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // State: City Searchbar & Observation Plots
+  const [internalSearchQuery, setInternalSearchQuery] = useState<string>(initialSearchQuery || '');
+  const [prevInitialQuery, setPrevInitialQuery] = useState<string>(initialSearchQuery || '');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<LocationData[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+
+  // Sync state during render when initialSearchQuery prop changes (React recommended pattern)
+  if (initialSearchQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialSearchQuery || '');
+    setInternalSearchQuery(initialSearchQuery || '');
+  }
+
+  const searchQuery = internalSearchQuery;
+  const setSearchQuery = (val: string) => {
+    setInternalSearchQuery(val);
+  };
+
+  // Autocomplete suggestions matching observation plots (NASA catalog)
+  const matchedPlots = useMemo(() => {
+    if (!fields || fields.length === 0) return [];
+    if (!searchQuery.trim()) return fields;
+    return searchCatalogPlots(searchQuery, fields);
+  }, [fields, searchQuery]);
 
   // Derived GPS location when device coordinates & nearestField are detected
   const userGpsLocation = useMemo<LocationData | null>(() => {
@@ -113,14 +138,10 @@ export function HeroSection({
           if (!isCancelled) {
             setLiveData(data);
             setActiveWeather(data.preset);
-            setIsLoadingLive(false);
           }
         })
         .catch((err) => {
           console.warn('Unable to load live weather, using simulated data:', err);
-          if (!isCancelled) {
-            setIsLoadingLive(false);
-          }
         });
     }
     return () => {
@@ -198,31 +219,51 @@ export function HeroSection({
     };
   }, [searchQuery]);
 
+  const handleSelectPlot = (plot: FieldProfile) => {
+    onSearchQueryChange?.(plot.name);
+    setSearchQuery(plot.name);
+    setIsSearchOpen(false);
+    onOpenWorkspace(plot, plot.name);
+  };
+
   const handleSelectSearchResult = (loc: LocationData) => {
     setCustomGpsLocation(loc);
     setSearchQuery(loc.name);
+    onSearchQueryChange?.(loc.name);
     setIsSearchOpen(false);
     setIsLiveMode(true);
-    setIsLoadingLive(true);
   };
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (nearestField && userCoords) {
-      onOpenWorkspace(nearestField);
+    const q = searchQuery.trim();
+    onSearchQueryChange?.(q);
+
+    // If nearest plot is detected and active
+    if (nearestField && userCoords && (!q || q.includes(nearestField.village))) {
+      onOpenWorkspace(nearestField, q || nearestField.name);
       return;
     }
+
+    // If there is a matched observation plot
+    if (matchedPlots.length > 0 && q.length > 0) {
+      onOpenWorkspace(matchedPlots[0], q);
+      return;
+    }
+
     if (searchResults.length > 0) {
       handleSelectSearchResult(searchResults[0]);
     }
-    onOpenWorkspace();
+    onOpenWorkspace(undefined, q);
   };
 
   const handleDetectDeviceGps = () => {
     if (onRequestLocation) {
       onRequestLocation();
       if (nearestField) {
-        setSearchQuery(`${nearestField.name} (${nearestField.village})`);
+        const text = `${nearestField.name} (${nearestField.village})`;
+        setSearchQuery(text);
+        onSearchQueryChange?.(text);
       }
       return;
     }
@@ -230,7 +271,6 @@ export function HeroSection({
       return;
     }
 
-    setIsLoadingLive(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude;
@@ -251,7 +291,6 @@ export function HeroSection({
       },
       (err) => {
         console.warn('Geolocation error:', err);
-        setIsLoadingLive(false);
       },
       { timeout: 8000 }
     );
@@ -383,6 +422,7 @@ export function HeroSection({
                 onChange={(e) => {
                   const val = e.target.value;
                   setSearchQuery(val);
+                  onSearchQueryChange?.(val);
                   setIsSearchOpen(true);
                   if (val.trim().length < 2) {
                     setSearchResults([]);
@@ -404,6 +444,7 @@ export function HeroSection({
                   type="button"
                   onClick={() => {
                     setSearchQuery('');
+                    onSearchQueryChange?.('');
                     setSearchResults([]);
                   }}
                   className="p-1 rounded-lg text-slate-400 hover:text-slate-700 transition cursor-pointer"
@@ -504,62 +545,104 @@ export function HeroSection({
                     )}
                   </div>
 
-                  <div className="space-y-1 max-h-60 overflow-y-auto">
-                    {/* If searching or has results */}
-                    {searchQuery.trim().length >= 2 ? (
-                      searchResults.length > 0 ? (
-                        searchResults.map((loc) => (
+                  <div className="space-y-1 max-h-64 overflow-y-auto divide-y divide-slate-100">
+                    {/* Section 1: Catalog Observation Plots (Workspace 3D Map) */}
+                    {matchedPlots.length > 0 && (
+                      <div className="pb-1.5">
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#237F8E] flex items-center justify-between">
+                          <span>
+                            {isId ? 'Petak Observasi Satelit (Peta 3D)' : 'Satellite Observation Plots (3D Map)'}
+                          </span>
+                          <span className="text-[9px] font-mono font-normal text-slate-400">
+                            {matchedPlots.length} {isId ? 'petak' : 'plots'}
+                          </span>
+                        </div>
+                        {matchedPlots.slice(0, 4).map((plot) => (
+                          <button
+                            key={plot.id}
+                            type="button"
+                            onClick={() => handleSelectPlot(plot)}
+                            className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-left hover:bg-[#E3F1F3]/70 transition group cursor-pointer border border-transparent hover:border-[#237F8E]/30"
+                          >
+                            <div>
+                              <span className="block font-bold text-[#14232B] group-hover:text-[#237F8E]">
+                                {plot.name}
+                              </span>
+                              <span className="block text-[11px] text-slate-500">
+                                Desa {plot.village}, Kec. {plot.district} &middot; {plot.soil.type} ({plot.areaHectares} ha)
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-semibold text-[#1B6572] rounded-md bg-[#E3F1F3] border border-[#237F8E]/30 px-2 py-0.5 shrink-0 flex items-center gap-1 group-hover:bg-[#237F8E] group-hover:text-white transition">
+                              <span>Peta 3D</span>
+                              <ArrowRight className="h-3 w-3" />
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Section 2: City / Farmland Basins */}
+                    <div className="pt-1.5">
+                      {searchQuery.trim().length >= 2 ? (
+                        searchResults.length > 0 ? (
+                          <>
+                            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                              {isId ? 'Wilayah / Kota Terkait' : 'Matching Regions / Cities'}
+                            </div>
+                            {searchResults.map((loc) => (
+                              <button
+                                key={loc.id}
+                                type="button"
+                                onClick={() => handleSelectSearchResult(loc)}
+                                className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-left hover:bg-[#E3F1F3]/60 transition group cursor-pointer border border-transparent hover:border-[#237F8E]/30"
+                              >
+                                <div>
+                                  <span className="block font-bold text-[#14232B] group-hover:text-[#237F8E]">
+                                    {loc.name}
+                                  </span>
+                                  <span className="block text-[11px] text-slate-500">
+                                    {loc.region} &middot; {loc.coords}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-mono text-[#1B6572] rounded-md bg-[#E3F1F3] border border-[#237F8E]/20 px-2 py-0.5">
+                                  {loc.elevation}
+                                </span>
+                              </button>
+                            ))}
+                          </>
+                        ) : !isSearching && matchedPlots.length === 0 ? (
+                          <div className="p-3 text-center text-slate-500 text-xs">
+                            {isId
+                              ? 'Tidak ada lokasi cocok. Coba cari nama petak (cth. Karangrau), kota, atau kabupaten.'
+                              : 'No matching locations found. Try plot names (e.g. Karangrau), city, or regency.'}
+                          </div>
+                        ) : null
+                      ) : (
+                        /* Default recommendations when input is empty */
+                        LOCATIONS.map((loc) => (
                           <button
                             key={loc.id}
                             type="button"
                             onClick={() => handleSelectSearchResult(loc)}
-                            className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-left hover:bg-[#E3F1F3]/60 transition group cursor-pointer border border-transparent hover:border-[#237F8E]/30"
+                            className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-left transition group cursor-pointer ${
+                              currentLocation.name === loc.name
+                                ? 'bg-[#E3F1F3] border border-[#237F8E]/50 text-[#14232B] font-bold'
+                                : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
+                            }`}
                           >
                             <div>
-                              <span className="block font-bold text-[#14232B] group-hover:text-[#237F8E]">
-                                {loc.name}
-                              </span>
-                              <span className="block text-[11px] text-slate-500">
-                                {loc.region} &middot; {loc.coords}
+                              <span className="block font-medium">{loc.name}</span>
+                              <span className="block text-[10px] text-slate-500">
+                                {loc.region} &middot; {loc.elevation} &middot; {loc.soilType}
                               </span>
                             </div>
-                            <span className="text-[10px] font-mono text-[#1B6572] rounded-md bg-[#E3F1F3] border border-[#237F8E]/20 px-2 py-0.5">
-                              {loc.elevation}
-                            </span>
+                            {currentLocation.name === loc.name && (
+                              <CheckCircle2 className="h-4 w-4 text-[#237F8E] shrink-0" />
+                            )}
                           </button>
                         ))
-                      ) : !isSearching ? (
-                        <div className="p-3 text-center text-slate-500 text-xs">
-                          {isId
-                            ? 'Tidak ada lokasi cocok. Coba cari nama kota atau kabupaten lain.'
-                            : 'No matching locations found. Try another city or regency name.'}
-                        </div>
-                      ) : null
-                    ) : (
-                      /* Default recommendations when input is empty */
-                      LOCATIONS.map((loc) => (
-                        <button
-                          key={loc.id}
-                          type="button"
-                          onClick={() => handleSelectSearchResult(loc)}
-                          className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-left transition group cursor-pointer ${
-                            currentLocation.name === loc.name
-                              ? 'bg-[#E3F1F3] border border-[#237F8E]/50 text-[#14232B] font-bold'
-                              : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
-                          }`}
-                        >
-                          <div>
-                            <span className="block font-medium">{loc.name}</span>
-                            <span className="block text-[10px] text-slate-500">
-                              {loc.region} &middot; {loc.elevation} &middot; {loc.soilType}
-                            </span>
-                          </div>
-                          {currentLocation.name === loc.name && (
-                            <CheckCircle2 className="h-4 w-4 text-[#237F8E] shrink-0" />
-                          )}
-                        </button>
-                      ))
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </>
