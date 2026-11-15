@@ -53,9 +53,7 @@ class DatabaseConfig:
         return cls(
             url=settings.database_url,
             pool_size=getattr(settings, "database_pool_size", _DEFAULT_POOL_SIZE),
-            max_overflow=getattr(
-                settings, "database_max_overflow", _DEFAULT_MAX_OVERFLOW
-            ),
+            max_overflow=getattr(settings, "database_max_overflow", _DEFAULT_MAX_OVERFLOW),
             pool_timeout=getattr(
                 settings,
                 "database_pool_timeout_seconds",

@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { MOCK_FIELDS, MOCK_STRATEGIES } from './api/mock/mockData';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { applyWeights } from './lib/scoring';
+import { MOCK_FIELDS, SNAPSHOT_CROP_LABELS, snapshotStrategies } from './api/mock/mockData';
+import { baselineFromRotation, fetchFields, fetchSiteInfo, fetchStrategies, siteOf } from './api/fieldshift';
 import { FieldMap } from './features/map/FieldMap';
 import { PlotAnalysisWorkspace } from './features/analysis/PlotAnalysisWorkspace';
 import { EvidenceModal } from './features/evidence-card/EvidenceModal';
@@ -8,30 +10,17 @@ import { DataSourcesModal } from './components/landing/DataSourcesModal';
 import { GeolocationBanner } from './components/common/GeolocationBanner';
 import { LandingPage } from './pages/LandingPage';
 import { useGeolocation } from './hooks/useGeolocation';
-import { parseHash, buildWorkspaceHash } from './lib/deepLink';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
 import type { Language } from './types/landing';
 
-function isFieldProfile(obj: unknown): obj is FieldProfile {
-  return Boolean(
-    obj &&
-    typeof obj === 'object' &&
-    'id' in obj &&
-    'coordinates' in obj &&
-    Array.isArray((obj as FieldProfile).coordinates)
-  );
-}
-
 export function App() {
-  const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
-
-  // Initial hash parsing for deep-linking (Issue #20)
+  // Mode: Landing Page (default) vs Fullscreen Interactive Map vs Deep-Dive Analysis
   const [viewMode, setViewMode] = useState<'landing' | 'workspace' | 'analysis'>(() => {
     if (typeof window !== 'undefined') {
-      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
+      const hash = window.location.hash.toLowerCase();
       const path = window.location.pathname.toLowerCase();
-      if (parsed.viewMode === 'analysis') return 'analysis';
-      if (path.includes('/app') || parsed.viewMode === 'workspace') {
+      if (hash.includes('analysis')) return 'analysis';
+      if (path.includes('/app') || hash.includes('app') || hash.includes('workspace')) {
         return 'workspace';
       }
     }
@@ -39,26 +28,16 @@ export function App() {
   });
 
   const [currentLang, setCurrentLang] = useState<Language>('en');
-  const [userSelectedField, setUserSelectedField] = useState<FieldProfile | null>(() => {
-    if (typeof window !== 'undefined') {
-      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
-      if (parsed.matchedField) return parsed.matchedField;
-    }
-    return null;
-  });
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const parsed = parseHash(window.location.hash, MOCK_FIELDS);
-      return parsed.query;
-    }
-    return '';
-  });
+  // Real data from the backend; the offline snapshot (also real output) is shown until it loads
+  const [fields, setFields] = useState<FieldProfile[]>(MOCK_FIELDS);
+  const [selectedField, setSelectedField] = useState<FieldProfile>(MOCK_FIELDS[0]);
+  const [dataMode, setDataMode] = useState<'live' | 'snapshot'>('snapshot');
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isDataSourcesOpen, setIsDataSourcesOpen] = useState(false);
   const [evidenceStrategy, setEvidenceStrategy] = useState<Strategy | null>(null);
 
-  // Climate forcing state
-  const [climatePhase, setClimatePhase] = useState<ClimatePhase>('el_nino');
+  // Climate forcing state (Aug-Oct 2025 ONI was ENSO-neutral)
+  const [climatePhase, setClimatePhase] = useState<ClimatePhase>('normal');
 
   // Farmer constraints state
   const [constraints, setConstraints] = useState<FarmerConstraints>({
@@ -74,10 +53,8 @@ export function App() {
   });
 
   // PPL Field Verification Checklist persistence
-  const [verifiedChecks, setVerifiedChecks] = useState<Record<string, boolean>>({
-    'Saluran irigasi tersier bebas endapan lumpur (debit minimal 15 L/detik)': true,
-    'Ketersediaan benih kedelai bersertifikat di penangkar lokal': true,
-  });
+  // Nothing is verified until the extension officer ticks it in the evidence card
+  const [verifiedChecks, setVerifiedChecks] = useState<Record<string, boolean>>({});
 
   const handleToggleCheck = (checkText: string) => {
     setVerifiedChecks((prev) => ({
@@ -88,12 +65,85 @@ export function App() {
 
   // Multi-objective weighting (sums to 100)
   const [weights, setWeights] = useState<PriorityWeights>({
-    yield: 20,
     waterEfficiency: 25,
-    soilHealth: 25,
+    soilHealth: 20,
     coverDays: 15,
-    laborDemand: 15,
+    erosionControl: 25,
+    pestBreak: 15,
   });
+
+  // Farmer-entered current rotation per field (defaults to the field's recorded rotation)
+  const [baselines, setBaselines] = useState<Record<string, Record<string, string>>>({});
+  const [cropLabels, setCropLabels] = useState<Record<string, string>>(SNAPSHOT_CROP_LABELS);
+  const initialBaseline = baselineFromRotation(selectedField);
+  const currentBaseline = baselines[selectedField.id] ?? initialBaseline;
+  const baselineKey = JSON.stringify(currentBaseline);
+
+  useEffect(() => {
+    let alive = true;
+    fetchSiteInfo('banyumas')
+      .then((info) => alive && info?.crop_labels && setCropLabels(info.crop_labels))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Strategies from the backend rotation engine for the selected field's site and ENSO phase
+  const [currentStrategies, setCurrentStrategies] = useState<Strategy[]>(() => snapshotStrategies('normal'));
+
+  useEffect(() => {
+    let alive = true;
+    fetchFields()
+      .then((live) => {
+        if (!alive || live.length === 0) return;
+        setFields(live);
+        setSelectedField((prev) => live.find((f) => f.id === prev.id) ?? live[0]);
+        setDataMode('live');
+      })
+      .catch(() => alive && setDataMode('snapshot'));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Debounced so dragging the scenario sliders sends one request, not dozens
+  useEffect(() => {
+    let alive = true;
+    const timer = window.setTimeout(() => {
+      const fieldId = dataMode === 'live' ? selectedField.id : undefined;
+      const baseline = dataMode === 'live' ? (JSON.parse(baselineKey) as Record<string, string>) : undefined;
+      fetchStrategies(siteOf(selectedField), climatePhase, fieldId, scenario, baseline)
+        .then((s) => alive && setCurrentStrategies(s))
+        .catch(() => alive && setCurrentStrategies(snapshotStrategies(climatePhase)));
+    }, 350);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [selectedField, climatePhase, scenario, dataMode, baselineKey]);
+
+  // Every score shown (cards, consultation brief) uses the farmer's current weights
+  const weightedStrategies = useMemo(() => applyWeights(currentStrategies, weights), [currentStrategies, weights]);
+
+  // Handle URL hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.includes('analysis')) {
+        setViewMode('analysis');
+      } else if (hash.includes('app') || hash.includes('workspace')) {
+        setViewMode('workspace');
+      } else if (hash.includes('landing') || hash === '' || hash === '#') {
+        setViewMode('landing');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const hasUserSelectedRef = useRef(false);
 
   // Browser Geolocation hook & nearest plot matching (Issue #19)
   const {
@@ -110,59 +160,24 @@ export function App() {
     lang: currentLang,
   });
 
-  // Active selected field: user explicit choice, or null when viewing regional overview initially
-  const selectedField: FieldProfile | null = isFieldProfile(userSelectedField) ? userSelectedField : null;
-
-  // Handle URL hash changes
+  // When location is granted and a nearest field is found, automatically set selectedField to nearestField if user hasn't chosen manually
   useEffect(() => {
-    const handleHashChange = () => {
-      const parsed = parseHash(window.location.hash, fields);
-      setViewMode(parsed.viewMode);
-      if (parsed.matchedField) {
-        setUserSelectedField(parsed.matchedField);
-      }
-      if (parsed.query) {
-        setSearchQuery(parsed.query);
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [fields]);
+    if (nearestField && !hasUserSelectedRef.current) {
+      setSelectedField(nearestField);
+    }
+  }, [nearestField]);
 
   const handleSelectField = (field: FieldProfile) => {
-    if (!isFieldProfile(field)) return;
-    setUserSelectedField(field);
-    setSearchQuery(field.name);
-    if (viewMode === 'workspace') {
-      const newHash = buildWorkspaceHash(field.id, field.name);
-      if (window.location.hash !== newHash) {
-        window.history.replaceState(null, '', newHash);
-      }
-    }
+    hasUserSelectedRef.current = true;
+    setSelectedField(field);
   };
 
-  const handleWorkspaceQueryChange = (q: string) => {
-    setSearchQuery(q);
-    const newHash = buildWorkspaceHash(selectedField ? selectedField.id : undefined, q);
-    if (window.location.hash !== newHash) {
-      window.history.replaceState(null, '', newHash);
-    }
-  };
-
-  const handleOpenWorkspace = (targetField?: FieldProfile, query?: string) => {
-    const validTarget = isFieldProfile(targetField) ? targetField : undefined;
-    setUserSelectedField(validTarget ?? null);
-
-    const effectiveQuery = typeof query === 'string'
-      ? query
-      : (validTarget ? validTarget.name : searchQuery);
-
-    if (typeof effectiveQuery === 'string') {
-      setSearchQuery(effectiveQuery);
+  const handleOpenWorkspace = (targetField?: FieldProfile) => {
+    if (targetField) {
+      handleSelectField(targetField);
     }
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(validTarget ? validTarget.id : undefined, effectiveQuery);
+    window.location.hash = '#workspace';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -173,10 +188,8 @@ export function App() {
   };
 
   const handleOpenAnalysis = (field?: FieldProfile) => {
-    if (isFieldProfile(field)) {
+    if (field) {
       handleSelectField(field);
-    } else if (!selectedField && fields.length > 0) {
-      handleSelectField(fields[0]);
     }
     setViewMode('analysis');
     window.location.hash = '#analysis';
@@ -185,7 +198,7 @@ export function App() {
 
   const handleBackToMap = () => {
     setViewMode('workspace');
-    window.location.hash = buildWorkspaceHash(selectedField?.id, searchQuery);
+    window.location.hash = '#workspace';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -206,9 +219,6 @@ export function App() {
           nearestField={nearestField}
           nearestDistanceKm={nearestDistanceKm}
           isLocating={geoStatus === 'requesting'}
-          fields={fields}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
         />
 
         {/* Floating Polite Geolocation Pre-Prompt Toast */}
@@ -225,18 +235,11 @@ export function App() {
 
   // 2. If in Deep-Dive Analysis Mode, render Dedicated Full-Page Workspace
   if (viewMode === 'analysis') {
-    const activeAnalysisField = selectedField ?? fields[0];
-    const currentStrategies: Strategy[] =
-      MOCK_STRATEGIES[activeAnalysisField.id] ??
-      MOCK_STRATEGIES['banyumas-karangrau-01'] ??
-      Object.values(MOCK_STRATEGIES)[0] ??
-      [];
-
     return (
       <div className="min-h-screen bg-[#F4F7FA] text-[#14232B]">
         <PlotAnalysisWorkspace
-          field={activeAnalysisField}
-          strategies={currentStrategies}
+          field={selectedField}
+          strategies={weightedStrategies}
           weights={weights}
           onWeightsChange={setWeights}
           climatePhase={climatePhase}
@@ -251,6 +254,11 @@ export function App() {
           onOpenGlossary={() => setIsGlossaryOpen(true)}
           onOpenDataSources={() => setIsDataSourcesOpen(true)}
           currentLang={currentLang}
+          dataMode={dataMode}
+          baseline={currentBaseline}
+          initialBaseline={initialBaseline}
+          cropLabels={cropLabels}
+          onBaselineChange={(b) => setBaselines((prev) => ({ ...prev, [selectedField.id]: b }))}
         />
 
         {/* Global Modals accessible across modes */}
@@ -300,8 +308,6 @@ export function App() {
         userCoords={userCoords}
         onRequestLocation={requestLocation}
         isLocating={geoStatus === 'requesting'}
-        initialSearchQuery={searchQuery}
-        onSearchQueryChange={handleWorkspaceQueryChange}
       />
 
       {/* Global Modals */}

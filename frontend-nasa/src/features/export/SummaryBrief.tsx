@@ -1,3 +1,4 @@
+import { blendedScore } from '../../lib/scoring';
 import React, { useState } from 'react';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario, PplBriefMetadata } from '../../types/domain';
 import { Printer, CheckCircle2, FileText, UserCheck, ShieldCheck, Edit3 } from 'lucide-react';
@@ -21,14 +22,15 @@ export const SummaryBrief: React.FC<SummaryBriefProps> = ({
   scenario,
   verifiedChecks = {},
 }) => {
-  const topStrategy = strategies.find((s) => s.paretoStatus === 'Optimal') || strategies[0];
+  // Same ranking as the strategy board at its default caution level
+  const topStrategy = [...strategies].sort((a, b) => blendedScore(b) - blendedScore(a))[0] ?? strategies[0];
   const baselineStrategy = strategies.find((s) => s.isBaseline) || strategies[strategies.length - 1];
 
   const [metadata, setMetadata] = useState<PplBriefMetadata>({
-    farmerName: 'Bpk. Slamet Sugiharto',
-    poktanName: 'Kelompok Tani Sri Rejeki II',
-    pplOfficerName: 'Ir. Bambang Sutrisno (PPL Wilbin Rawalo)',
-    notes: 'Rekomendasi adaptasi pola tanam ini telah disesuaikan dengan anomali curah hujan BMKG/NASA POWER. Ketersediaan benih kedelai varietas Anjasmoro telah dikoordinasikan dengan BBI. Pasokan air saluran tersier dijadwalkan berkala tiap 10 hari.',
+    farmerName: '',
+    poktanName: '',
+    pplOfficerName: '',
+    notes: 'Perbandingan berbasis tahun analog iklim NASA POWER (1991–2025) dan indikator air, tanah, erosi. Perlu dicek PPL: ketersediaan air musim kemarau, benih, drainase, dan pasar.',
   });
 
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
@@ -148,7 +150,7 @@ export const SummaryBrief: React.FC<SummaryBriefProps> = ({
                 Field Shift Recommendation Summary
               </h2>
               <p className="text-xs text-[#5F6B74] mt-0.5">
-                Rekomendasi Adaptasi Pola Rotasi Tanam Berbasis Data Satelit NASA & Kalibrasi Lapangan
+                Rekomendasi Adaptasi Pola Rotasi Tanam Berbasis Data NASA & Indikator Agronomi (perlu verifikasi PPL)
               </p>
             </div>
             <div className="text-right">
@@ -210,7 +212,7 @@ export const SummaryBrief: React.FC<SummaryBriefProps> = ({
 
           {/* Calibrated Weights Bar */}
           <div className="mt-2 rounded-xl bg-[#F7F9FB] border border-[#E6EBF0] px-4 py-2 text-[11px] text-[#5F6B74]">
-            <strong>Bobot Multi-Objektif Terkalibrasi:</strong> Hasil Panen {weights.yield}% &middot; Efisiensi Air {weights.waterEfficiency}% &middot; Kesehatan Tanah {weights.soilHealth}% &middot; Tutupan Tanah {weights.coverDays}% &middot; Penghematan Tenaga {weights.laborDemand}%
+            <strong>Bobot Multi-Objektif Terkalibrasi:</strong> Efisiensi Air {weights.waterEfficiency}% &middot; Kesehatan Tanah {weights.soilHealth}% &middot; Tutupan Tanah {weights.coverDays}% &middot; Perlindungan Erosi {weights.erosionControl}% &middot; Pemutus Siklus Hama {weights.pestBreak}%
           </div>
         </div>
 

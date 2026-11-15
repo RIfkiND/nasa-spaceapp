@@ -2,6 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Field Shift API",
+    "description": "Crop-rotation decision support API",
     "version": "0.1.0"
   },
   "paths": {
@@ -25,10 +26,281 @@
           }
         }
       }
+    },
+    "/api/v1/rotations/sites": {
+      "get": {
+        "tags": [
+          "rotations"
+        ],
+        "summary": "Sites",
+        "operationId": "sites_api_v1_rotations_sites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_SiteInfo__"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rotations/compare": {
+      "post": {
+        "tags": [
+          "rotations"
+        ],
+        "summary": "Compare Rotations",
+        "operationId": "compare_rotations_api_v1_rotations_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompareRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ComparisonOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fields": {
+      "get": {
+        "tags": [
+          "fields"
+        ],
+        "summary": "List Fields",
+        "operationId": "list_fields_api_v1_fields_get",
+        "parameters": [
+          {
+            "name": "site",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,40}$",
+              "default": "banyumas",
+              "title": "Site"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_FieldProfileOut__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fields/{field_id}": {
+      "get": {
+        "tags": [
+          "fields"
+        ],
+        "summary": "Get Field",
+        "operationId": "get_field_api_v1_fields__field_id__get",
+        "parameters": [
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Field Id"
+            }
+          },
+          {
+            "name": "site",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,40}$",
+              "default": "banyumas",
+              "title": "Site"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_FieldProfileOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AnalogsOut": {
+        "properties": {
+          "grouping": {
+            "type": "string",
+            "title": "Grouping"
+          },
+          "phase": {
+            "type": "string",
+            "title": "Phase"
+          },
+          "years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grouping",
+          "phase",
+          "years"
+        ],
+        "title": "AnalogsOut"
+      },
+      "ApiResponse_ComparisonOut_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ApiResponse[ComparisonOut]"
+      },
+      "ApiResponse_FieldProfileOut_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldProfileOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ApiResponse[FieldProfileOut]"
+      },
       "ApiResponse_HealthData_": {
         "properties": {
           "success": {
@@ -72,6 +344,339 @@
         ],
         "title": "ApiResponse[HealthData]"
       },
+      "ApiResponse_list_FieldProfileOut__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldProfileOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ApiResponse[list[FieldProfileOut]]"
+      },
+      "ApiResponse_list_SiteInfo__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SiteInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ApiResponse[list[SiteInfo]]"
+      },
+      "ClimateMonth": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "rainfall": {
+            "type": "number",
+            "title": "Rainfall",
+            "description": "Mean monthly rainfall 1991-2020, mm"
+          },
+          "tempMin": {
+            "type": "number",
+            "title": "Tempmin"
+          },
+          "tempMax": {
+            "type": "number",
+            "title": "Tempmax"
+          },
+          "soilMoisture": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Soilmoisture",
+            "description": "Root-zone soil wetness, 0-1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "rainfall",
+          "tempMin",
+          "tempMax",
+          "soilMoisture"
+        ],
+        "title": "ClimateMonth"
+      },
+      "CompareRequest": {
+        "properties": {
+          "site": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,40}$",
+            "title": "Site",
+            "examples": [
+              "nevada_mason_valley"
+            ]
+          },
+          "priorities": {
+            "$ref": "#/components/schemas/Priorities"
+          },
+          "risk_aversion": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Risk Aversion",
+            "description": "0 = average years only, 1 = worst 20 % only",
+            "default": 0.5
+          },
+          "enso_phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "el_nino",
+                  "la_nina",
+                  "neutral"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enso Phase",
+            "description": "Default: latest observed"
+          },
+          "iod_phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "positive",
+                  "negative",
+                  "neutral"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iod Phase",
+            "description": "Default: latest observed"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z0-9_-]{1,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id",
+            "description": "Use this field's slope and soil water capacity (from /api/v1/fields)"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/ScenarioIn"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 10,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline",
+            "description": "Farmer's current rotation: one {season: crop} object per year; seasons left out are fallow. Replaces the default baseline."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "site"
+        ],
+        "title": "CompareRequest"
+      },
+      "ComparisonOut": {
+        "properties": {
+          "site": {
+            "type": "string",
+            "title": "Site"
+          },
+          "analogs": {
+            "$ref": "#/components/schemas/AnalogsOut"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Weights"
+          },
+          "risk_aversion": {
+            "type": "number",
+            "title": "Risk Aversion"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyOut"
+            },
+            "type": "array",
+            "title": "Strategies"
+          },
+          "field_ctx": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldContextOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/ScenarioOut"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "site",
+          "analogs",
+          "weights",
+          "risk_aversion",
+          "strategies",
+          "scenario",
+          "disclaimer"
+        ],
+        "title": "ComparisonOut"
+      },
+      "DataAvailability": {
+        "properties": {
+          "hasObservedRotation": {
+            "type": "boolean",
+            "title": "Hasobservedrotation"
+          },
+          "hasFieldSoilSurvey": {
+            "type": "boolean",
+            "title": "Hasfieldsoilsurvey"
+          },
+          "hasSatelliteNdvi": {
+            "type": "boolean",
+            "title": "Hassatellitendvi"
+          },
+          "hasDailyPrecipitation": {
+            "type": "boolean",
+            "title": "Hasdailyprecipitation"
+          },
+          "overallConfidence": {
+            "type": "string",
+            "enum": [
+              "HIGH",
+              "MODERATE",
+              "LOW"
+            ],
+            "title": "Overallconfidence"
+          },
+          "missingDataNotes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missingdatanotes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hasObservedRotation",
+          "hasFieldSoilSurvey",
+          "hasSatelliteNdvi",
+          "hasDailyPrecipitation",
+          "overallConfidence",
+          "missingDataNotes"
+        ],
+        "title": "DataAvailability"
+      },
       "ErrorInfo": {
         "properties": {
           "code": {
@@ -108,6 +713,248 @@
         ],
         "title": "ErrorInfo"
       },
+      "EvidenceCardOut": {
+        "properties": {
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "benefits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Benefits"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "risks_for_local_review": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risks For Local Review"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Confidence"
+          },
+          "confidence_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Confidence Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "why",
+          "evidence",
+          "benefits",
+          "gaps",
+          "risks_for_local_review",
+          "confidence",
+          "confidence_reasons"
+        ],
+        "title": "EvidenceCardOut"
+      },
+      "FieldContextOut": {
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "title": "Field Id"
+          },
+          "slope_pct": {
+            "type": "number",
+            "title": "Slope Pct"
+          },
+          "awc_mm_per_m": {
+            "type": "number",
+            "title": "Awc Mm Per M"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_id",
+          "slope_pct",
+          "awc_mm_per_m"
+        ],
+        "title": "FieldContextOut"
+      },
+      "FieldProfileOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "regency": {
+            "type": "string",
+            "title": "Regency"
+          },
+          "district": {
+            "type": "string",
+            "title": "District"
+          },
+          "village": {
+            "type": "string",
+            "title": "Village"
+          },
+          "coordinates": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Coordinates",
+            "description": "[lat, lng]"
+          },
+          "elevationMeters": {
+            "type": "integer",
+            "title": "Elevationmeters"
+          },
+          "areaHectares": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Areahectares"
+          },
+          "currentRotation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Currentrotation"
+          },
+          "soil": {
+            "$ref": "#/components/schemas/FieldSoil"
+          },
+          "climateHistory": {
+            "items": {
+              "$ref": "#/components/schemas/ClimateMonth"
+            },
+            "type": "array",
+            "title": "Climatehistory"
+          },
+          "ndviTimeSeries": {
+            "items": {
+              "$ref": "#/components/schemas/NdviPoint"
+            },
+            "type": "array",
+            "title": "Ndvitimeseries"
+          },
+          "dataAvailability": {
+            "$ref": "#/components/schemas/DataAvailability"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "regency",
+          "district",
+          "village",
+          "coordinates",
+          "elevationMeters",
+          "currentRotation",
+          "soil",
+          "climateHistory",
+          "ndviTimeSeries",
+          "dataAvailability",
+          "provenance"
+        ],
+        "title": "FieldProfileOut"
+      },
+      "FieldSoil": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "texture": {
+            "type": "string",
+            "title": "Texture"
+          },
+          "organicMatter": {
+            "type": "string",
+            "title": "Organicmatter"
+          },
+          "awc": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Awc",
+            "description": "Available water capacity, mm per m of soil"
+          },
+          "slope": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Slope",
+            "description": "Slope, percent rise"
+          },
+          "erosionRisk": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Moderate",
+              "High"
+            ],
+            "title": "Erosionrisk"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "texture",
+          "organicMatter",
+          "awc",
+          "slope",
+          "erosionRisk"
+        ],
+        "title": "FieldSoil"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthData": {
         "properties": {
           "status": {
@@ -125,6 +972,91 @@
           "env"
         ],
         "title": "HealthData"
+      },
+      "MetricsOut": {
+        "properties": {
+          "irrigation_mean_mm": {
+            "type": "number",
+            "title": "Irrigation Mean Mm"
+          },
+          "irrigation_cvar_mm": {
+            "type": "number",
+            "title": "Irrigation Cvar Mm"
+          },
+          "cover_share": {
+            "type": "number",
+            "title": "Cover Share"
+          },
+          "legume_share": {
+            "type": "number",
+            "title": "Legume Share"
+          },
+          "families": {
+            "type": "integer",
+            "title": "Families"
+          },
+          "pest_break_share": {
+            "type": "number",
+            "title": "Pest Break Share"
+          },
+          "erosion_index": {
+            "type": "number",
+            "title": "Erosion Index"
+          },
+          "soil_health": {
+            "type": "number",
+            "title": "Soil Health"
+          }
+        },
+        "type": "object",
+        "required": [
+          "irrigation_mean_mm",
+          "irrigation_cvar_mm",
+          "cover_share",
+          "legume_share",
+          "families",
+          "pest_break_share",
+          "erosion_index",
+          "soil_health"
+        ],
+        "title": "MetricsOut"
+      },
+      "NdviPoint": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "ndvi": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Ndvi"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "Land Prep",
+              "Vegetative",
+              "Reproductive",
+              "Fallow (Bera)"
+            ],
+            "title": "Phase"
+          },
+          "observations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Observations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "ndvi",
+          "phase",
+          "observations"
+        ],
+        "title": "NdviPoint"
       },
       "PageMeta": {
         "properties": {
@@ -151,6 +1083,287 @@
           "limit"
         ],
         "title": "PageMeta"
+      },
+      "Priorities": {
+        "properties": {
+          "water": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Water",
+            "description": "Weight for low irrigation need",
+            "default": 1.0
+          },
+          "soil_health": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Soil Health",
+            "default": 1.0
+          },
+          "erosion": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Erosion",
+            "description": "Weight for low erosion exposure",
+            "default": 1.0
+          },
+          "pest_break": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pest Break",
+            "default": 0.5
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Priorities"
+      },
+      "Provenance": {
+        "properties": {
+          "elevationSlope": {
+            "type": "string",
+            "title": "Elevationslope"
+          },
+          "soil": {
+            "type": "string",
+            "title": "Soil"
+          },
+          "climate": {
+            "type": "string",
+            "title": "Climate"
+          },
+          "ndvi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ndvi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "elevationSlope",
+          "soil",
+          "climate"
+        ],
+        "title": "Provenance"
+      },
+      "ScenarioIn": {
+        "properties": {
+          "rain_anomaly_pct": {
+            "type": "number",
+            "maximum": 50.0,
+            "minimum": -50.0,
+            "title": "Rain Anomaly Pct",
+            "description": "Rainfall change, %",
+            "default": 0
+          },
+          "temp_delta_c": {
+            "type": "number",
+            "maximum": 4.0,
+            "minimum": -2.0,
+            "title": "Temp Delta C",
+            "description": "Air temperature change, C",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ScenarioIn"
+      },
+      "ScenarioOut": {
+        "properties": {
+          "rain_anomaly_pct": {
+            "type": "number",
+            "title": "Rain Anomaly Pct"
+          },
+          "temp_delta_c": {
+            "type": "number",
+            "title": "Temp Delta C"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rain_anomaly_pct",
+          "temp_delta_c"
+        ],
+        "title": "ScenarioOut"
+      },
+      "SiteInfo": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "seasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Seasons"
+          },
+          "crops": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Crops"
+          },
+          "crop_labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Crop Labels"
+          },
+          "latest_enso_phase": {
+            "type": "string",
+            "title": "Latest Enso Phase"
+          },
+          "latest_iod_phase": {
+            "type": "string",
+            "title": "Latest Iod Phase"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "seasons",
+          "crops",
+          "crop_labels",
+          "latest_enso_phase",
+          "latest_iod_phase",
+          "sources"
+        ],
+        "title": "SiteInfo"
+      },
+      "StrategyOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "alternative"
+            ],
+            "title": "Kind"
+          },
+          "sequence": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Sequence"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/MetricsOut"
+          },
+          "utilities": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Utilities"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "pareto_optimal": {
+            "type": "boolean",
+            "title": "Pareto Optimal"
+          },
+          "card": {
+            "$ref": "#/components/schemas/EvidenceCardOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "kind",
+          "sequence",
+          "metrics",
+          "utilities",
+          "score",
+          "rank",
+          "pareto_optimal",
+          "card"
+        ],
+        "title": "StrategyOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }
