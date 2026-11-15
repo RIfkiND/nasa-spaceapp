@@ -102,7 +102,7 @@ export function LandingNavbar({ onOpenWorkspace }: LandingNavbarProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onOpenWorkspace}
+            onClick={() => onOpenWorkspace()}
             className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white font-bold px-5 py-2 text-xs shadow-xs hover:shadow transition active:scale-[0.98] cursor-pointer"
           >
             <span>Launch App</span>

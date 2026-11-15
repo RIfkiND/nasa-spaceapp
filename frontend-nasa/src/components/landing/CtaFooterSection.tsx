@@ -72,7 +72,7 @@ export function CtaFooterSection({ onOpenWorkspace }: CtaFooterSectionProps) {
             <div className="shrink-0 w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#237F8E] to-[#1E5B4F] hover:from-[#1B6572] hover:to-[#17463c] text-white px-8 py-4 text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition active:scale-[0.98] cursor-pointer"
               >
                 <span>Launch Field Shift Workspace</span>

@@ -98,6 +98,7 @@ export function FieldMap({
   const prevFieldIdRef = useRef<string | null>(null);
   // Cinematic 360-degree Camera Orbit Animation to any field
   const animateToField = useCallback((field: FieldProfile) => {
+    if (!field || !field.coordinates) return;
     setIsSideCardOpen(true);
 
     const startLng = viewState.longitude;
@@ -153,7 +154,7 @@ export function FieldMap({
 
   // Watch for external selectedField prop changes
   useEffect(() => {
-    if (prevFieldIdRef.current !== selectedField.id) {
+    if (selectedField?.id && prevFieldIdRef.current !== selectedField.id) {
       prevFieldIdRef.current = selectedField.id;
       animateToField(selectedField);
     }
@@ -334,7 +335,7 @@ export function FieldMap({
           onOpenGlossary={onOpenGlossary}
           onOpenDataSources={onOpenDataSources}
           onBackToLanding={onBackToLanding}
-          selectedVillage={selectedField.village}
+          selectedVillage={selectedField?.village ?? 'Banyumas'}
         />
       )}
 

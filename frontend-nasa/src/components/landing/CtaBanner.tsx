@@ -49,7 +49,7 @@ interface CtaBannerProps {
 
             <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
               <button
-                onClick={onOpenWorkspace}
+                onClick={() => onOpenWorkspace()}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-xs sm:text-sm font-bold text-[#1B6572] shadow-lg transition hover:bg-emerald-50 active:scale-95"
               >
                 <span>{isId ? 'Buka Workspace Peta' : 'Launch Workspace'}</span>

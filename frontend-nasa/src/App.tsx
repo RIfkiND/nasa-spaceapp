@@ -12,6 +12,16 @@ import { parseHash, buildWorkspaceHash } from './lib/deepLink';
 import type { FieldProfile, Strategy, PriorityWeights, ClimatePhase, FarmerConstraints, ClimateScenario } from './types/domain';
 import type { Language } from './types/landing';
 
+function isFieldProfile(obj: unknown): obj is FieldProfile {
+  return Boolean(
+    obj &&
+    typeof obj === 'object' &&
+    'id' in obj &&
+    'coordinates' in obj &&
+    Array.isArray((obj as FieldProfile).coordinates)
+  );
+}
+
 export function App() {
   const [fields] = useState<FieldProfile[]>(MOCK_FIELDS);
 
@@ -101,7 +111,10 @@ export function App() {
   });
 
   // Active selected field: user explicit choice > nearest detected GPS plot > default catalog plot
-  const selectedField: FieldProfile = userSelectedField ?? nearestField ?? fields[0];
+  const selectedField: FieldProfile =
+    (isFieldProfile(userSelectedField) ? userSelectedField : null) ??
+    nearestField ??
+    fields[0];
 
   // Current strategies for the selected field with safe fallback to prevent unhandled crashes
   const currentStrategies: Strategy[] =
@@ -128,6 +141,7 @@ export function App() {
   }, [fields]);
 
   const handleSelectField = (field: FieldProfile) => {
+    if (!isFieldProfile(field)) return;
     setUserSelectedField(field);
     setSearchQuery(field.name);
     if (viewMode === 'workspace') {
@@ -147,12 +161,16 @@ export function App() {
   };
 
   const handleOpenWorkspace = (targetField?: FieldProfile, query?: string) => {
-    const field = targetField ?? selectedField;
-    if (targetField) {
-      setUserSelectedField(targetField);
+    const validTarget = isFieldProfile(targetField) ? targetField : undefined;
+    const field = validTarget ?? selectedField;
+    if (validTarget) {
+      setUserSelectedField(validTarget);
     }
-    const effectiveQuery = query !== undefined ? query : (targetField ? targetField.name : searchQuery);
-    if (effectiveQuery !== undefined) {
+    const effectiveQuery = typeof query === 'string'
+      ? query
+      : (validTarget ? validTarget.name : searchQuery);
+
+    if (typeof effectiveQuery === 'string') {
       setSearchQuery(effectiveQuery);
     }
     setViewMode('workspace');
@@ -167,7 +185,7 @@ export function App() {
   };
 
   const handleOpenAnalysis = (field?: FieldProfile) => {
-    if (field) {
+    if (isFieldProfile(field)) {
       handleSelectField(field);
     }
     setViewMode('analysis');
