@@ -55,6 +55,7 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
   const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(activeFilter !== 'all');
+  const [isNearestDismissed, setIsNearestDismissed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Sync state during render when initialQuery prop changes (React recommended pattern)
@@ -139,7 +140,6 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
               ? 'Cari petak, desa, tanah (misal: Karangrau, Clay Loam)...'
               : 'Search plots, villages, soil (e.g. Karangrau, Clay Loam)...'
           }
-          aria-label={isId ? 'Cari petak lahan' : 'Search field plots'}
           className="w-full bg-transparent text-xs font-medium text-[#14232B] placeholder:text-[#5F6B74] focus:outline-hidden"
         />
 
@@ -157,11 +157,11 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
           </button>
         )}
 
-        {/* Filter Toggle Button */}
+        {/* Filter Toggle Button with Micro-Interaction */}
         <button
           type="button"
           onClick={() => setIsFilterOpen((prev) => !prev)}
-          className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
+          className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 cursor-pointer ${
             activeFilter !== 'all'
               ? 'bg-[#237F8E] text-white shadow-xs'
               : isFilterOpen
@@ -171,10 +171,14 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
           aria-expanded={isFilterOpen}
           title={isId ? 'Buka/Tutup Filter Cepat' : 'Toggle Quick Filters'}
         >
-          <Filter className={`h-3.5 w-3.5 ${activeFilter !== 'all' ? 'text-white' : 'text-[#237F8E]'}`} />
+          <Filter
+            className={`h-3.5 w-3.5 transition-transform duration-200 ease-out ${
+              activeFilter !== 'all' ? 'text-white' : 'text-[#237F8E]'
+            } ${isFilterOpen ? 'rotate-12 scale-110' : 'rotate-0 scale-100'}`}
+          />
           <span className="hidden sm:inline">{isId ? 'Filter' : 'Filters'}</span>
           {activeFilter !== 'all' && (
-            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[9px] font-bold">1</span>
+            <span className="rounded-full bg-white/25 px-1.5 py-0.2 text-[9px] font-bold">1</span>
           )}
         </button>
 
@@ -192,7 +196,7 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
                   ? 'Gunakan Lokasi Perangkat Saya'
                   : 'Use My Device Location'
             }
-            className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition ${
+            className={`flex items-center gap-1.5 shrink-0 rounded-xl px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 active:scale-95 ${
               userCoords
                 ? 'bg-[#E3F1F3] text-[#1B6572] hover:bg-[#d0ebef]'
                 : 'border border-[#E6EBF0] text-[#14232B] hover:border-[#237F8E] hover:text-[#237F8E]'
@@ -222,33 +226,56 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
         )}
       </div>
 
-      {/* Detected Location Status Banner (when active) - High-contrast glassmorphic card */}
-      {userCoords && nearestField && (
-        <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-[#237F8E]/30 bg-white/95 px-3 py-2 shadow-float backdrop-blur-md text-xs">
-          <div className="flex items-center gap-1.5 text-[#14232B] font-medium truncate">
-            <Navigation className="h-3.5 w-3.5 shrink-0 text-[#237F8E]" />
-            <span className="text-[#5F6B74]">
-              {isId ? 'Terdekat dari Anda:' : 'Nearest to you:'}
-            </span>
-            <strong className="text-[#14232B] font-bold">{nearestField.village}</strong>
-            {nearestField.distanceKm !== undefined && (
-              <span className="rounded-full bg-[#E3F1F3] px-2 py-0.5 text-[10px] font-bold text-[#1B6572]">
-                {formatDistance(nearestField.distanceKm, isId ? 'id' : 'en')}
+      {/* Detected Location Status Banner - Only visible initially before a plot is selected */}
+      {Boolean(userCoords && nearestField && !selectedField && !isNearestDismissed) && (
+        <div className="mt-2 overflow-hidden transition-all duration-300 ease-out animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-[#237F8E]/30 bg-white/95 px-3 py-2 shadow-float backdrop-blur-md text-xs">
+            <div className="flex items-center gap-1.5 text-[#14232B] font-medium truncate">
+              <Navigation className="h-3.5 w-3.5 shrink-0 text-[#237F8E]" />
+              <span className="text-[#5F6B74]">
+                {isId ? 'Terdekat dari Anda:' : 'Nearest to you:'}
               </span>
-            )}
+              <strong className="text-[#14232B] font-bold">{nearestField?.village}</strong>
+              {nearestField?.distanceKm !== undefined && (
+                <span className="rounded-full bg-[#E3F1F3] px-2 py-0.5 text-[10px] font-bold text-[#1B6572]">
+                  {formatDistance(nearestField.distanceKm, isId ? 'id' : 'en')}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => {
+                  if (nearestField) {
+                    handleSelect(nearestField);
+                    setIsNearestDismissed(true);
+                  }
+                }}
+                className="rounded-lg bg-[#237F8E] px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-[#1B6572] active:scale-95 shadow-xs cursor-pointer"
+              >
+                {isId ? 'Pilih Petak' : 'Select Plot'}
+              </button>
+              <button
+                onClick={() => setIsNearestDismissed(true)}
+                className="rounded-lg p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition active:scale-95 cursor-pointer"
+                aria-label={isId ? 'Tutup rekomendasi' : 'Dismiss suggestion'}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => handleSelect(nearestField)}
-            className="shrink-0 rounded-lg bg-[#237F8E] px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-[#1B6572] shadow-xs cursor-pointer"
-          >
-            {isId ? 'Pilih Petak' : 'Select Plot'}
-          </button>
         </div>
       )}
 
-      {/* Collapsible Quick Filter Drawer - High Contrast Card */}
-      {isFilterOpen && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#E6EBF0] bg-white/95 p-2.5 shadow-float backdrop-blur-md animate-in fade-in duration-200">
+      {/* Collapsible Quick Filter Drawer with smooth height & fade micro-transition */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+          isFilterOpen
+            ? 'mt-2 max-h-40 opacity-100 translate-y-0 pointer-events-auto'
+            : 'max-h-0 opacity-0 -translate-y-2 pointer-events-none'
+        }`}
+        aria-hidden={!isFilterOpen}
+      >
+        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#E6EBF0] bg-white/95 p-2.5 shadow-float backdrop-blur-md">
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#14232B] px-1">
             <Filter className="h-3 w-3 text-[#237F8E]" /> {isId ? 'Karakteristik:' : 'Property:'}
           </span>
@@ -258,7 +285,7 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
               <button
                 key={chip.id}
                 onClick={() => onFilterChange(chip.id)}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition cursor-pointer ${
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition active:scale-95 cursor-pointer ${
                   isActive
                     ? 'bg-[#237F8E] text-white shadow-xs font-bold'
                     : 'border border-[#CAD4DC] bg-[#F7F9FB] text-[#14232B] hover:border-[#237F8E] hover:bg-[#E3F1F3]'
@@ -271,17 +298,17 @@ export const FloatingSearchBar: React.FC<FloatingSearchBarProps> = ({
           {activeFilter !== 'all' && (
             <button
               onClick={() => onFilterChange('all')}
-              className="ml-auto px-1.5 py-0.5 text-[10px] font-bold text-[#DC2626] hover:underline cursor-pointer"
+              className="ml-auto px-1.5 py-0.5 text-[10px] font-bold text-[#DC2626] hover:underline transition active:scale-95 cursor-pointer"
             >
               {isId ? 'Reset' : 'Reset'}
             </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Search Suggestion Dropdown */}
+      {/* Search Suggestion Dropdown with smooth entrance */}
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 max-h-80 w-full overflow-y-auto rounded-2xl border border-[#E6EBF0] bg-white/95 p-2 shadow-float backdrop-blur-md">
+        <div className="absolute top-full left-0 z-50 mt-2 max-h-80 w-full overflow-y-auto rounded-2xl border border-[#E6EBF0] bg-white/95 p-2 shadow-float backdrop-blur-md transition-all duration-150 ease-out animate-in fade-in zoom-in-95">
           {searchResults.length === 0 ? (
             <div className="p-4 text-center text-xs text-[#5F6B74]">
               {isId

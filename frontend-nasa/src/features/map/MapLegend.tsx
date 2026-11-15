@@ -15,7 +15,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
 
   return (
     <aside
-      className="pointer-events-auto fixed bottom-18 sm:bottom-6 left-4 sm:left-6 z-30 flex flex-wrap items-center gap-3 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-2 text-xs text-[#5F6B74] backdrop-blur-md shadow-float"
+      className="pointer-events-auto fixed bottom-18 sm:bottom-6 left-4 sm:left-6 z-30 flex flex-wrap items-center gap-3 rounded-full border border-[#E6EBF0] bg-white/95 px-4 py-2 text-xs text-[#5F6B74] backdrop-blur-md shadow-float transition-all duration-300 ease-out motion-reduce:transition-none"
       aria-label={isId ? 'Legenda Peta Interaktif' : 'Interactive Map Legend'}
     >
       {thematicLayer === 'status' && (

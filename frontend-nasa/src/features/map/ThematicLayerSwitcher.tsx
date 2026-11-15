@@ -32,7 +32,7 @@ export const ThematicLayerSwitcher: React.FC<ThematicLayerSwitcherProps> = ({
         <button
           type="button"
           onClick={() => onLayerChange('status')}
-          className={`rounded-full px-3 py-1.5 transition cursor-pointer ${
+          className={`rounded-full px-3 py-1.5 transition-all duration-150 active:scale-95 cursor-pointer motion-reduce:transition-none ${
             thematicLayer === 'status'
               ? 'bg-[#237F8E] text-white font-bold shadow-xs'
               : 'text-[#14232B] hover:text-[#237F8E] hover:bg-[#F4F7FA]'
@@ -45,7 +45,7 @@ export const ThematicLayerSwitcher: React.FC<ThematicLayerSwitcherProps> = ({
         <button
           type="button"
           onClick={() => onLayerChange('slope')}
-          className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition cursor-pointer ${
+          className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-150 active:scale-95 cursor-pointer motion-reduce:transition-none ${
             thematicLayer === 'slope'
               ? 'bg-[#237F8E] text-white font-bold shadow-xs'
               : 'text-[#14232B] hover:text-[#237F8E] hover:bg-[#F4F7FA]'
@@ -59,7 +59,7 @@ export const ThematicLayerSwitcher: React.FC<ThematicLayerSwitcherProps> = ({
         <button
           type="button"
           onClick={() => onLayerChange('awc')}
-          className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition cursor-pointer ${
+          className={`flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-150 active:scale-95 cursor-pointer motion-reduce:transition-none ${
             thematicLayer === 'awc'
               ? 'bg-[#237F8E] text-white font-bold shadow-xs'
               : 'text-[#14232B] hover:text-[#237F8E] hover:bg-[#F4F7FA]'
@@ -76,7 +76,7 @@ export const ThematicLayerSwitcher: React.FC<ThematicLayerSwitcherProps> = ({
         type="button"
         onClick={onToggle3D}
         aria-pressed={is3D}
-        className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-3.5 py-2 text-xs font-semibold text-[#14232B] backdrop-blur-md transition hover:border-[#237F8E] hover:text-[#237F8E] shadow-float cursor-pointer"
+        className="flex items-center gap-1.5 rounded-full border border-[#E6EBF0] bg-white/95 px-3.5 py-2 text-xs font-semibold text-[#14232B] backdrop-blur-md transition-all duration-150 active:scale-95 hover:border-[#237F8E] hover:text-[#237F8E] shadow-float cursor-pointer motion-reduce:transition-none"
         title={isId ? 'Beralih antara perspektif 2D dan 3D' : 'Switch between 2D and 3D perspectives'}
       >
         <Layers className="h-3.5 w-3.5 text-[#237F8E]" />
