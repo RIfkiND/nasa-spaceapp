@@ -123,7 +123,7 @@ export function CtaFooterSection({ onOpenWorkspace, currentLang = 'en' }: CtaFoo
             <div className="flex flex-wrap items-center justify-center gap-4 text-[#5F6B74] font-medium text-[11px] sm:text-xs">
               <span>{isId ? 'Didukung oleh NASA POWER, SRTM & AppEEARS (HLS, SMAP, ECOSTRESS)' : 'Powered by NASA POWER, SRTM & AppEEARS (HLS, SMAP, ECOSTRESS)'}</span>
               <span className="hidden sm:inline text-slate-300">|</span>
-              <span>&copy; {new Date().getFullYear()} Field Shift. {isId ? 'Inisiatif Data Terbuka.' : 'Open Data Initiative.'}</span>
+              <span>&copy; {new Date().getFullYear()} FIELD SHIFT. {isId ? 'Inisiatif Data Terbuka.' : 'Open Data Initiative.'}</span>
             </div>
           </footer>
         </ScrollReveal>
