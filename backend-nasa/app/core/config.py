@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     app_port: int = Field(default=8000, ge=1, le=65535)
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     data_dir: Path = Path("datasets")
+    # Derived products from fieldshift-data-kit (data/processed/<site>/{climate,terrain,rotation})
+    processed_dir: Path = Path("datasets/processed")
     models_dir: Path = Path("models")
     log_level: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR)$")
     log_format: str = Field(default="text", pattern="^(text|json)$")

@@ -21,10 +21,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rotations/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sites */
+        get: operations["sites_api_v1_rotations_sites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rotations/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare Rotations */
+        post: operations["compare_rotations_api_v1_rotations_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalogsOut */
+        AnalogsOut: {
+            /** Grouping */
+            grouping: string;
+            /** Phase */
+            phase: string;
+            /** Years */
+            years: number[];
+        };
+        /** ApiResponse[ComparisonOut] */
+        ApiResponse_ComparisonOut_: {
+            /** Success */
+            success: boolean;
+            data?: components["schemas"]["ComparisonOut"] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
         /** ApiResponse[HealthData] */
         ApiResponse_HealthData_: {
             /** Success */
@@ -32,6 +83,63 @@ export interface components {
             data?: components["schemas"]["HealthData"] | null;
             error?: components["schemas"]["ErrorInfo"] | null;
             meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** ApiResponse[list[SiteInfo]] */
+        ApiResponse_list_SiteInfo__: {
+            /** Success */
+            success: boolean;
+            /** Data */
+            data?: components["schemas"]["SiteInfo"][] | null;
+            error?: components["schemas"]["ErrorInfo"] | null;
+            meta?: components["schemas"]["PageMeta"] | null;
+        };
+        /** CompareRequest */
+        CompareRequest: {
+            /**
+             * Site
+             * @example nevada_mason_valley
+             */
+            site: string;
+            priorities?: components["schemas"]["Priorities"];
+            /**
+             * Risk Aversion
+             * @description 0 = average years only, 1 = worst 20 % only
+             * @default 0.5
+             */
+            risk_aversion: number;
+            /**
+             * Enso Phase
+             * @description Default: latest observed
+             */
+            enso_phase?: ("el_nino" | "la_nina" | "neutral") | null;
+            /**
+             * Iod Phase
+             * @description Default: latest observed
+             */
+            iod_phase?: ("positive" | "negative" | "neutral") | null;
+            /**
+             * Baseline
+             * @description Farmer's current rotation: one {season: crop} object per year; seasons left out are fallow. Replaces the default baseline.
+             */
+            baseline?: {
+                [key: string]: string;
+            }[] | null;
+        };
+        /** ComparisonOut */
+        ComparisonOut: {
+            /** Site */
+            site: string;
+            analogs: components["schemas"]["AnalogsOut"];
+            /** Weights */
+            weights: {
+                [key: string]: number;
+            };
+            /** Risk Aversion */
+            risk_aversion: number;
+            /** Strategies */
+            strategies: components["schemas"]["StrategyOut"][];
+            /** Disclaimer */
+            disclaimer: string;
         };
         /** ErrorInfo */
         ErrorInfo: {
@@ -53,12 +161,56 @@ export interface components {
                 [key: string]: unknown;
             }[] | null;
         };
+        /** EvidenceCardOut */
+        EvidenceCardOut: {
+            /** Why */
+            why: string;
+            /** Evidence */
+            evidence: string[];
+            /** Benefits */
+            benefits: string[];
+            /** Gaps */
+            gaps: string[];
+            /** Risks For Local Review */
+            risks_for_local_review: string[];
+            /**
+             * Confidence
+             * @enum {string}
+             */
+            confidence: "low" | "medium" | "high";
+            /** Confidence Reasons */
+            confidence_reasons: string[];
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** HealthData */
         HealthData: {
             /** Status */
             status: string;
             /** Env */
             env: string;
+        };
+        /** MetricsOut */
+        MetricsOut: {
+            /** Irrigation Mean Mm */
+            irrigation_mean_mm: number;
+            /** Irrigation Cvar Mm */
+            irrigation_cvar_mm: number;
+            /** Cover Share */
+            cover_share: number;
+            /** Legume Share */
+            legume_share: number;
+            /** Families */
+            families: number;
+            /** Pest Break Share */
+            pest_break_share: number;
+            /** Erosion Index */
+            erosion_index: number;
+            /** Soil Health */
+            soil_health: number;
         };
         /** PageMeta */
         PageMeta: {
@@ -68,6 +220,91 @@ export interface components {
             page: number;
             /** Limit */
             limit: number;
+        };
+        /** Priorities */
+        Priorities: {
+            /**
+             * Water
+             * @description Weight for low irrigation need
+             * @default 1
+             */
+            water: number;
+            /**
+             * Soil Health
+             * @default 1
+             */
+            soil_health: number;
+            /**
+             * Erosion
+             * @description Weight for low erosion exposure
+             * @default 1
+             */
+            erosion: number;
+            /**
+             * Pest Break
+             * @default 0.5
+             */
+            pest_break: number;
+        };
+        /** SiteInfo */
+        SiteInfo: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Seasons */
+            seasons: {
+                [key: string]: number;
+            };
+            /** Crops */
+            crops: string[];
+            /** Latest Enso Phase */
+            latest_enso_phase: string;
+            /** Latest Iod Phase */
+            latest_iod_phase: string;
+            /** Sources */
+            sources: string[];
+        };
+        /** StrategyOut */
+        StrategyOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "baseline" | "alternative";
+            /** Sequence */
+            sequence: {
+                [key: string]: string;
+            }[];
+            metrics: components["schemas"]["MetricsOut"];
+            /** Utilities */
+            utilities: {
+                [key: string]: number;
+            };
+            /** Score */
+            score: number;
+            /** Rank */
+            rank: number;
+            /** Pareto Optimal */
+            pareto_optimal: boolean;
+            card: components["schemas"]["EvidenceCardOut"];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -94,6 +331,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_HealthData_"];
+                };
+            };
+        };
+    };
+    sites_api_v1_rotations_sites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_SiteInfo__"];
+                };
+            };
+        };
+    };
+    compare_rotations_api_v1_rotations_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ComparisonOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

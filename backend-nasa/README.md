@@ -71,3 +71,21 @@ di `models/registry.yaml`, dan simpan salinan `configs/experiment.example.yaml` 
   profil black), jadi tidak perlu memasang isort terpisah.
 - Pre-commit: dari root repo jalankan `pre-commit install` sekali.
 - Test dulu (TDD), coverage ≥ 80%.
+
+## Rotation comparison API
+
+Needs the processed data from `fieldshift-data-kit` (`run_all.ps1 -Process`). Point
+`PROCESSED_DIR` in `.env` at `fieldshift-data-kit/data/processed` (absolute path) or copy it
+to `datasets/processed`.
+
+- `GET /api/v1/rotations/sites`: sites with processed data, seasons, crops, latest ENSO/IOD phase
+- `POST /api/v1/rotations/compare`: ranked strategies with metrics and evidence cards
+
+```json
+{"site": "banyumas",
+ "priorities": {"water": 1, "soil_health": 1, "erosion": 1, "pest_break": 0.5},
+ "risk_aversion": 0.5,
+ "baseline": [{"MT1_wet": "rice", "MT2_wet_dry": "rice"}]}
+```
+
+Design and limits: `docs/adr/0004-rotation-engine.md`.
