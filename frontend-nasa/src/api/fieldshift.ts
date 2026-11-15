@@ -66,11 +66,11 @@ function hashSeed(id: string): number {
 }
 
 function syntheticNdviFromClimate(f: FieldProfileOut): NdviPointOut[] {
-  if (!f.climate_history?.length) return [];
+  if (!f.climateHistory?.length) return [];
   const seed = hashSeed(f.id);
-  const maxRain = Math.max(...f.climate_history.map((m) => m.rainfall), 1);
+  const maxRain = Math.max(...f.climateHistory.map((m) => m.rainfall), 1);
 
-  return f.climate_history.map((m, idx) => {
+  return f.climateHistory.map((m, idx) => {
     const rainNorm = m.rainfall / maxRain;
     const moistureNorm = clamp01(m.soil_moisture);
     const thermalPenalty = clamp01((m.temp_max - 31) * 0.035);
@@ -98,11 +98,11 @@ function syntheticNdviFromClimate(f: FieldProfileOut): NdviPointOut[] {
 }
 
 export function toField(f: FieldProfileOut): FieldProfile {
-  const ndvi = f.ndvi_time_series?.length ? f.ndvi_time_series : syntheticNdviFromClimate(f);
+  const ndvi = f.ndviTimeSeries?.length ? f.ndviTimeSeries : syntheticNdviFromClimate(f);
   return {
     ...f,
     coordinates: [f.coordinates[0], f.coordinates[1]],
-    ndvi_time_series: ndvi,
+    ndviTimeSeries: ndvi,
   } as FieldProfile;
 }
 
